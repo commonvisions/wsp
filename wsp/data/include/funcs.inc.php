@@ -3491,28 +3491,15 @@ if (!(function_exists('prepareTextField'))):
 endif;
 
 // check given raw strings for utf and converts to, if needed
-if (!(function_exists('setUTF8'))):
-	function setUTF8($givenstring) {
+if (!(function_exists("setUTF8"))) { 
+	function setUTF8($givenstring) { 
 		$stringtype = mb_detect_encoding($givenstring);
-		if (trim($stringtype)!=""):
-			if (mb_check_encoding($givenstring, $stringtype)):
-				if ($stringtype=='UTF-8'):
-					return $givenstring;
-				else:
-					return utf8_encode($givenstring);
-				endif;
-			else:
-				if ($stringtype=='UTF-8'):
-					return utf8_encode($givenstring);
-				else:
-					return $givenstring;
-				endif;
-			endif;
-		else:
-			return utf8_encode($givenstring);
-		endif;
+		if (trim($stringtype) && mb_check_encoding($givenstring, $stringtype)) {
+			return $stringtype === 'UTF-8' ? $givenstring : mb_convert_encoding($givenstring, 'UTF-8');
 		}
-endif;
+		return mb_convert_encoding($givenstring, 'UTF-8');
+	}
+}
 
 if (!(function_exists('mediaDirList'))):
 	function mediaDirList($path, $basefolder = '') {
