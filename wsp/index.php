@@ -1,11 +1,9 @@
 <?php
 /**
  * Startseite von WSP3
- * @author s.haendler@covi.de
- * @copyright (c) 2022, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11
- * @lastchange 2022-10-25
+ * @version GIT
  */
 
 /* start session ----------------------------- */
@@ -345,7 +343,7 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 			<div id="index_lasteditinfo_fieldset">
 			<?php
 			
-			$lastedit_sql = "SELECT `cid`, `mid`, `lastchange` FROM `content` WHERE `lastchange` != 0 GROUP BY `mid` ORDER BY `lastchange` DESC  LIMIT 0, 10"; 
+			$lastedit_sql = "SELECT `cid`, `mid`, `lastchange` FROM `content` WHERE `lastchange` != 0 GROUP BY `mid`, `cid` ORDER BY `lastchange` DESC  LIMIT 0, 10"; 
 			$lastedit_res = doSQL($lastedit_sql);
 			
 			if ($lastedit_res['num']>0) {

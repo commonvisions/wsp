@@ -1,15 +1,16 @@
 <?php
 /**
  * aufbau des menues
- * @author s.haendler@covi.de
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11.1
- * @lastchange 2023-01-10
+ * @version GIT
  * 
  * 2023-01-10
  * 6.11.1
  * Fixed error with "DELETE *"
+ * 
+ * 2024-01-08
+ * Fixed error with GROUP BY statements
  * 
  */
 
@@ -152,7 +153,7 @@ function mobileJump(jumpValue) {
 				
 				<?php if ($standardtemp>0): /* allow preview/publisher only with defined standard template */
 					
-					$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`";
+					$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
 					$queue_res = doSQL($queue_sql);
 					$queue_num = $queue_res['num'];
 					
@@ -508,7 +509,7 @@ function mobileJump(jumpValue) {
 		if ((array_key_exists('wspvars', $_SESSION) && array_key_exists('usertype', $_SESSION['wspvars']) && $_SESSION['wspvars']['usertype']==1) || (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('publisher', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['publisher']!=0 && $_SESSION['wspvars']['rights']['publisher']<100)):
 			if ($standardtemp>0): // allow preview/publisher only with defined standard template
 				
-				$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`";
+				$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
 				$queue_res = doSQL($queue_sql);
 				$queue_num = $queue_res['num'];
 				

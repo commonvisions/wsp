@@ -1,11 +1,9 @@
 <?php
 /**
  * website publisher
- * @author s.haendler@covi.de
- * @copyright (c) 2021, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.10
- * @lastchange 2021-03-02
+ * @version GIT
  */
 
 /* start session ----------------------------- */
@@ -316,10 +314,10 @@ function setToPublish(selectType) {
 	
 	$_SESSION['publishrun'] = 0;
 	
-	$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`";
+	$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
 	$queue_res = doSQL($queue_sql);
 
-	$subqueue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = -1 GROUP BY `param`";
+	$subqueue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = -1 GROUP BY `param`, `id`";
 	$subqueue_res = doSQL($subqueue_sql);
 
 	if ($queue_res['num']>0 || $subqueue_res['num']>0):

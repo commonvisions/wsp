@@ -1,11 +1,9 @@
 <?php
 /**
 * @description wsp footer file
-* @author s.roscher@covi.de
-* @copyright (c) 2022, Common Visions Media.Agentur (COVI)
+* @author stefan@covi.de
 * @since 3.1
-* @version 6.11
-* @lastchange 2022-11-16
+* @version GIT
 */
 
 // remove loading entry so we have less entries in db and a loaded page is a good information ;)
@@ -166,7 +164,7 @@ if (isset($_SESSION['wspvars']['devstat']) && $_SESSION['wspvars']['devstat']===
 <!--
 
 <?php 
-$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`";
+$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
 $queue_res = doSQL($queue_sql);
 $queue_num = intval($queue_res['num']);
 
