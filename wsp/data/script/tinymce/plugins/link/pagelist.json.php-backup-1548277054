@@ -1,0 +1,89 @@
+<?php
+/**
+ * TINYMCE pagelist.json for "link"-plugin
+ * @author COVI
+ * @copyright (c) 2018, Common Visions Media.Agentur (COVI)
+ * @since 3.1
+ * @version 6.7
+ * @lastchange 2018-09-18
+ */
+
+session_start();
+
+include_once $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/data/include/globalvars.inc.php';
+include_once $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/data/include/funcs.inc.php';
+include_once $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/data/include/dbaccess.inc.php';
+
+	function getMenuLevelTiny($parent, $spaces, $modi, $aSelectIDs = array(), $op = '', $gmlVisible = 1) {
+		$menulevel_sql = "SELECT `mid`, `position`,`editable`,`level`, `visibility`, `description`, `templates_id`, `connected`, `contentchanged` FROM `menu` WHERE trash != 1 AND `connected` = '".intval($parent)."' ORDER BY `position`";
+		$menulevel_res = mysql_query($menulevel_sql);
+		if ($menulevel_res):
+			$menulevel_num = mysql_num_rows($menulevel_res);
+		endif;
+		
+		
+		if ($menulevel_num > 0) {
+			$spacer = "";
+			
+			for ($i=0; $i<$spaces; $i++):
+				$spacer .= " ";
+			endfor;
+			
+			$i = 1;
+			
+			while ($row = mysql_fetch_array($menulevel_res)) {
+				
+				$menuItem = "";
+				if (is_array($op)):
+					if (count($op)>0):
+						if (in_array($row['mid'], $op)):
+							if (($gmlVisible==0 && $row['visibility']==0) || $gmlVisible==1 || ($gmlVisible==2 && $row['visibility']==1)):
+								$menuItem = "{title: '".$spacer.$row['description']."', value: '[%PAGE:".$row['mid']."%]'},\n";
+							endif;			
+						endif;
+					else:
+						if (($gmlVisible==0 && $row['visibility']==0) || $gmlVisible==1 || ($gmlVisible==2 && $row['visibility']==1)):
+							$menuItem = "{title: '".$spacer.$row['description']."', value: '[%PAGE:".$row['mid']."%]'},\n";
+						endif;
+					endif;
+				else:
+					if (($gmlVisible==0 && $row['visibility']==0) || $gmlVisible==1 || ($gmlVisible==2 && $row['visibility']==1)):
+						$menuItem = "{title: '".$spacer.$row['description']."', value: '[%PAGE:".$row['mid']."%]'},\n";
+					endif;
+				endif;
+				
+				if ($op!='xajax'):
+					echo $menuItem;
+				else:
+					$GLOBALS['getMenuLevelTiny']['finalmenu'].= $menuItem;
+				endif;
+				
+				
+				if ($spaces=="-1"):
+					getMenuLevelTiny($row['mid'], $spaces, $modi, $aSelectIDs, $op);
+				else:
+					if (!isset($getsubs)):
+						getMenuLevelTiny($row['mid'], $spaces+3, $modi, $aSelectIDs, $op);
+					elseif ($getsubs):
+						getMenuLevelTiny($row['mid'], $spaces+3, $modi, $aSelectIDs, $op);
+					endif;
+				endif;
+				$i++;
+	
+			}	// while
+		}	// if
+	}	// getMenuLevelTiny()
+
+		echo "[
+";
+getMenuLevelTiny(0, '', gmlSelect);
+		echo "]";
+
+//[
+//    {title: 'My page 1', value: '[%PAGE1%]'},
+//    {title: ' My page 2', value: '[%PAGE2%]'},
+//    {title: '  My page 3', value: '[%PAGE3%]'},
+//    {title: ' My page 4', value: '[%PAGE47%]'}
+//]
+
+// EOF ?>
