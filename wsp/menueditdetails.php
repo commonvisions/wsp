@@ -1,16 +1,15 @@
 <?php
 /**
  * edit menupoints details
- * @author s.haendler@covi.de
- * @copyright (c) 2022, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11.2
- * @lastchange 2022-11-11
+ * @version GIT
  * 
- * 6.11.2
  * 2023-01-08
  * - fixed "Passing null to parameter #1 ($string) of type string is deprecated"
- * 
+ * 2025-01-08
+ * - fixed problem with external db access
+ * - fixed wrong editable param on menupoints with revieved dynamic contents
  * 
  */
 
@@ -116,7 +115,6 @@ if ($op=='save'):
 		$description = "not set";
 	endif;
 	$menuupdate_sql.= ", `description` = '".escapeSQL(trim($description))."'";
-	// $menuupdate_sql.= ", `filename` = '".escapeSQL(trim($_POST['filename']))."'"; unset($_POST['filename']);
 	$menuupdate_sql.= ", `offlink` = '".escapeSQL(trim($_POST['offlink']))."'"; unset($_POST['offlink']);
 	$menuupdate_sql.= ", `imageon` = '".escapeSQL(trim($_POST['imageon']))."'"; unset($_POST['imageon']);
 	$menuupdate_sql.= ", `imageoff` = '".escapeSQL(trim($_POST['imageoff']))."'"; unset($_POST['imageoff']);
@@ -221,7 +219,7 @@ if ($op=='save'):
                 $_SESSION['wspvars']['db'] = new mysqli(trim($_POST['pluginconfig']['dbhost']), trim($_POST['pluginconfig']['dbuser']), trim($_POST['pluginconfig']['dbpass']), trim($_POST['pluginconfig']['dbname']));
                 $tmpdb = true;
             }
-            $plugincontent_sql = "SELECT `".trim($_POST['pluginconfig']['identifier'])."`, `".trim($_POST['pluginconfig']['filename'])."` AS filename, `".trim($_POST['pluginconfig']['description'])."` AS description FROM `".trim($_POST['pluginconfig']['fromtable'])."`";
+            $plugincontent_sql = "SELECT `".trim($_POST['pluginconfig']['identifier'])."`, `".trim($_POST['pluginconfig']['filename'])."` AS filename, `".trim($_POST['pluginconfig']['description'])."` AS description FROM `" . escapeSQL($_POST['pluginconfig']['dbname'] ?? DB_NAME) . "`.`" . escapeSQL($_POST['pluginconfig']['fromtable']) . "`";
             if (trim($_POST['pluginconfig']['where'])!='') {
                 $plugincontent_sql.= str_replace(" ORDER BY ", "", " WHERE ".trim($_POST['pluginconfig']['where']));
             }
@@ -576,6 +574,7 @@ if ($menudetails_res['num']==0): ?>
                         <td class="tablecell two"><select id="editable" name="editable" size="1" class="" onchange="document.getElementById('cfc').value = 1;" >
                             <option value="0"><?php echo returnIntLang('structure edit generell block not editable', true); ?></option>
                             <option value="1" <?php if (intval($menueditdata['editable'])==1) echo " selected='selected' " ; ?>><?php echo returnIntLang('structure edit generell block editable', true); ?></option>
+                            <option value="7" <?php if (intval($menueditdata['editable'])==7) echo " selected='selected' " ; ?>><?php echo returnIntLang('structure edit generell recieved dynamic content', true); ?></option>
                             <option value="9" <?php if (intval($menueditdata['editable'])==9) echo " selected='selected' " ; ?>><?php echo returnIntLang('structure edit generell block dynamic content', true); ?></option>
                         </select></td>
                     </tr>
