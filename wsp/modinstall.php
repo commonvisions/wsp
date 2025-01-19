@@ -1,16 +1,14 @@
 <?php
 /**
  * Modulverwaltung
- * @author s.haendler@covi.de
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11
- * @lastchange 2023-01-06
+ * @version GIT
  * 
  * 2023-01-06
- * 6.11
- * - fixed error with version compare
- * 
+ * fixed error with version compare
+ * 2025-01-19
+ * fixed bug with false return of module installation server
  */
 
 // enable/disable warnings for false class definitions
@@ -1138,7 +1136,7 @@ include ("./data/include/wspmenu.inc.php");
                 xml_parse_into_struct($xml, $xmlversion, $values, $index);
             }
         }
-		
+
 		$i = 0;
 		foreach ($values as $file) {
 			if ($file['tag']=='PACKAGENAME'):
@@ -1164,7 +1162,7 @@ include ("./data/include/wspmenu.inc.php");
 					<td class='tablecell two'><?php echo returnIntLang('modinstall choosefromdisk'); ?></td>
 					<td class='tablecell six'><input type="file" name="modulfile" id="modulfile" class="three full" /></td>
 				</tr>
-				<?php if (is_array($mod)): ?>
+				<?php if (is_array($mod ?? false)): ?>
 				<tr>
 					<td class='tablecell two'><?php echo returnIntLang('modinstall choosefromserver'); ?></td>
 					<td class='tablecell six'><select name="serverfile" id="serverfile" class="three full">
