@@ -1,11 +1,9 @@
 <?php
 /**
  * @description global editor properties
- * @author s.haendler@covi.de
- * @copyright (c) 2021, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.8.1
- * @lastchange 2021-01-19
+ * @version GIT
  */
 
 /* start session ----------------------------- */
@@ -137,8 +135,8 @@ if ((isset($sitedata['wsprobots']) && $sitedata['wsprobots']==1) || (isset($site
 	// create ftp-connect
     $ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])));
     if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }}
-    if (isset($_SESSION['wspvars']['ftppasv'])) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
-	$ftpcon = ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass']);
+    if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv'] ?? true); }
+	$ftpcon = ($ftp) ? ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass']) : false;
 	if ($ftpcon):
 		// create file content
 		$fh = fopen("./tmp/robots.txt", "w+");
@@ -349,7 +347,7 @@ endif;
 			</div>
 			<input type="hidden" class="one full" name="defaultpublish" id="defaultpublish" value="5">
 		</fieldset>
-		<?php if ($_SESSION['wspvars']['createthumbfromimage']=="checked"): ?>
+		<?php if (($_SESSION['wspvars']['createthumbfromimage'] ?? null)=="checked"): ?>
 		<fieldset id="fieldset_grafix" class="text">
 		<legend><?php echo returnIntLang('editorprefs files'); ?> <?php echo legendOpenerCloser('pref-files'); ?></legend>
 		<div id="pref-files">
