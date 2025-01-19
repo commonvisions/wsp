@@ -1,11 +1,13 @@
 <?php
 /**
  * Modulverwaltung
- * @author s.haendler@covi.de
- * @copyright (c) 2020, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.9
- * @lastchange 2020-07-13
+ * @version GIT
+ * 
+ * 2025-01-19
+ * fixed GROUP BY clause in SQL statement
+ * 
  */
 
 /* start session ----------------------------- */
@@ -550,7 +552,8 @@ include ("./data/include/wspmenu.inc.php");
                             c.`content_lang` IN (\''.implode("','", $clang['shortcut']).'\') AND
                             (c.`interpreter_guid` = i.`guid` AND i.`module_guid` = "'.trim($presv["guid"]).'") 
                         GROUP BY 
-                            s.`mid`';
+                            s.`mid`,
+							c.`cid`';
                         $parseruse_res = doSQL($parseruse_sql);
                         
                         echo "<tr>";
