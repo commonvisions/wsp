@@ -7,6 +7,8 @@
  * 
  * 2025-01-19
  * fixed GROUP BY clause in SQL statement
+ * fixed missing DB_NAME definition
+ * minor bugfixes
  * 
  */
 
@@ -232,25 +234,27 @@ function modRights() {
 			</table>
             <input type="hidden" name="op" value="setrights">
 		</fieldset>
+		<?php
+		
+		$colset = array();
+		$modtable_sql = "SELECT `TABLE_NAME` FROM `information_schema`.`tables` WHERE `TABLE_SCHEMA` = '" . escapeSQL(defined('DB_NAME') ? DB_NAME : ($_SESSION['wspvars']['dbname'] ?? 'modtable')) . "' AND `TABLE_NAME` LIKE '".escapeSQL(trim($mresv['module_guid']))."%'";
+		$modtable_res = getResultSQL($modtable_sql);
+		if (is_array($modtable_res)):
+
+			?>
             <fieldset>
                 <legend><?php echo returnIntLang('modrights manage affectedcontents'); ?></legend>
                 <?php
                 
-                $colset = array();
-                $modtable_sql = "SELECT `TABLE_NAME` FROM `information_schema`.`tables` WHERE `TABLE_SCHEMA` = '".DB_NAME."' AND `TABLE_NAME` LIKE '".escapeSQL(trim($mresv['module_guid']))."%'";
-                $modtable_res = getResultSQL($modtable_sql);
-    
-                if (is_array($modtable_res)):
-                    foreach ($modtable_res AS $mtrk => $mtrv):
-                        $col_sql = "SHOW FULL COLUMNS FROM `".$mtrv."` WHERE (`Type` LIKE '%varchar%' OR `Type` LIKE '%text%') AND `Type` NOT LIKE '%varchar(1_)%' AND `Type` NOT LIKE '%varchar(_)%'";
-                        $col_res = doSQL($col_sql);
-                        if ($col_res['num']>0):
-                            foreach($col_res['set'] AS $crk => $crv):
-                                $colset[$mtrv][] = array('fieldname' => $crv['Field']);
-                            endforeach;
-                        endif;
-                    endforeach;
-                endif;
+				foreach ($modtable_res AS $mtrk => $mtrv):
+					$col_sql = "SHOW FULL COLUMNS FROM `".$mtrv."` WHERE (`Type` LIKE '%varchar%' OR `Type` LIKE '%text%') AND `Type` NOT LIKE '%varchar(1_)%' AND `Type` NOT LIKE '%varchar(_)%'";
+					$col_res = doSQL($col_sql);
+					if ($col_res['num']>0):
+						foreach($col_res['set'] AS $crk => $crv):
+							$colset[$mtrv][] = array('fieldname' => $crv['Field']);
+						endforeach;
+					endif;
+				endforeach;
                 
                 $affectedcontent = unserializeBroken($moddata_res['set'][0]['affectedcontent']);
                 if (!(is_array($affectedcontent))): $affectedcontent = array(); endif;
@@ -278,6 +282,7 @@ function modRights() {
 
                 ?>
             </fieldset>
+			<?php endif; ?>
 		</form>
         <fieldset class="options">
 			<p><a onclick="document.getElementById('setrightsform').submit();" style="cursor: pointer;" class="greenfield">&Auml;nderungen speichern</a> <a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="orangefield">Zur&uuml;ck</a></p>	
@@ -635,7 +640,7 @@ include ("./data/include/wspmenu.inc.php");
 						
                         echo trim($cresv["name"])." ".trim($cresv["version"]);
 						$detailset = array();
-                        if ($details_num>0):
+                        if ($details_res['num']>0):
 							foreach ($details_res['set'] AS $dresk => $dresv):
 								$detailset[] = "<em>".trim($dresv["name"])." - ".trim($dresv["version"])."</em>";
 							endforeach;
