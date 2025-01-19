@@ -1,18 +1,15 @@
 <?php
 /**
  * Verwaltung von Dateien
- * @author s.haendler@covi.de
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11.4
- * @lastchange 2023-01-05
+ * @version GIT
  * 
  * 2023-01-05
- * 6.11.4
  * Fixed error with undefined $thisimgdata
- * 
- * 6.11.3
  * Fixed error with $used 
+ * 2025-01-19
+ * Fixed detection of php-files in media folders
  * 
  */
 
@@ -24,6 +21,7 @@ function fileUsage($path, $file) {
 	$replacefile = str_replace("/screen/", "/", $replacefile);
 	$replacefile = str_replace("/download/", "/", $replacefile);
 	$replacefile = str_replace("/fonts/", "/", $replacefile);
+	$replacefile = str_replace("/video/", "/", $replacefile);
 	$replacefile = str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", $replacefile))));
     $file = strtolower($replacefile);
         
@@ -145,7 +143,7 @@ if (isset($_REQUEST['op']) && $_REQUEST['op']=='readstructure'):
 		if (!$res['res']) { var_export($res); }
 		// adding files to db
 		while (false !== ($entry = $d->read())):
-			if ((substr($entry, 0, 1)!='.') && (is_file(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry))))):
+			if ((substr($entry, 0, 1)!='.') && (is_file(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)))) && $entry!='index.php'):
 				$thisimgdata = @getimagesize(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)));
 				$thisfiledata = @stat(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)));
 				if (intval($thisfiledata[7]) > 0):
@@ -253,16 +251,16 @@ $m_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".escapeSQL(trim($me
 $m_res = doSQL($m_sql);
 
 $filecount = 0;
-foreach ($fullmediastructure AS $fk => $fv):
+foreach ($fullmediastructure AS $fk => $fv) {
 	$scandir = scandir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fk);
 	$si = 0;
-	foreach ($scandir AS $sv):
-		if (!(is_dir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fk."/".$sv))):
+	foreach ($scandir AS $sv) {
+		if (!(is_dir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fk."/".$sv)) && !($sv=='index.php') && !(substr($sv,0,1)=='.')) {
 			$si++;
-		endif;
-	endforeach;
+		}
+	}
 	$filecount = $filecount + $si;
-endforeach;
+}
 $sysinfo = "[SYS:".$filecount."#DB:".$m_res['num']."]";
 $sysequal = (intval($filecount)==$m_res['num']);
 
