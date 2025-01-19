@@ -1,11 +1,9 @@
 <?php
 /**
  * system administration
- * @author s.roscher@covi.de
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11.5
- * @lastchange 2023-01-09
+ * @version GIT
  * 
  * 2023-01-09
  * 6.11.4
@@ -14,6 +12,9 @@
  * 6.11.5
  * removed unnesseccary "update filesystem" fieldset
  * 
+ * 2025-01-19
+ * Fixed missing array key warnings
+ * Fixed missing files warnings
  */
 
 // switching off errors to prevent update failures
@@ -136,7 +137,7 @@ function checkDatabase($own,$dev,$dev_tablename,$own_tablename) {
 						$same=false;
 					endif;
 				endif;
-				if (!in_array($own[$table]['field'][$i],$dev[$table]['field']) && $i<sizeof($own[$table]['field'])):
+				if (!in_array(($own[$table]['field'][$i] ?? null),$dev[$table]['field']) && $i<sizeof($own[$table]['field'])):
 					//
 					// feld geloescht
 					// 
@@ -1072,7 +1073,7 @@ flush();flush();flush();
 				for($i=0;$i<sizeof($_SESSION['wspvars']['tables']);$i++) {
 					$sql = "DESCRIBE `".$_SESSION['wspvars']['tables'][$i]."`";
 					$res = doSQL($sql);
-					if ($res['res']) {
+					if ($res['res']===true) {
 						$own_tablename[$i] = $_SESSION['wspvars']['tables'][$i];
 						foreach ($res['set'] AS $rsk => $rsv) {
                         	$owntable[$own_tablename[$i]]['field'][]= $rsv['Field'];
@@ -1158,10 +1159,14 @@ flush();flush();flush();
                 }
 					
 				$temarray['tablecount'] = $devid;
-				$datbasepfad = $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/updatedatabase.php";
-				$datbasedat = fopen($datbasepfad,'w');
-				fwrite($datbasedat, serialize($temarray));
-				fclose($datbasedat);
+				$datbasepfad = str_replace('//', '/', str_replace('//', '/', $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/updatedatabase.php"));
+				$datbasedat = @fopen($datbasepfad,'w');
+				if (file_exists($datbasepfad)) {
+					fwrite($datbasedat, serialize($temarray));
+					fclose($datbasedat);
+				} else {
+					addWSPMsg('errormsg', returnIntLang('Could not create Database checkup file.'));
+				}
 				
 				if (trim($_SESSION['dbchanges']) == trim($dbchanges)) {
 					$_SESSION['dbchangerun'] = isset($_SESSION['dbchangerun'])?$_SESSION['dbchangerun']+1:1;
@@ -1304,10 +1309,10 @@ flush();flush();flush();
 					$readcss = $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir']."/media/layout/".$file;
 					$fileinfo = file($readcss);
 					for ($x=0; $x<=8; $x++):
-						if (str_replace("@description", "@", $fileinfo[$x])!=$fileinfo[$x]):
+						if (str_replace("@description", "@", ($fileinfo[$x] ?? 'x')) != ($fileinfo[$x] ?? 'x')):
 							$cssdesc[$i] = trim(str_replace(" * @description ","",$fileinfo[$x]));
 						endif;
-						if (str_replace("@version", "@", $fileinfo[$x])!=$fileinfo[$x]):
+						if (str_replace("@version", "@", ($fileinfo[$x] ?? 'x')) != ($fileinfo[$x] ?? 'x')):
 							$cssversion[$i] = trim(str_replace(" * @version ","",$fileinfo[$x]));
 						endif;
 					endfor;
@@ -1407,10 +1412,10 @@ flush();flush();flush();
 							echo "</ul>";
 						endif;
 					endif;
-					
+
 					$datverpfad = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/updatedateien.php"));
-					$datverdat = fopen($datverpfad,'w');
-					
+					$datverdat = @fopen($datverpfad,'w');
+
                     if ($datverdat) {
                         if (in_array("".$_SESSION['wspvars']['wspbasedir']."/data/include/globalvars.inc.php",$newmodul)):
                             fwrite($datverdat, "1\r\n");
@@ -1422,7 +1427,9 @@ flush();flush();flush();
                             endfor;
                         endif;
                         fclose($datverdat);
-                    }
+                    } else {
+						addWSPMsg('errormsg', returnIntLang('Could not create GlobalVars checkup file.'));
+					}
                     
                     if (is_array($delfiles) && count($delfiles)>0):
                         $delverpfad = str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/deletefiles.php")));
