@@ -1,6 +1,9 @@
 
 wsp/test.php
+wsp/tmp
+wsp/data/modules/*
 wsp/data/include/ftpaccess.inc.php
 wsp/data/include/dbaccess.inc.php
+
 data/include/dbaccess.inc.php
-/wsp/tmp
+data/modules/*
