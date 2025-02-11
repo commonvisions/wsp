@@ -156,9 +156,7 @@ if (isset($_SESSION['wspvars']['devstat']) && $_SESSION['wspvars']['devstat']===
 
 <input type="hidden" id="cfc" value="0" />
 <div id="footer">
-	<p class="rightpos"><?php echo returnIntLang('worksbestwith'); ?></p>
-	<p class="leftpos"><?php echo returnIntLang('footerquicklinks'); ?></p>
-	<p><strong><a href="http://www.websitepreview.de" target="_blank">WebSitePreview</a> 6.11</strong> &copy; <a href="http://www.covi.de" target="_blank">Common Visions Media.Agentur</a><span class="cleardate"> </span>2001 - 2022 &middot; <a href="http://www.covi.de" target="_blank">www.covi.de</a></p>
+	<p><strong><a href="http://www.websitepreview.de" target="_blank" class="link-secondary">WSP <em>X&nbsp;</em> 6.12 • © 2025</a></strong></p>
 </div>
 <script type="text/javascript">
 <!--
@@ -240,7 +238,7 @@ function createFloatingTable() {
 	}
 
 //******* function extending autocomplete widget *******//
-
+/*
 (function( $ ) {
 	$.widget( "custom.combobox", {
 		_create: function() {
@@ -384,24 +382,8 @@ function createFloatingTable() {
 			}
 		});
 	})( jQuery );
-//******* Ende Funtionen für Dropbox-Autocomplete *******//
- 
-$(document).ready(function() {      
-	
-	/* run function to style tables */
-	createFloatingTable();
-	
-	/* passLiTable is deprecated since 6.0 */ 
-	if ($(window).width()>480) {
-		passLiTable('ul.tablelist', 'li.tablecell', 8, new Array('one','two','three','four','five','six','seven','eight'), 'tblc');
-		}
-	
-	/* run function to init autocomplete */
-	$(function() {
-		$( ".autocombo" ).combobox();
-		});
-
-	});
+*/
+	//******* Ende Funtionen für Dropbox-Autocomplete *******//
 
 <?php if (key_exists('preventleave', $_SESSION['wspvars']) && $_SESSION['wspvars']['preventleave']): ?>
 $(window).bind('beforeunload', function () {
