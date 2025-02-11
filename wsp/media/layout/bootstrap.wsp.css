@@ -1,0 +1,81 @@
+/* source-sans-3-regular - latin */
+@font-face {
+	font-display: swap;
+	font-family: 'Source Sans 3';
+	font-style: normal;
+	font-weight: 400;
+	src: url('./../fonts/source-sans-3-v15-latin/source-sans-3-v15-latin-regular.woff2') format('woff2');
+}
+
+/* source-sans-3-700 - latin */
+@font-face {
+	font-display: swap;
+	font-family: 'Source Sans 3';
+	font-style: normal;
+	font-weight: 700;
+	src: url('./../fonts/source-sans-3-v15-latin/source-sans-3-v15-latin-700.woff2') format('woff2');
+}
+
+/* source-code-pro-regular - latin */
+@font-face {
+	font-display: swap;
+	font-family: 'Source Code Pro';
+	font-style: normal;
+	font-weight: 400;
+	src: url('./../fonts/source-code-pro-v23-latin/source-code-pro-v23-latin-regular.woff2') format('woff2');
+}
+
+/* source-code-pro-700 - latin */
+@font-face {
+	font-display: swap;
+	font-family: 'Source Code Pro';
+	font-style: normal;
+	font-weight: 700;
+	src: url('./../fonts/source-code-pro-v23-latin/source-code-pro-v23-latin-700.woff2') format('woff2');
+}
+
+body { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; font-size: 13px; overflow: scroll; overflow-x: hidden; }
+input { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
+select { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
+textarea { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
+textarea.source { font-family: 'Source Code Pro', monospace; font-weight: 400; }
+
+a {
+	text-decoration: none;
+}
+
+nav .dropdown-menu {
+	font-size: 0.9rem !important;
+}
+
+fieldset {
+	padding: 0.5%;
+	margin: 5px 0px;
+	border: 1px solid var(--bs-border-color);
+	border-radius: 4px;
+}
+
+fieldset legend {
+	padding: 0px 4px;
+	font-weight: 400;
+	font-size: 0.9em;
+	float: none;
+	width: auto;
+	margin-bottom: 0;
+}
+
+/* ELEMENTS */
+
+#menuholder {
+	position: fixed;
+	height: auto;
+	width: 100%;
+	z-index: 30;
+	box-shadow: 0rem 0rem 1rem rgba(0,0,0,0.5);
+	margin: 0 !important;
+	padding: 0.5em;
+}
+
+#topspacer {
+	height: 4rem;
+}

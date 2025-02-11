@@ -18,10 +18,10 @@ header("Content-Type: text/css");
 ?>
 * { margin: 0px; padding: 0px; }
 
-body { font-family: 'Source Sans Pro', 'Open Sans', sans-serif; font-weight: 400; font-size: 13px; overflow: scroll; overflow-x: hidden; }
-input { font-family: 'Source Sans Pro', 'Open Sans', sans-serif; font-weight: 400; }
-select { font-family: 'Source Sans Pro', 'Open Sans', sans-serif; font-weight: 400; }
-textarea { font-family: 'Source Sans Pro', 'Open Sans', sans-serif; font-weight: 400; }
+body { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; font-size: 13px; overflow: scroll; overflow-x: hidden; }
+input { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
+select { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
+textarea { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
 textarea.source { font-family: 'Source Code Pro', monospace; font-weight: 400; }
 
 a { text-decoration: none; }
