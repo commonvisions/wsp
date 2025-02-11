@@ -1,3 +1,6 @@
+*
+
+!wsp/
 
 wsp/test.php
 wsp/tmp
@@ -7,3 +10,4 @@ wsp/data/include/dbaccess.inc.php
 
 data/include/dbaccess.inc.php
 data/modules/*
+
