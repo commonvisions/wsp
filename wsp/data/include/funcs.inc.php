@@ -1,21 +1,20 @@
 <?php
 /**
  * Allgemeine Funktionen
- * @author COVI
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11.3
- * @lastchange 2023-01-09
+ * @version GIT
  * 
  * 6.11.1
  * fixed error with missing getWSPProperties
  * 
  * 2023-01-09
- * 6.11.2
  * fixed exception on sql statement
- * 
- * 6.11.3
  * fixed deprecation error on prepareTextField
+ * 
+ * 2025-01-19
+ * added backtrace and error message to sql error message output
+ * fixed call of utf8_decode
  * 
  */
 
@@ -179,8 +178,8 @@ function groupbyval( $groupby , $table ) {
 if (!(function_exists('doSQL'))) {
     function doSQL($statement) {
 		$set = array('res'=>false,'aff'=>0,'num'=>0,'set'=>array(),'sql'=>$statement,'inf'=>'','err'=>'','mysqli'=>false);
-        if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {
-            if (mysqli_get_server_info($_SESSION['wspvars']['db'])>=8) {
+        if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {			
+			if (mysqli_get_server_info($_SESSION['wspvars']['db'])>=8) {
 				// grep the group by part 
 				$grp = '/(GROUP BY \`[a-zA-Z_\-0-9]*\`)/i';
 				$grpfnd = preg_match($grp, $statement, $grpmatches, PREG_OFFSET_CAPTURE, 0);
@@ -208,6 +207,7 @@ if (!(function_exists('doSQL'))) {
 			}
 			catch (Exception $e) {
 				$set['err'] = $e;
+				addWSPMsg('errormsg', '<p>' . nl2br($statement) . '</p>');
 				addWSPMsg('errormsg', '<p>' . nl2br($e) . '</p>');
 			}
 		    if (isset($res) && $res===true) {
@@ -427,7 +427,7 @@ if (!(function_exists('removeSpecialChar'))) {
 }
 
 if (!(function_exists("urltext"))) { 
-    function urltext($txt) { $txt = strtolower(trim(utf8_decode($txt))); $replaces = array( chr(192) => "a", chr(193) => "a", chr(194) => "a", chr(195) => "ae", chr(197) => "a", chr(196) => "ae", chr(228) => "ae", chr(198) => "ae", chr(214) => "oe", chr(220) => "ue", chr(223) => "ss", chr(224) => "a", chr(225) => "a", chr(226) => "a", chr(232) => "e", chr(233) => "e", chr(234) => "e", chr(236) => "i", chr(237) => "i", chr(238) => "i", chr(242) => "o", chr(243) => "o", chr(244) => "o", chr(246) => "oe", chr(249) => "u", chr(250) => "u", chr(251) => "u", chr(252) => "ue", "\"" => "", "'" => "", "," => "", " " => "-", "." => "", "?" => "", "!" => "", "*" => "", "#" => ""); foreach ($replaces AS $key => $value) { $txt = str_replace($key, $value, trim($txt)); } $txt = preg_replace('/[^a-z0-9\-_]/', "", $txt); $t = 0; while (strpos($txt, '--') || $t==20) { $txt = str_replace("--", "-", $txt); $t++; } return $txt; }
+    function urltext($txt) { $txt = strtolower(trim(setUTF8($txt))); $replaces = array( chr(192) => "a", chr(193) => "a", chr(194) => "a", chr(195) => "ae", chr(197) => "a", chr(196) => "ae", chr(228) => "ae", chr(198) => "ae", chr(214) => "oe", chr(220) => "ue", chr(223) => "ss", chr(224) => "a", chr(225) => "a", chr(226) => "a", chr(232) => "e", chr(233) => "e", chr(234) => "e", chr(236) => "i", chr(237) => "i", chr(238) => "i", chr(242) => "o", chr(243) => "o", chr(244) => "o", chr(246) => "oe", chr(249) => "u", chr(250) => "u", chr(251) => "u", chr(252) => "ue", "\"" => "", "'" => "", "," => "", " " => "-", "." => "", "?" => "", "!" => "", "*" => "", "#" => ""); foreach ($replaces AS $key => $value) { $txt = str_replace($key, $value, trim($txt)); } $txt = preg_replace('/[^a-z0-9\-_]/', "", $txt); $t = 0; while (strpos($txt, '--') || $t==20) { $txt = str_replace("--", "-", $txt); $t++; } return $txt; }
 }
 
 if (!(function_exists('datetotime'))) {
