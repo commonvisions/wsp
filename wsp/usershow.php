@@ -1,11 +1,12 @@
 <?php
 /**
- * anzeige und verwaltung eingeloggter benutzer
- * @author s.haendler@covi.de
- * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.8
- * @lastchange 2019-01-22
+ * @version GIT
+ * 
+ * 2025-02-11
+ * - fixed bug with undefined $wspvars['usevar']
+ * 
  */
 
 /* start session ----------------------------- */
@@ -57,7 +58,7 @@ include ("./data/include/wspmenu.inc.php");
 		<li class="tablecell head two"><?php echo returnIntLang('loginstat last'); ?></li>
 		<li class="tablecell head four"><?php echo returnIntLang('loginstat pos'); ?></li>
 	</ul>
-	<input name="usevar" type="hidden" value="<?php echo $wspvars['usevar']; ?>" />
+	<input name="usevar" type="hidden" value="<?php echo ($wspvars['usevar'] ?? ''); ?>" />
 	<input name="op" type="hidden" value="setfree" />
 	</form>
 	</fieldset>
@@ -90,5 +91,6 @@ $(window).load(function() {
 	
 </script>
 
-<?php @ include ("./data/include/footer.inc.php"); ?>
-<!-- EOF -->
+<?php 
+
+@include ("./data/include/footer.inc.php"); 
