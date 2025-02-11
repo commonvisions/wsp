@@ -1,11 +1,8 @@
 <?php
 /**
- *
- * @author info@covi.de
- * @copyright (c) 2021, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1.2
- * @version 6.9
- * @lastchange 2021-01-20
+ * @version GIT
 */
 
 ksort($_SESSION);
@@ -26,8 +23,6 @@ if (!(isset($_POST['previewid']))):
 		<title><?php echo (isset($_SESSION['wspvars']['sitetitle'])?$_SESSION['wspvars']['sitetitle']:'WSP Admin Panel'); ?></title>
 		<!-- viewport definitions especially for mobile devices -->
 		<meta name="viewport" content="width=device-width, user-scalable=no">
-		<!-- get font from google -->
-		<link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700|Source+Code+Pro:400,700' rel='stylesheet' type='text/css'>
 		<!-- base desktop stylesheet -->
 		<link rel="stylesheet" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/layout/flexible.css.php" media="screen" type="text/css">
 		<!-- print_screen extensions -->
@@ -37,12 +32,9 @@ if (!(isset($_POST['previewid']))):
 		<link rel="shortcut icon" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/screen/favicon.ico">
 		<link rel="apple-touch-icon" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/screen/iphone_favicon.png" />
 		<!-- get jquery -->
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-		<!-- get jquery user interface extension -->
-		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
-		<!-- get jquery user interface extension css -->
-		<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-		<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/jquery/css/wsptheme/jquery-ui.custom.css" media="screen" type="text/css">
+		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/jquery/jquery-3.7.1.min.js"></script>
+		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/jquery/jquery-migrate-1.4.1.min.js"></script>
+		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/jquery-ui/jquery-ui.min.js"></script>
 		<!-- get WSP supported and/or required base scripts -->
 		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/basescript.js.php"></script>
 		<!-- fancyBox -->
@@ -63,7 +55,9 @@ if (!(isset($_POST['previewid']))):
 			$(window).load(function(){
 				$(".opencloseButton" ).click(function() {
 					var options = {};
+					
 					$('#' + $(this).attr("rel")).toggle('blind', options, 300, returnSetOpenTab($(this).attr("rel")));
+					
 					passLiTable('ul.tablelist', 'li.tablecell', 8, new Array('one','two','three','four','five','six','seven','eight'), 'tblc');
 					return false;
 					});
