@@ -2283,6 +2283,29 @@ if (!(function_exists('getPublisherStructure'))) {
     } // getPublisherStructure
 }
 
+/**
+ * create the ftp connect
+ */
+function doFTP() {
+	$ftp = false;
+	$ftp = (($_SESSION['wspvars']['ftpssl'] ?? false)===true) ? 
+		ftp_ssl_connect(
+			($_SESSION['wspvars']['ftphost'] ?? 'localhost'), 
+			intval($_SESSION['wspvars']['ftpport'] ?? 22)) : 
+		ftp_connect(
+			($_SESSION['wspvars']['ftphost'] ?? 'localhost'),
+			intval($_SESSION['wspvars']['ftpport'] ?? 22));
+	if ($ftp!==false) {
+		if (!ftp_login($ftp, ($_SESSION['wspvars']['ftpuser'] ?? 'user'), ($_SESSION['wspvars']['ftppass'] ?? 'password'))) { 
+			$ftp = false;
+		}
+	}
+	if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) {
+		ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']);
+	}
+	return ($ftp!==false) ? $ftp : null;
+}
+
 // delete menupoint with existing submenu
 function deleteMenuItems($mid, $ftp) {
 	// dateien des zu loeschenden menuepunktes loeschen
