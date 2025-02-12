@@ -447,17 +447,17 @@ function mobileJump(jumpValue) {
 			?>
 			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_6" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu files'); ?></a>
 			<ul id="m_6s" class="basic level1">
-				<?php if ($_SESSION['wspvars']['rights']['imagesfolder']!="0") { ?>
+				<?php if (($_SESSION['wspvars']['rights']['imagesfolder'] ?? 0)!="0") { ?>
 				<li class="level1" id="m_6_1">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/imagemanagement.php"><?php echo returnIntLang('menu files images'); ?></a>
 				</li>
 				<?php } ?>
-				<?php if ($_SESSION['wspvars']['rights']['downloadfolder']!="0") { ?>
+				<?php if (($_SESSION['wspvars']['rights']['downloadfolder'] ?? 0)!="0") { ?>
 				<li class="level1" id="m_6_2">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/documentmanagement.php"><?php echo returnIntLang('menu files docs'); ?></a>
 				</li>
 				<?php } ?>
-				<?php if ($_SESSION['wspvars']['rights']['videofolder']!="0") { ?>
+				<?php if (($_SESSION['wspvars']['rights']['videofolder'] ?? 0)!="0") { ?>
 				<li class="level1" id="m_6_3">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/videomanagement.php"><?php echo returnIntLang('menu files video'); ?></a>
 				</li>
