@@ -9,22 +9,22 @@
  */
 if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
     session_start();
-    include $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/globalvars.inc.php';
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/wsplang.inc.php';
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/dbaccess.inc.php";
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/ftpaccess.inc.php";
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/funcs.inc.php";
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/filesystemfuncs.inc.php";
-    include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php";
-    include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php";
+    $wspdir = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".($_SESSION['wspvars']['wspbasediradd'] ?? "")."/".($_SESSION['wspvars']['wspbasedir'] ?? "")));
+	include $wspdir.'/data/include/globalvars.inc.php';
+	require $wspdir.'/data/include/wsplang.inc.php';
+	require $wspdir."/data/include/dbaccess.inc.php";
+	if (file_exists($wspdir."/data/include/ftpaccess.inc.php")) require $wspdir."/data/include/ftpaccess.inc.php";
+	require $wspdir."/data/include/funcs.inc.php";
+	require $wspdir."/data/include/filesystemfuncs.inc.php";
+	include $wspdir."/data/include/errorhandler.inc.php";
+	include $wspdir."/data/include/siteinfo.inc.php";
 
     $result = array('success' => false, 'id' => intval($_POST['dirid']), 'msg' => 'could not handle request');
     
     if (intval($_POST['dirid'])>0) {
-
         $finaldir = str_replace("//", "/", str_replace("//", "/", $_SESSION['fullstructure'][intval($_POST['dirid'])]['folder']));
         // do ftp login
-        $ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport']))); if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }} if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
+        $ftp = doFTP();
         if ($ftp) {
             // check for files in folder
             $foldercontent = @ftp_nlist($ftp, str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/".$finaldir)));
@@ -64,11 +64,29 @@ if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
                 }
             }
             ftp_close($ftp);
+        } else {
+            $dir = $_SERVER['DOCUMENT_ROOT'] . '/' . ($_SESSION['wspvars']['wspbasediradd'] ?? '') . '/' . $finaldir;
+            if (!is_dir($dir)) {
+                $result['msg'] = "dir doesnt exist";
+            } else {
+                foreach (scandir($dir) as $file) {
+                    if ($file === '.' || $file === '..') continue;
+                    $filePath = $dir . '/' . $file ;
+                    if (is_dir($filePath)) {
+                        $result['msg'] = "please remove subdirectories of directory first";
+                    } else {
+                        unlink($filePath);
+                    }
+                }
+                if (rmdir($dir)) {
+                    doSQL("DELETE FROM `wspmedia` WHERE `mediafolder` = '" . escapeSQL($finaldir) . "'");
+                    $result['success'] = true;
+                    $result['msg'] = 'direct removal';
+                } else {
+                    $result['msg'] = $result['msg'] ?? "could not delete directory for unknown reason";
+                }
+            }
         }
     }
-
     echo htmlspecialchars(json_encode($result), ENT_NOQUOTES);
-
 }
-
-// EOF ?>

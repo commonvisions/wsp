@@ -16,7 +16,7 @@ require ("data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/wsplang.inc.php");
 require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/dbaccess.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/ftpaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/funcs.inc.php");
 /* checkParamVar ----------------------------- */
 $op = checkParamVar('op', '');
@@ -34,9 +34,19 @@ require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/"
 
 // define folders, that should exist
 $requiredstructure = array("media","/media/layout");
+
 // do ftp connect
-$ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport']))); if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }} if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
-foreach ($requiredstructure AS $csk => $csv) { if (!(is_dir(str_replace("//","/",$_SERVER['DOCUMENT_ROOT']."/media")))) { if ($ftp!==false) { @ftp_mkdir($ftphdl, str_replace("//","/",$_SESSION['wspvars']['ftpbasedir'].$csv)); }}} if ($ftp!==false) { ftp_close($ftp); }
+$ftp = doFTP();
+foreach ($requiredstructure AS $csk => $csv) {
+	if (!(is_dir(str_replace("//","/",$_SERVER['DOCUMENT_ROOT']."/media")))) {
+		if ($ftp) { 
+			@ftp_mkdir($ftphdl, str_replace("//","/",$_SESSION['wspvars']['ftpbasedir'].$csv)); 
+		} else {
+			@mkdir($_SERVER['DOCUMENT_ROOT'] . '/' . ($_SESSION['wspvars']['wspbasediradd'] ?? '') . '/' . $csv, 0755, true);
+		}
+	}
+}
+if ($ftp) { ftp_close($ftp); }
 
 // define page specific funcs ----------------
 if (isset($_POST) && array_key_exists('op', $_POST) && $_POST['op']=="save" && trim($_POST['file'])!=''):

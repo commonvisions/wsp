@@ -14,10 +14,10 @@ session_start();
 require ("data/include/usestat.inc.php");
 require ("data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/wsplang.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/dbaccess.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/ftpaccess.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/funcs.inc.php");
+require ("./data/include/wsplang.inc.php");
+require ("./data/include/dbaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
+require ("./data/include/funcs.inc.php");
 /* checkParamVar ----------------------------- */
 
 /* define actual system position ------------- */
@@ -27,11 +27,11 @@ $_SESSION['wspvars']['fpos'] = $_SERVER['PHP_SELF'];
 $_SESSION['wspvars']['fposcheck'] = true;
 $_SESSION['wspvars']['preventleave'] = true;
 /* second includes --------------------------- */
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/checkuser.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php");
+require ("./data/include/checkuser.inc.php");
+require ("./data/include/errorhandler.inc.php");
+require ("./data/include/siteinfo.inc.php");
 /* page specific includes */
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/clsinterpreter.inc.php");
+require ("./data/include/clsinterpreter.inc.php");
 /* define page specific vars ----------------- */
 $worklang = unserialize($_SESSION['wspvars']['sitelanguages']);
 /* define page specific functions ------------ */
@@ -168,8 +168,8 @@ include ("data/include/wspmenu.inc.php");
 					$fieldvalue = unserializeBroken($gcresv['valuefield']);
                     $interpreterdesc = returnIntLang('globalcontent interpreter desc not found');
 					// Interpreter einlesen
-					if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/interpreter/".$file)) {
-						require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/interpreter/".$file;
+					if (is_file("./data/interpreter/".$file)) {
+						require "./data/interpreter/".$file;
 						$clsInterpreter = new $interpreterClass;
 						$clsInterpreter->dbCon = $_SESSION['wspvars']['dbcon'];
 						if (isset($clsinterpreter) && method_exists($clsinterpreter, 'getView')) {

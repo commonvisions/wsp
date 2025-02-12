@@ -11,14 +11,14 @@
 /* start session ----------------------------- */
 session_start();
 /* base includes ----------------------------- */
-require ("data/include/usestat.inc.php");
-require ("data/include/globalvars.inc.php");
+require ("./data/include/usestat.inc.php");
+require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/wsplang.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/dbaccess.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/ftpaccess.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/funcs.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/filesystemfuncs.inc.php");
+require ("./data/include/wsplang.inc.php");
+require ("./data/include/dbaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
+require ("./data/include/funcs.inc.php");
+require ("./data/include/filesystemfuncs.inc.php");
 /* checkParamVar ----------------------------- */
 $op = checkParamVar('op', '');
 $extern = checkParamVar('extern', 0);
@@ -29,9 +29,9 @@ $_SESSION['wspvars']['fpos'] = $_SERVER['PHP_SELF'];
 $_SESSION['wspvars']['fposcheck'] = false;
 $_SESSION['wspvars']['menuposition'] = 'download'; // ?? is dieser Eintrag richtig?
 /* second includes --------------------------- */
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/checkuser.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php");
+require ("./data/include/checkuser.inc.php");
+require ("./data/include/errorhandler.inc.php");
+require ("./data/include/siteinfo.inc.php");
 /* define page specific vars ----------------- */
 $mediafolder = "download";
 $mediadesc = "Dateien";

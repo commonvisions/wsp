@@ -15,7 +15,7 @@ require ("./data/include/usestat.inc.php");
 require ("./data/include/globalvars.inc.php");
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-require ("./data/include/ftpaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 require ("./data/include/filesystemfuncs.inc.php");
 // checkParamVar -----------------------------
@@ -142,14 +142,13 @@ function showDirs($sDir = '', $bRecursive = true) {
 					$cFTP = $tFTP;
 					sleep(1);
 				endif;
-				$ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])));
+				$ftp = doFTP();
 				$tFTP--;
 			endwhile;
-			if ($ftp === false):
+			if (!$ftp) {
 				addWSPMsg('errormsg', returnIntLang('cleanup cant connect to ftp'));
-			elseif (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])):
-				addWSPMsg('errormsg', returnIntLang('cleanup cant login to ftp'));
-			endif;
+			}
+			
 			// if ftp-connect exists
 			if ($ftp):
 				// setup some vars

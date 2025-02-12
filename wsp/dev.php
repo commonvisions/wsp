@@ -20,7 +20,7 @@ require ("./data/include/globalvars.inc.php");
 // first includes ----------------------------
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-require ("./data/include/ftpaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 /* checkParamVar ----------------------------- */
 $_SESSION['wspvars']['lockstat'] = '';
@@ -58,8 +58,8 @@ if (isset($_POST['save_data'])) {
 	$fh = fopen($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/usestat.inc.php", "w+");
 	fwrite($fh, $usestatfile);
 
-    $ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport']))); if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }} if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
-    if ($ftp!==false) {
+    $ftp = doFTP();
+    if ($ftp) {
         if (ftp_put($ftp, $_SESSION['wspvars']['ftpbasedir']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/usestat.inc.php", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/usestat.inc.php", FTP_BINARY)) {
             addWSPMsg('noticemsg', 'could upload usestat.inc.php');
         } else {

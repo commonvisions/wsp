@@ -109,17 +109,17 @@ if ($allowedtopdir!="" && $extern!=1) { if (str_replace($allowedtopdir, "", $pat
 // define folders, that should exist
 if (isset($requiredstructure) && is_array($requiredstructure)) {
     // do ftp connect
-    $ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport']))); if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }} if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
+    $ftp = doFTP();
     foreach ($requiredstructure AS $csk => $csv) {
         if (!(is_dir(str_replace("//","/",str_replace("//","/",$_SERVER['DOCUMENT_ROOT']."/".$csv."/"))))) {
-			if ($ftp!==false) {
+			if ($ftp) {
                 ftp_mkdir($ftp, str_replace("//","/",$_SESSION['wspvars']['ftpbasedir'].$csv)); 
             } else {
 				mkdir(str_replace("//","/",str_replace("//","/",$_SERVER['DOCUMENT_ROOT']."/".$csv."/")));
 			}
         }
     }
-    if ($ftp!==false) { ftp_close($ftp); }
+    if ($ftp) { ftp_close($ftp); }
 }
 
 $fullmediastructure = array('/media/'.$mediafolder.'/' => array());
@@ -298,7 +298,6 @@ $sysequal = (intval($filecount)==$m_res['num']);
 				'<div class="qq-upload-file"></div>' +
 				'<div class="qq-upload-size"></div>' +
 				'<a class="qq-upload-cancel" href="#"><?php echo returnIntLang("media cancel upload", false); ?></a>' +
-/*				'<div class="qq-upload-failed-text"><?php echo returnIntLang("media error upload", false); ?></div>' + */
 				'</li>',        
 	        classes: {
 	            // used to get elements from templates
@@ -522,11 +521,12 @@ $sysequal = (intval($filecount)==$m_res['num']);
 		var newdirname = document.getElementById('newdirname_'+ fkid).value;
 		if ($.trim(subdirto)!="" && $.trim(newdirname)!="") {
 			$.post("xajax/ajax.createnewdir.php", { 'subdirto': subdirto, 'newdirname': newdirname, 'mediatype': '<?php echo $mediafolder; ?>'})
-				.done (function(data) {
+				.done(function(data) {
 					if(data==true || data=='1') {
 						document.location.reload();
 						}
 					else {
+						console.info(data);
 						alert('media error creating dir');
 						}
 					})

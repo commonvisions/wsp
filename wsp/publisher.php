@@ -13,7 +13,7 @@ require ("./data/include/usestat.inc.php");
 require ("./data/include/globalvars.inc.php");
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-require ("./data/include/ftpaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 /* checkParamVar ----------------------------- */
 

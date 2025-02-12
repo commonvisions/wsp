@@ -18,7 +18,7 @@ require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-require ("./data/include/ftpaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 require ("./data/include/filesystemfuncs.inc.php");
 require ("./data/include/mediafuncs.inc.php");

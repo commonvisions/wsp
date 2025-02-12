@@ -1,11 +1,9 @@
 <?php
 /**
  * WSP-Modul ausfuehren
- * @author COVI
- * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.8
- * @lastchange 2019-01-25
+ * @version GIT
  */
 
 /* start session ----------------------------- */
@@ -16,7 +14,7 @@ require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-require ("./data/include/ftpaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 require ("./data/include/filesystemfuncs.inc.php");
 /* define actual system position ------------- */
@@ -35,6 +33,7 @@ $wspvars['mod']['mid'] = checkParamVar('modid', 0);
 $mod_sql = 'SELECT w.`link`, w.`parent_id`, w.`guid` FROM `wspmenu` w, `modules` m WHERE w.`module_guid` = m.`guid` && w.`id` = '.intval($wspvars['mod']['mid']);
 $mod_res = doSQL($mod_sql);
 $mod_num = $mod_res['num'];
+
 // redefining FPOS
 $_SESSION['wspvars']['fpos'] = $_SERVER['PHP_SELF'].";mod=".intval($wspvars['mod']['mid']);
 if ($mod_num>0):
@@ -61,14 +60,17 @@ include ("./data/include/wspmenu.inc.php");
 <div id="contentholder">
 <?php
 
-if (!($mod_num>0) && !(is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/modules/".trim($mod_res['set'][0]["link"])))):
-	$errormsg .= returnIntLang('module not found', true);
-	if ($errormsg!=""):
-		echo "<fieldset class=\"errormsg\">".$errormsg."</fieldset>";
-	endif;
-else:
-	$moddir = explode("/", trim($mod_res['set'][0]["link"]));
-	if (trim($moddir[0])!=""):
+var_export($mod_res);
+
+if ($mod_res['num']===0) {
+    addWSPMsg('errormsg', 'module not found');
+}
+else if (!(is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/modules/".trim($mod_res['set'][0]["link"] ?? 'notfound.php')))) {
+    addWSPMsg('errormsg', 'module file not found');
+}
+else {
+    $moddir = explode("/", trim($mod_res['set'][0]['link']));
+	if (trim($moddir[0] ?? '')!=''):
 		if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/modules/".trim($mod_res['set'][0]["link"]))):
             if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/modules/".$moddir[0]."/lang.inc.php")):
                 include($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/modules/".$moddir[0]."/lang.inc.php");
@@ -87,7 +89,7 @@ else:
     else:
         echo "<fieldset class='errormsg'>".returnIntLang('module not found', true)."</fieldset>";
     endif;
-endif;
+}
 
 ?>
 </div>
