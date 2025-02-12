@@ -20,7 +20,6 @@ require ("./data/include/funcs.inc.php");
 // logout from wsp ---------------------------
 if (isset($_REQUEST['logout'])):
     setcookie ('wspautologin', 'off', time()-36000, '/'.$_SESSION['wspvars']['wspbasedir'].'/', (isset($_SESSION['wspvars']['siteurl'])?$_SESSION['wspvars']['siteurl']:$_SERVER['HTTP_HOST']), false);
-//	session_destroy();
 	session_regenerate_id(FALSE);
 	header('location: index.php');
 	$_SESSION['wspvars']['cookielogin'] = 0;
@@ -111,20 +110,12 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
         $ftp = false; $ftpt = 0;
 		if (!(isset($_SESSION['wspvars']['ftpusage'])) || (isset($_SESSION['wspvars']['ftpusage']) && $_SESSION['wspvars']['ftpusage']!==false)) {
 			while ($ftp===false && $ftpt<3) {
-				$ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport']), 5):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport']), 5));
-				if ($ftp!==false) {
-					if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { 
-						$ftp = false; 
-					}
-				}
-				if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { 
-					ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); 
-				}
+				$ftp = doFTP();
 				$ftpt++;
 			}
 		}
 
-		if ($ftp!==false) {
+		if ($ftp) {
 
             mkdir($_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/'.$_SESSION['wspvars']['usevar'], 0777);
 			chmod($_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/'.$_SESSION['wspvars']['usevar'], 0777);
@@ -172,7 +163,8 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
 			// do checkuser
 			ftp_close($ftp);
 			$_SESSION['wspvars']['ftpcon'] = true;
-        } else {
+        
+		} else {
 
 			$sql = "INSERT INTO `securitylog` SET `uid` = ".intval($login_res['set'][0]['rid']).", `lastposition` = '/".$_SESSION['wspvars']['wspbasedir']."/index.php', `lastaction` = 'login', `lastchange` = '".time()."'";
 			doSQL($sql);
@@ -191,7 +183,9 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
                 $loginindex = true;
 			} 
 			else if ($_SESSION['wspvars']['directwriting']===true) {
-				addWSPMsg('noticemsg', returnIntLang('use wsp with direct writing', false));
+				if (file_exists("./data/include/ftpaccess.inc.php")) {
+					addWSPMsg('noticemsg', returnIntLang('use wsp with direct writing', false));
+				}			
 				$_SESSION['wspvars']['ftpcon'] = false;
 				$loginindex = true;
 			}
