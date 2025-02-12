@@ -56,17 +56,13 @@ endif;
 include ("./data/include/header.inc.php");
 include ("./data/include/wspmenu.inc.php");
 
-?>
-<div id="contentholder">
-<?php
-
-var_export($mod_res);
+echo '<div id="contentholder">';
 
 if ($mod_res['num']===0) {
-    addWSPMsg('errormsg', 'module not found');
+    addWSPMsg('errormsg', returnIntLang('module not found', false));
 }
 else if (!(is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/modules/".trim($mod_res['set'][0]["link"] ?? 'notfound.php')))) {
-    addWSPMsg('errormsg', 'module file not found');
+    addWSPMsg('errormsg', sprintf(returnIntLang('module file <strong>%s</strong> with GUID <strong>%s</strong> not found', false), $mod_res['set'][0]["link"], $mod_res['set'][0]["guid"]));
 }
 else {
     $moddir = explode("/", trim($mod_res['set'][0]['link']));
@@ -91,7 +87,6 @@ else {
     endif;
 }
 
-?>
-</div>
-<?php include ("./data/include/footer.inc.php"); ?>
-<!-- EOF -->
+echo '</div>';
+
+include ("./data/include/footer.inc.php");
