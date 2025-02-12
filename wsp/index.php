@@ -14,7 +14,7 @@ require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-require ("./data/include/ftpaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 
 // logout from wsp ---------------------------
@@ -493,11 +493,11 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 								<td class="tablecell four"><?php echo returnIntLang('editcon ftp password', true); ?></td>
 								<td class="tablecell four"><input name="ftppass" id="ftppass" type="password" class="one full" /></td>
 							</tr>
-						<?php else: ?>
-						<tr>
-							<td class="tablecell four"><?php echo returnIntLang('login ignore ftp access', true); ?></td>
-							<td class="tablecell four"><input type="checkbox" name="ignoreftp" id="ignoreftp" value="1" /></td>
-						</tr>
+						<?php elseif (file_exists("./data/include/ftpaccess.inc.php")): ?>
+							<tr>
+								<td class="tablecell four"><?php echo returnIntLang('login ignore ftp access', true); ?></td>
+								<td class="tablecell four"><input type="checkbox" name="ignoreftp" id="ignoreftp" value="1" /></td>
+							</tr>
 						<?php endif; ?>
 					</table>
 				</fieldset>

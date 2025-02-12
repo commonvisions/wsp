@@ -4,16 +4,15 @@
  * @author COVI
  * @copyright Copyright 2018, Common Visions Media.Agentur (COVI)
  * @since 3.1
- * @version 6.8
- * @lastchange 2019-01-19
+ * @version GIT
  */
 
 session_start();
 require ("./data/include/usestat.inc.php");
 require ("./data/include/globalvars.inc.php");
 if (isset($_SESSION['wspvars']['wspbasedir']) && isset($_SESSION['wspvars']['usevar']) && trim($_SESSION['wspvars']['usevar'])!=''):
+	if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 	require ("./data/include/dbaccess.inc.php");
-	require ("./data/include/ftpaccess.inc.php");
 	require ("./data/include/funcs.inc.php");
 	require ("./data/include/filesystemfuncs.inc.php");
 	// make logout from database
