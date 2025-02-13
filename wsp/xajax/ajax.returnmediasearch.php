@@ -1,25 +1,25 @@
 <?php
 /**
- * ...
- * @author s.haendler@covi.de
- * @copyright (c) 2018, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 6.0
  * @version 6.8
- * @lastchange 2018-09-18
  */
-if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!=''):
-session_start();
-include $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/globalvars.inc.php';
-require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/wsplang.inc.php';
-require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/funcs.inc.php';
-include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php";
-include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php";
 
-$fullmediastructure = $_SESSION['xajaxmediastructure'];
-ksort($fullmediastructure);
-$fsizes = array('Byte', 'KB', 'MB', 'GB', 'TB');
-$folder = array();
-$mysortlist = array();
+if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
+	session_start();
+	$wspdir = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".($_SESSION['wspvars']['wspbasediradd'] ?? "")."/".($_SESSION['wspvars']['wspbasedir'] ?? "")));
+
+	require $wspdir.'/data/include/globalvars.inc.php';
+	require $wspdir.'/data/include/wsplang.inc.php';
+	require $wspdir.'/data/include/funcs.inc.php';
+	require $wspdir."/data/include/errorhandler.inc.php";
+	require $wspdir."/data/include/siteinfo.inc.php";
+
+	$fullmediastructure = $_SESSION['xajaxmediastructure'];
+	ksort($fullmediastructure);
+	$fsizes = array('Byte', 'KB', 'MB', 'GB', 'TB');
+	$folder = array();
+	$mysortlist = array();
 
 if (isset($_POST) && isset($_POST['search']) && strlen(trim($_POST['search']))>2):
 	$resultset = array();

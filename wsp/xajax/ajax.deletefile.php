@@ -5,17 +5,18 @@
  * @version GIT
  */
 
- if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!=''):
+if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
 	session_start();
 	$wspdir = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".($_SESSION['wspvars']['wspbasediradd'] ?? "")."/".($_SESSION['wspvars']['wspbasedir'] ?? "")));
-	include $wspdir.'/data/include/globalvars.inc.php';
+
+	require $wspdir.'/data/include/globalvars.inc.php';
 	require $wspdir.'/data/include/wsplang.inc.php';
 	require $wspdir."/data/include/dbaccess.inc.php";
 	if (file_exists($wspdir."/data/include/ftpaccess.inc.php")) require $wspdir."/data/include/ftpaccess.inc.php";
 	require $wspdir."/data/include/funcs.inc.php";
 	require $wspdir."/data/include/filesystemfuncs.inc.php";
-	include $wspdir."/data/include/errorhandler.inc.php";
-	include $wspdir."/data/include/siteinfo.inc.php";
+	require $wspdir."/data/include/errorhandler.inc.php";
+	require $wspdir."/data/include/siteinfo.inc.php";
 
 	$result = array('success' => false, 'msg' => 'could not handle request');
 

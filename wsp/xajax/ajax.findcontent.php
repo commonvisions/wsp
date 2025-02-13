@@ -1,23 +1,23 @@
 <?php
 /**
  * content finden
- * @author s.haendler@covi.de
- * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 6.0
  * @version 6.8
  * @lastchange 2019-01-18
  */
 
-session_start();
-if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
-    include $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/globalvars.inc.php';
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/wsplang.inc.php';
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/dbaccess.inc.php";
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/ftpaccess.inc.php";
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/funcs.inc.php";
-    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/filesystemfuncs.inc.php";
-    include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php";
-    include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php";
+if (!empty($_SERVER['HTTP_REFERER'] ?? null)) {
+	session_start();
+	$wspdir = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".($_SESSION['wspvars']['wspbasediradd'] ?? "")."/".($_SESSION['wspvars']['wspbasedir'] ?? "")));
+
+    require $wspdir.'/data/include/globalvars.inc.php';
+    require $wspdir.'/data/include/wsplang.inc.php';
+    require $wspdir."/data/include/dbaccess.inc.php";
+    require $wspdir."/data/include/funcs.inc.php";
+    require $wspdir."/data/include/filesystemfuncs.inc.php";
+    require $wspdir."/data/include/errorhandler.inc.php";
+    require $wspdir."/data/include/siteinfo.inc.php";
 
     if (isset($_REQUEST['searchval']) && trim($_REQUEST['searchval'])!='') {
 
@@ -189,5 +189,3 @@ if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
         $_SESSION['wspvars']['searchcontent'] = trim($_REQUEST['searchval']);
     }
 }
-
-// EOF ?>

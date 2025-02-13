@@ -1,22 +1,22 @@
 <?php
 /**
- * ...
- * @author s.haendler@covi.de
- * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 6.0
  * @version 6.9
  * @lastchange 2019-10-16
  */
+
 if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
     session_start();
     $wspdir = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".($_SESSION['wspvars']['wspbasediradd'] ?? "")."/".($_SESSION['wspvars']['wspbasedir'] ?? "")));
-	include $wspdir.'/data/include/globalvars.inc.php';
+	
+    require $wspdir.'/data/include/globalvars.inc.php';
 	require $wspdir.'/data/include/wsplang.inc.php';
 	require $wspdir."/data/include/dbaccess.inc.php";
 	require $wspdir."/data/include/funcs.inc.php";
 	require $wspdir."/data/include/filesystemfuncs.inc.php";
-	include $wspdir."/data/include/errorhandler.inc.php";
-	include $wspdir."/data/include/siteinfo.inc.php";
+	require $wspdir."/data/include/errorhandler.inc.php";
+	require $wspdir."/data/include/siteinfo.inc.php";
 
     $fsizes = array('Byte', 'KB', 'MB', 'GB', 'TB');
     $folder = array();

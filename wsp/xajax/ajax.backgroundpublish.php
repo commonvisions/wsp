@@ -1,9 +1,8 @@
 <?php
 /**
  * publishing files in background
- * @author s.haendler@covi.de
- * @copyright (c) 2022, Common Visions Media.Agentur (COVI)
- * @since 6.0
+ * @author stefan@covi.de
+  * @since 6.0
  * @version 6.11.1
  * @lastchange 2023-01-02
  */
