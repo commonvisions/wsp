@@ -9,3 +9,5 @@ WebSitePreview
 - extended support for local file system
 - updated jquery
 - bug fixes
+- security fixes
+- maintenance
