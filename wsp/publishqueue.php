@@ -1,11 +1,12 @@
 <?php
 /**
- * website publisher
- * @author s.haendler@covi.de
- * @copyright (c) 2021, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.10
- * @lastchange 2021-03-02
+ * @version GIT
+ * 
+ * 2025-02-13
+ * fixed sql GROUP BY bug
+ * 
  */
 
 /* start session ----------------------------- */
@@ -49,17 +50,15 @@ include ("./data/include/wspmenu.inc.php");
 <div id="contentholder">
 	<pre id="debugcontent"></pre>
 	<fieldset><h1><?php echo returnIntLang('queue headline'); ?></h1></fieldset>
-	<fieldset>
-		<legend><?php echo returnIntLang('str legend'); ?> <?php echo legendOpenerCloser('wsplegend', 'closed'); ?></legend>
-		<div id="wsplegend" style="<?php echo $_SESSION['opentabs']['wsplegend']; ?>">
-			<p><?php echo returnIntLang('queue legend', true); ?></p>
-		</div>
-	</fieldset>
 	<?php
 	
 	$_SESSION['publishrun'] = 0;
 	
-	$queue_sql = "SELECT * FROM `wspqueue` WHERE `done` = 0 GROUP BY `param` ORDER BY `priority` DESC, `action` ASC, `set` ASC, `id` ASC";
+	$queue_sql = "SELECT MIN(`id`) AS `id`, MAX(`priority`) AS `priority`, MIN(`uid`) AS `uid`, `param`, MIN(`done`) AS `done`, MIN(`action`) AS `action`, MIN(`set`) AS `set`
+		FROM `wspqueue` 
+		WHERE `done` = 0 
+		GROUP BY `param`
+		ORDER BY `priority` DESC, `action` ASC, `set` ASC, `id` ASC";
 	$queue_res = doSQL($queue_sql);
 
 	if ($queue_res['num']>0):
@@ -143,7 +142,7 @@ include ("./data/include/wspmenu.inc.php");
 		echo '<fieldset id="showqueue"><p>'.returnIntLang('queue no jobs in queue').'</p></fieldset>';
 	endif; 
 	
-	$subqueue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = -1 GROUP BY `param`";
+	$subqueue_sql = "SELECT MAX(`id`) AS `id`, `param` FROM `wspqueue` WHERE `done` = -1 GROUP BY `param`";
 	$subqueue_res = doSQL($subqueue_sql);
 	
 	if ($subqueue_res['num']>0) {
