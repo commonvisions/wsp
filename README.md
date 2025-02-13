@@ -1,12 +1,11 @@
 # WSP
 WebSitePreview
 
-## WSP_X_
+## 6.25.2
 
-in development
-
-## 6.12
-
-removed google fonts
-
-## 6.11
+- removed external sources fonts
+- extended check for ftp-usage
+- changed ftp connection management
+- extended support for local file system
+- updated jquery
+- bug fixes
