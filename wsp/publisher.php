@@ -458,6 +458,7 @@ function setToPublish(selectType) {
 	<?php endif; ?>	
 	<?php
 	
+	/*
 	if (intval($_SESSION['wspvars']['rights']['rss'])==1):
 		
 		$rssdata_sql = "SELECT * FROM `rssdata`";
@@ -500,8 +501,9 @@ function setToPublish(selectType) {
 				</div>
 			</fieldset>
 		<?php endif; ?>
-	<?php endif; ?>
-		<script language="JavaScript" type="text/javascript">
+	<?php endif; */ ?>
+
+	<script language="JavaScript" type="text/javascript">
 		<!--
 		
 		function searchPublish() {
