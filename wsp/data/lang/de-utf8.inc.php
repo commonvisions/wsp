@@ -1731,7 +1731,8 @@ $lang['de'] = array(
 'system creating backup file failed2' => 'konnte nicht angelegt werden.',
 
 'Information about GIT support' => 'Informationen zur GIT-Unterstützung',
-'Our self-hosted update service will expire in 2025. You can download the latest version from <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> or use the github.com repository as your git source. Latest release version is <strong>%2$s</strong> from <strong>%3$s</strong>.' => 'Wir werden unseren eigenen Update-Dienst Ende 2025 einstellen. Die aktuellste Version von WSP kann dann auf <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> heruntergeladen oder über das Repository bereitgestellt werden. Die letzte Veröffentlichung ist Version <strong>%2$s</strong> vom <strong>%3$s</strong>.',
+'Our self-hosted update service ended. You can download the latest version from <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> or use the github.com repository as your git source. Latest release version is <strong>%2$s</strong> from <strong>%3$s</strong>.' => 'Der Update-Dienst wurde eingestellt. Die aktuellste Version von WSP kann auf <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> heruntergeladen oder über das Repository bereitgestellt werden. Die aktuellste Veröffentlichung ist Version <strong>%2$s</strong> vom <strong>%3$s</strong>.',
+'Our self-hosted update service ended. You can download the latest version from <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> or use the github.com repository as your git source.' => 'Der Update-Dienst wurde eingestellt. Die aktuellste Version von WSP kann auf <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> heruntergeladen oder über das Repository bereitgestellt werden.',
 
 // upload 
 
