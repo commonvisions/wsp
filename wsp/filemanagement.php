@@ -330,13 +330,13 @@ $sysequal = (intval($filecount)==$m_res['num']);
 		if ($("#btn_upload_" + fkid).hasClass('orange')) {
 			$("li.upload.shown").removeClass('shown');
 			$(".uploadbutton").addClass('orange');
-			$("#upload_" + fkid).toggleClass('shown', 1);
+			$("#upload_" + fkid).addClass('shown');
 			$("#btn_upload_" + fkid).toggleClass('orange', 1);
 			createUploader(fkid);
 			document.getElementById('activeupload').value = fkid;
 			}
 		else {
-			$("#upload_" + fkid).toggleClass('shown', 1);
+			$("#upload_" + fkid).removeClass('shown');
 			$("#btn_upload_" + fkid).toggleClass('orange', 1);
 			document.getElementById('activeupload').value = fkid;
 			}
@@ -537,9 +537,6 @@ $sysequal = (intval($filecount)==$m_res['num']);
 		if ($.trim(fkid)!="") {
 			$.post("xajax/ajax.deletedir.php", { 'dirid': $.trim(fkid) } )
 				.done (function(data) {
-                
-                    console.log(data);
-                
 					var returnData = JSON.parse(data);
 					if(returnData['success']) {
 						$('#files_'+returnData.id).hide();

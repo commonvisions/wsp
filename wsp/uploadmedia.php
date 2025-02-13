@@ -16,7 +16,7 @@ require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-require ("./data/include/ftpaccess.inc.php");
+if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 require ("./data/include/filesystemfuncs.inc.php");
 // define actual system position -------------
@@ -103,8 +103,9 @@ class qqFileUploader {
         $uploadSize = $this->toBytes(ini_get('upload_max_filesize'));
 		}
     
-    private function toBytes($str){
-        $val = trim($str);
+    private function toBytes($str) 
+	{
+        $val = intval(trim($str));
         $last = strtolower($str[strlen($str)-1]);
         switch($last) {
             case 'g': $val *= 1024;
@@ -112,13 +113,15 @@ class qqFileUploader {
             case 'k': $val *= 1024;        
 			}
         return $val;
-		}
+	}
     
     // returns array('success'=>true) or array('error'=>'error message')
     function handleUpload($targetfolder, $replaceOldFile = 0){
         $uploadTargetFolder = $targetfolder;
-        $uploadTmpDirectory = str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/");
-        $uploadFtpDirectory = str_replace("//", "/", str_replace("//", "/", $_SESSION['wspvars']['ftpbasedir']."/".$uploadTargetFolder));
+        $uploadTmpDirectory = str_replace("//", "/", 
+			$_SERVER['DOCUMENT_ROOT'] . "/" . 
+			$_SESSION['wspvars']['wspbasediradd'] . "/" . $_SESSION['wspvars']['wspbasedir'] . "/tmp/" . 
+			$_SESSION['wspvars']['usevar'] . "/");
         
         // error outputs before processing
         if (!is_writable($uploadTmpDirectory)) return array('error' => returnIntLang('upload upload dir not writable 1', false)." \"".$uploadTmpDirectory."\" ".returnIntLang('upload upload dir not writable 2', false));
@@ -134,47 +137,154 @@ class qqFileUploader {
 		$uploadFtpOrgDirectory = '';
 		$uploadFtpPrevDirectory = '';
 		
+		$uploadBaseTarget = $_SESSION['wspvars']['upload']['basetarget'];
+
 		// thumbnail directory if image processing 
-		if ($_SESSION['wspvars']['upload']['basetarget']=='screen' || $_SESSION['wspvars']['upload']['basetarget']=='images' || $_SESSION['wspvars']['upload']['basetarget']=='download'):
-			$uploadTmbDirectory = str_replace("//", "/", str_replace("//", "/", "/".str_replace("/media/".$_SESSION['wspvars']['upload']['basetarget']."/", "/media/".$_SESSION['wspvars']['upload']['basetarget']."/thumbs/", $uploadTargetFolder)));
-			$uploadFtpTmbDirectory = str_replace("//", "/", str_replace("//", "/", $_SESSION['wspvars']['ftpbasedir']."/".$uploadTmbDirectory));
+		if ($uploadBaseTarget=='screen' || $uploadBaseTarget=='images' || $uploadBaseTarget=='download'):
+			$uploadTmbDirectory = str_replace("//", "/", str_replace("//", "/", "/".
+				str_replace(
+					"/media/".$uploadBaseTarget."/", 
+					"/media/".$uploadBaseTarget."/thumbs/", 
+					$uploadTargetFolder
+				)
+			));
         endif;
+
 		// original directory if image processing
-        if ($_SESSION['wspvars']['upload']['basetarget']=='images'):
-			$uploadOrgDirectory = str_replace("//", "/", str_replace("//", "/", "/".str_replace("/media/".$_SESSION['wspvars']['upload']['basetarget']."/", "/media/".$_SESSION['wspvars']['upload']['basetarget']."/originals/", $uploadTargetFolder)));
-			$uploadFtpOrgDirectory = str_replace("//", "/", str_replace("//", "/", $_SESSION['wspvars']['ftpbasedir']."/".$uploadOrgDirectory));
+        if ($uploadBaseTarget=='images'):
+			$uploadOrgDirectory = str_replace("//", "/", str_replace("//", "/", "/".
+				str_replace(
+					"/media/".$uploadBaseTarget."/", 
+					"/media/".$uploadBaseTarget."/originals/", 
+					$uploadTargetFolder
+				)
+			));
 		endif;
+
         // preview directory if pdf processing
 		if ($_SESSION['wspvars']['upload']['preview']):
 			$uploadPrevDirectory = str_replace("//", "/", str_replace("//", "/", "/".str_replace("/media/download/", "/media/images/preview/", $uploadTargetFolder)));
-			$uploadFtpPrevDirectory = str_replace("//", "/", str_replace("//", "/", $_SESSION['wspvars']['ftpbasedir']."/".$uploadPrevDirectory));
 	    endif;
         
         // check for right extensions
-        if($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions) && !count($this->allowedExtensions)>0):
-            $these = implode(', ', $this->allowedExtensions);
-			return array('error' => returnIntLang('upload file with invalid extension', false)." ".$these . " hier");
-        endif;
+        if($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions) && !count($this->allowedExtensions)>0) {
+            $exts = implode(', ', $this->allowedExtensions);
+			return array('error' => sprintf(returnIntLang('upload file with invalid extension <strong>%s</strong>', false), $exts));
+        }
         
-        if($replaceOldFile!=1):
+        if ($replaceOldFile!=1) {
             /// don't overwrite previous files that were uploaded
-            while (file_exists(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$uploadTargetFolder."/".$filename.".".$ext)))):
+            while (file_exists(str_replace("//", "/", str_replace("//", "/", 
+				$_SERVER['DOCUMENT_ROOT'] . "/" . $_SESSION['wspvars']['wspbasediradd'] . "/" . 
+				$uploadTargetFolder . "/" . $filename . "." . $ext)))) {
                 $filename .= rand(10, 99);
-            endwhile;
-		endif;
+            }
+		}
         
-        if ($this->file->save($uploadTmpDirectory.$filename.'.'.$ext)):
+		// tmp save the file
+		$fileSave = $this->file->save($uploadTmpDirectory . $filename . '.' . $ext);		
+		
+        if ($fileSave):
 
-			if($_SESSION['wspvars']['upload']['preview'] && $ext=="pdf"):
-				if($_SESSION['wspvars']['createimagefrompdf']!='nocheck'):
-					// create image from pdf-file 							
+			// optional pdf conversion
+			if ($_SESSION['wspvars']['upload']['preview'] && $ext=="pdf" && function_exists('exec')) {
+				if ($_SESSION['wspvars']['createimagefrompdf']!='nocheck') {
+					// try create image from pdf-file 							
 				 	@exec("/usr/bin/gs -q -dNOPAUSE -dBATCH -sDEVICE=jpeg -sOutputFile=".$uploadTmpDirectory.$filename.".jpg ".$uploadTmpDirectory.$filename.'.'.$ext);
-				endif;
-			endif;
+				}
+			}
 			
 			// resizing and copying
+			if (function_exists('resizeGDimage') && 
+				($ext=="gif" || $ext=="png" || $ext=="jpg" || $ext=="jpeg" || $ext=="pdf")) {
+				$preview = null;
+				$thumb = null;
+				$original = null;
+				$filedata = array(
+					'size' => '', 
+					'filesize' => $size, 
+					'lastchange' => time(), 
+					'md5key' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext)))
+				);
+			}
+
+			$ftp = doFTP();
+			if ($ftp) {
+				$uploadFtpPrevPath = str_replace("//", "/", str_replace("//", "/", 
+					($_SESSION['wspvars']['ftpbasedir'] ?? '') . "/" . $uploadPrevDirectory . 
+					'/' . $filename . '.' . $ext));
+				$uploadFtpTmbPath = str_replace("//", "/", str_replace("//", "/", 
+					($_SESSION['wspvars']['ftpbasedir'] ?? '') . "/" . $uploadTmbDirectory . 
+					'/' . $filename . '.' . $ext));
+				$uploadFtpOrgPath = str_replace("//", "/", str_replace("//", "/", 
+					($_SESSION['wspvars']['ftpbasedir'] ?? '') . "/" . $uploadOrgDirectory. 
+					'/' . $filename . '.' . $ext));
+				$uploadFtpPath = str_replace("//", "/", str_replace("//", "/", 
+					($_SESSION['wspvars']['ftpbasedir'] ?? '') . "/" . $uploadTargetFolder . 
+					'/' . $filename . '.' . $ext));
+				
+				if ($preview) {
+
+				}
+				if ($thumb) {
+					
+				}
+				if ($original) {
+					
+				}
+				// finally copy the (processed) upload to folder
+
+			} else {
+				$uploadPrevPath = str_replace("//", "/", str_replace("//", "/", 
+					$_SERVER['DOCUMENT_ROOT'] . "/" . $_SESSION['wspvars']['wspbasediradd'] . '/' . 
+					$uploadPrevDirectory. '/' . $filename . '.' . $ext));
+				$uploadTmbPath = str_replace("//", "/", str_replace("//", "/", 
+					$_SERVER['DOCUMENT_ROOT'] . "/" . $_SESSION['wspvars']['wspbasediradd'] . "/" . 
+					$uploadTmbDirectory. '/' . $filename . '.' . $ext));
+				$uploadOrgPath = str_replace("//", "/", str_replace("//", "/", 
+					$_SERVER['DOCUMENT_ROOT'] . "/" . $_SESSION['wspvars']['wspbasediradd'] . "/" . 
+					$uploadOrgDirectory. '/' . $filename . '.' . $ext));
+				$uploadPath = str_replace("//", "/", str_replace("//", "/", 
+					$_SERVER['DOCUMENT_ROOT'] . "/" . $_SESSION['wspvars']['wspbasediradd'] . "/" . 
+					$uploadTargetFolder . '/' . $filename . '.' . $ext));
+
+				$myFile = $uploadTmpDirectory . $filename . '.' . $ext;
+
+				// finally copy the (processed) upload to folder
+				/*
+				$directCopy = $this->file->save($uploadPath);
+				if ($directCopy) {
+					$filedata = array('size' => '', 'filesize' => $size, 'lastchange' => time(), 'md5key' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext))));
+					// check if file was just overwritten
+					$e_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".escapeSQL(trim($_REQUEST['mediafolder']))."' AND `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."' AND `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."' AND `filename` = '".escapeSQL(trim($filename.'.'.$ext))."' AND `filetype` = '".trim($ext)."'";
+					$e_res = doSQL($e_sql);
+					if ($e_res['num']>0):
+						// use update statement
+						$sql = "UPDATE `wspmedia` ";
+					else:
+						// use insert statement
+						$sql = "INSERT INTO `wspmedia` ";
+					endif;
+					$sql.= " SET `mediatype` = '".escapeSQL($_REQUEST['mediafolder'])."', `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."', `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."', `filename` = '".escapeSQL(trim($filename.'.'.$ext))."', `filetype` = '".trim($ext)."', `filekey` = '".md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext)))."', `filedata` = '".serialize($filedata)."', `filesize` = ".intval($size).",`filedate` = ".time().", `thumb` = 0, `preview` = 0, `original` = 0, `embed` = 0, `lastchange` = ".time();
+					if ($e_res['num']>0):
+						// use update statement
+						$sql.= " WHERE `mid` = ".intval($e_res['set'][0]['mid']);
+					endif;
+					doSQL($sql);
+					return array('success' => true);
+				} else {
+					return array('success' => false, 'params' => serialize($_REQUEST), 'state' => 'no ftp, no direct copy');
+				}
+				*/
+
+			}
+
+			if ()
+
+
+			/*
 			if (function_exists('resizeGDimage') && ($ext=="gif" || $ext=="png" || $ext=="jpg" || $ext=="jpeg" || $ext=="pdf")):
-				$ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport']))); if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }} if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
+				$ftp = doFTP();
 				if ($ftp):
 					$preview = 0;
 					$thumb = 0;
@@ -282,9 +392,10 @@ class qqFileUploader {
 				endif;
 				ftp_close($ftp);
 			else:
+			*/
 				// resizing isn't possible
 				// files could be handled in any other way
-				$ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport']))); if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }} if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
+				
 				if ($ftp):
 					if (@ftp_put($ftp, $uploadFtpDirectory."/".$filename.'.'.$ext, $uploadTmpDirectory."/".$filename.'.'.$ext, FTP_BINARY)):
 						$filedata = array('size' => '', 'filesize' => $size, 'lastchange' => time(), 'md5key' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext))));
@@ -308,12 +419,37 @@ class qqFileUploader {
 					else:
 						return array('success'=> false, 'params' => serialize($_REQUEST));
 					endif;
+					ftp_close($ftp);
+				else:
+					$targetCopy = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$uploadTargetFolder."/".$filename.".".$ext));
+					$directCopy = $this->file->save($targetCopy);
+					if ($directCopy) {
+						$filedata = array('size' => '', 'filesize' => $size, 'lastchange' => time(), 'md5key' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext))));
+						// check if file was just overwritten
+						$e_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".escapeSQL(trim($_REQUEST['mediafolder']))."' AND `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."' AND `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."' AND `filename` = '".escapeSQL(trim($filename.'.'.$ext))."' AND `filetype` = '".trim($ext)."'";
+						$e_res = doSQL($e_sql);
+						if ($e_res['num']>0):
+							// use update statement
+							$sql = "UPDATE `wspmedia` ";
+						else:
+							// use insert statement
+							$sql = "INSERT INTO `wspmedia` ";
+						endif;
+						$sql.= " SET `mediatype` = '".escapeSQL($_REQUEST['mediafolder'])."', `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."', `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."', `filename` = '".escapeSQL(trim($filename.'.'.$ext))."', `filetype` = '".trim($ext)."', `filekey` = '".md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext)))."', `filedata` = '".serialize($filedata)."', `filesize` = ".intval($size).",`filedate` = ".time().", `thumb` = 0, `preview` = 0, `original` = 0, `embed` = 0, `lastchange` = ".time();
+						if ($e_res['num']>0):
+							// use update statement
+							$sql.= " WHERE `mid` = ".intval($e_res['set'][0]['mid']);
+						endif;
+						doSQL($sql);
+						return array('success' => true);
+					} else {
+						return array('success' => false, 'params' => serialize($_REQUEST), 'state' => 'no ftp, no direct copy');
+					}
 				endif;
-				ftp_close($ftp);
 				return array('success' => false, 'params' => serialize($_REQUEST));
-			endif;
+			/* endif; */
 		else:
-			return array('success' => false, 'params' => serialize($_REQUEST));
+			return array('success' => false, 'params' => serialize($_REQUEST), 'state' => 'tmp saving did not work');
 		endif;
 	    }
 	}
@@ -322,12 +458,10 @@ class qqFileUploader {
 $allowedExtensions = explode(";", $_SESSION['wspvars']['upload']['extensions']);
 // max file size in bytes
 // $sizeLimit = 10 * 1024 * 1024;
-$sizeLimit = (ini_get('post_max_size')*1) * 1024 * 1024;
-
+$sizeLimit = intval(ini_get('post_max_size') ?? 1) * 1024 * 1024;
+// init uploader
 $uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
 // handleUpload to given uid ...
 $result = $uploader->handleUpload($_REQUEST['targetfolder'], $_SESSION['wspvars']['overwriteuploads']);
 // to pass data through iframe you will need to encode all html tags
 echo htmlspecialchars(json_encode($result), ENT_NOQUOTES);
-
-// EOF ?>
