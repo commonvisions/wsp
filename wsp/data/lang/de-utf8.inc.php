@@ -1681,8 +1681,8 @@ $lang['de'] = array(
 'system automatic update' => 'Automatische Aktualisierung verfügbar',
 'system upload update' => 'Manuelle Aktualisierung Ihres Systems',
 'system upload update info' => 'Hier können Sie ein Installationsdatei (ZIP) hochladen. Sie können ein aktuelles System nicht mit einer älteren Version ersetzen.',
-'system actualwsp' => 'Ihre Version von WebSitePreview ist auf einem aktuellen Stand.',
-'system updatewsp' => 'WebSitePreview aktualisieren',
+'system actualwsp' => 'Ihre Version von WSP ist auf einem aktuellen Stand.',
+'system updatewsp' => 'WSP vom Updateserver aktualisieren',
 'system sysinfo' => 'Systeminformation',
 'system information widgets' => 'Systeminformationen',
 'system zend version' => 'Zend-Version',
@@ -1732,6 +1732,9 @@ $lang['de'] = array(
 'system creating backup file failed' => 'Das Backup einer zu aktualisierenden Datei konnte nicht angelegt werden.',
 'system creating backup file failed1' => 'Das Backup zur Datei',
 'system creating backup file failed2' => 'konnte nicht angelegt werden.',
+
+'Information about GIT support' => 'Informationen zur GIT-Unterstützung',
+'Our self-hosted update service will expire in 2025. You can download the latest version from <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> or use the github.com repository as your git source. Latest release version is <strong>%2$s</strong> from <strong>%3$s</strong>.' => 'Wir werden unseren eigenen Update-Dienst Ende 2025 einstellen. Die aktuellste Version von WSP kann dann auf <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> heruntergeladen oder über das Repository bereitgestellt werden. Die letzte Veröffentlichung ist Version <strong>%2$s</strong> vom <strong>%3$s</strong>.',
 
 // upload 
 

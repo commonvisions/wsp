@@ -519,7 +519,7 @@ function DatabaseUpdate($changes, $dbsource = '', $dbstructure = array()) {
 if (!(function_exists('wspUpdate'))) {
     function wspUpdate($data, $ftp, $run = 1) {
         
-        if ($ftp!==false) {
+        if ($ftp) {
             
             $fileupdate = '';
             if (_isCurl()) {
@@ -533,16 +533,6 @@ if (!(function_exists('wspUpdate'))) {
                 curl_setopt_array($ch, $defaults);    
                 if( ! $fileupdate = curl_exec($ch)) { trigger_error(curl_error($ch)); } 
                 curl_close($ch);
-            } 
-            else {
-                $fh = fopen(trim($_SESSION['wspvars']['updateuri']."/updater.php?key=".md5($_SERVER['HTTP_HOST'])."&file=".str_replace("[wsp]", "wsp", $data)), 'r');
-                $fileupdate = '';
-                if (intval($fh)!=0):
-                    while (!feof($fh)):
-                        $fileupdate .= fgets($fh, 4096);
-                    endwhile;
-                endif;
-                fclose($fh);
             }
             
             if (trim($fileupdate)=='') {
@@ -773,19 +763,11 @@ flush();flush();flush();
 
         $ftp = false; $ftpt = 0;
         while ($ftp===false && $ftpt<3) {
-            $ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])));
-            if ($ftp!==false) {
-                if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { 
-                    $ftp = false; 
-                }
-            }
-            if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { 
-                ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); 
-            }
+            $ftp = doFTP();
             $ftpt++;
         }
         
-        if ($ftp!==false) {
+        if ($ftp) {
             // remove unused files on the fly
             if (count($deldat)>0) {
                 for($i=1;$i<=intval($deldat[0]);$i++) {
@@ -864,26 +846,34 @@ flush();flush();flush();
                     CURLOPT_TIMEOUT => 4 
                 );
                 $ch = curl_init();
-                curl_setopt_array($ch, $defaults);    
+                curl_setopt_array($ch, $defaults);
                 if( ! $xmldata = curl_exec($ch)) { trigger_error(curl_error($ch)); } 
                 curl_close($ch);
                 $xml = xml_parser_create();
                 xml_parse_into_struct($xml, $xmldata, $values, $index);
-            } 
-            else {
-                $fh = fopen($_SESSION['wspvars']['updatefiles'].'/versions.php?key='.md5($_SERVER['HTTP_HOST']).'&url='.$_SESSION['wspvars']['workspaceurl'].'&system='.$_SESSION['wspvars']['wspversion'], 'r');
-                $xmlversion = '';
-                if (intval($fh)==0) {
-                    addWSPMsg('errormsg', "error reading file \"".$_SESSION['wspvars']['updatefiles'].'/versions.php?key='.md5($_SERVER['HTTP_HOST']).'&url='.$_SESSION['wspvars']['workspaceurl'].'&system='.$_SESSION['wspvars']['wspversion']."\" from update server<br />");
-                    }
-                else {
-                    while (!feof($fh)) {
-                        $xmlversion .= fgets($fh, 4096);
-                    }
-                    fclose($fh);
-                    $xml = xml_parser_create();
-                    xml_parse_into_struct($xml, $xmlversion, $values, $index);
-                }
+				// git based request
+				$gitInfo = array( 
+					CURLOPT_URL => "https://api.github.com/repos/commonvisions/wsp/releases/latest", 
+					CURLOPT_HEADER => 0, 
+					CURLOPT_RETURNTRANSFER => TRUE, 
+					CURLOPT_TIMEOUT => 4, 
+					CURLOPT_SSL_VERIFYPEER => FALSE, // Disable SSL verification if needed
+					CURLOPT_HTTPHEADER => array(
+						"User-Agent: WSP Updater"
+					)
+				);
+				$ch = curl_init();
+				curl_setopt_array($ch, $gitInfo);
+				$gitResponse = curl_exec($ch);
+				curl_close($ch);
+				if (!empty($gitResponse)) {
+					$gitData = json_decode($gitResponse, true);
+				}
+				$GIT = [
+					'url' => $gitData['html_url'] ?? 'https://github.com/commonvisions/wsp/',
+					'update' => date(returnIntLang('format date'), strtotime($gitData['published_at'] ?? date('Y-m-d H:i:s'))),
+					'version' => $gitData['tag_name'],
+				];
             }
             // end getting data from update server
     		
@@ -1000,21 +990,6 @@ flush();flush();flush();
                     curl_close($ch);
                     $xml = xml_parser_create();
                     xml_parse_into_struct($xml, $xmldata, $values, $index);
-                } 
-                else {
-                    $fh = fopen($_SESSION['wspvars']['updatedatabase'].'/media/xml/database.xml', 'r');
-                    $xmlversion = '';
-                    if (intval($fh)==0) {
-                        addWSPMsg('errormsg', "error reading file \"".$_SESSION['wspvars']['updatedatabase']."/media/xml/database.xml\" from update server<hr />");
-                        }
-                    else {
-                        while (!feof($fh)) {
-                            $xmlversion .= fgets($fh, 4096);
-                        }
-                        fclose($fh);
-                        $xml = xml_parser_create();
-                        xml_parse_into_struct($xml, $xmlversion, $values, $index);
-                    }
                 }
                 // end getting data from update server
     
@@ -1240,9 +1215,15 @@ flush();flush();flush();
 				</table>
 			</div>
 		</fieldset>
-		<?php if (isset($devfiles[0]) && $devfiles[0]=="error"): ?>
+		<?php if ($GIT ?? false) { ?>
+		<fieldset class="text">
+			<legend><?php echo returnIntLang('Information about GIT support', false); ?></legend>
+			<p><?php echo sprintf(returnIntLang('Our self-hosted update service will expire in 2025. You can download the latest version from <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> or use the github.com repository as your git source. Latest release version is <strong>%2$s</strong> from <strong>%3$s</strong>.', false), $GIT['url'], $GIT['version'], $GIT['update']); ?></p>
+		</fieldset>
+		<?php } ?>
+		<?php if (($devfiles[0] ?? '') == "error"): ?>
 			<fieldset id="fieldset_wspkey" class="errormsg">
-				<p>F&uuml;r die automatische Update-Funktion von WSP wird <strong>CURL</strong> oder die Unterstützung der Funktion <strong>fopen()</strong> benötigt.</p>
+				<p>F&uuml;r die automatische Update-Funktion von WSP wird <strong>CURL</strong> benötigt.</p>
                 <p>Updateserver: <?php echo str_replace("/wsp", "", $_SESSION['wspvars']['updatefiles']); ?></p>
 				<p>WSP-Version: <?php echo $_SESSION['wspvars']['wspversion']; ?></p>
             </fieldset>
@@ -1267,21 +1248,6 @@ flush();flush();flush();
                 curl_close($ch);
                 $xml = xml_parser_create();
                 xml_parse_into_struct($xml, $xmldata, $values, $index);
-            } 
-            else {
-                $fh = fopen($_SESSION['wspvars']['updateuri'].'/versionsmedia.php', 'r');
-                $xmlversion = '';
-                if (intval($fh)==0) {
-                    addWSPMsg('errormsg', "error reading file \"".$_SESSION['wspvars']['updateuri']."/versionsmedia.php\" from update server<hr />");
-                    }
-                else {
-                    while (!feof($fh)) {
-                        $xmlversion .= fgets($fh, 4096);
-                    }
-                    fclose($fh);
-                    $xml = xml_parser_create();
-                    xml_parse_into_struct($xml, $xmlversion, $values, $index);
-                }
             }
 
             $mediapackage = array();
@@ -1293,7 +1259,7 @@ flush();flush();flush();
 					$i++;
 					$mediapackage[$i] = $file['value'];
 				endif;
-				if ($file['tag']=='VERSION'):
+				if (($file['tag'] ?? '')=='VERSION'):
 					$mediaversion[$i] = $file['value'];
 				endif;
 				if ($file['tag']=='DESCRIPTION'):
@@ -1305,7 +1271,7 @@ flush();flush();flush();
 			$cssdesc = array();
 			$i = 0;
 			while ($file=readdir($cssdir)):
-				if (substr($file,0,1)!="." && $file!="screen.css.php" && $file!="screen.css"):
+				if (substr($file,0,1)!="." && $file!="screen.css.php" && $file!="screen.css" && is_file($file)):
 					$readcss = $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir']."/media/layout/".$file;
 					$fileinfo = file($readcss);
 					for ($x=0; $x<=8; $x++):
@@ -1341,21 +1307,6 @@ flush();flush();flush();
                 curl_close($ch);
                 $xml = xml_parser_create();
                 xml_parse_into_struct($xml, $xmldata, $values, $index);
-            } 
-            else {
-                $fh = fopen($_SESSION['wspvars']['updateuri'].'/versionspackage.php', 'r');
-                $xmlversion = '';
-                if (intval($fh)==0) {
-                    addWSPMsg('errormsg', "error reading file \"".$_SESSION['wspvars']['updateuri']."/versionspackage.php\" from update server<br />");
-                    }
-                else {
-                    while (!feof($fh)) {
-                        $xmlversion .= fgets($fh, 4096);
-                    }
-                    fclose($fh);
-                    $xml = xml_parser_create();
-                    xml_parse_into_struct($xml, $xmlversion, $values, $index);
-                }
             }
             // end getting data from update server
             
@@ -1404,11 +1355,11 @@ flush();flush();flush();
 							<li class="tablecell head two"><?php echo returnIntLang('system instversion'); ?></li>
 							<li class="tablecell head two"><?php echo returnIntLang('system updversion'); ?></li>
 							<?php
-							for($i=0;$i<sizeof($newmodul);$i++):
+							for ($i=0;$i<sizeof($newmodul);$i++) {
 								echo "<li class=\"tablecell four\">".$newmodul[$i]."</li>";
 								echo "<li class=\"tablecell two\">".$newmodulversionact[$i]."</li>";
 								echo "<li class=\"tablecell two\">".$newmodulversionnew[$i]."</li>";
-							endfor;
+							}
 							echo "</ul>";
 						endif;
 					endif;
