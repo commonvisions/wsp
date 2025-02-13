@@ -2064,10 +2064,10 @@ if (!(function_exists('getPublisherStructure'))) {
                 // get some dynamic stat
                 if (intval($gmsv["editable"])==9) { $mpfacts['dyn'] = true; }
 				// get type of menupoint to set right icon
-				if (intval($gmsv["forwardmenu"])==1) {
+				if (intval($gmsv["forwardmenu"] ?? 0)==1) {
 					$mpfacts['forw'] = true;
 				}
-				if (trim($gmsv["offlink"])!="") {
+				if (trim($gmsv["offlink"] ?? '')!="") {
 					$mpfacts['ext'] = true;
 				}
 				// set information about subpoints
