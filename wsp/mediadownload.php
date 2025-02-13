@@ -1,7 +1,7 @@
 <?php
 /**
  * Media-Download
- * @author COVI
+ * @author stefan@covi.de
  * @copyright 2019, Common Visions Media.Agentur (COVI)
  * @since 3.1
  * @version 6.8

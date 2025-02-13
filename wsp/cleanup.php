@@ -1,11 +1,9 @@
 <?php
 /**
  * Cleanup
- * @author s.haendler@covi.de
- * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.3
- * @version 6.9.1
- * @lastchange 2020-04-08
+ * @version GIT
  */
 
 /* start session ----------------------------- */

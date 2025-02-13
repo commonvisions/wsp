@@ -1,8 +1,7 @@
 <?php
 /**
  * Verwaltung von Videodateien
- * @author s.haendler@covi.de
- * @copyright (c) 2021, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 6.9
  * @version 6.9
  * @lastchange 2021-01-20

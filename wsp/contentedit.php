@@ -1,32 +1,22 @@
 <?php
 /**
- * @description edit contents
- * @author info@covi.de
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11.5
- * @lastchange 2023-01-08
+ * @version GIT
  * 
  * 2023-01-04
- * 6.11.2
  * fixed error with missing clsInterpreter
  * 
  * 2023-01-06
- * 6.11.3
  * fixed error with getview call with 4 params 
  * 
  * 2023-01-08
- * 6.11.4
  * fixed error with typo in clsInterpreter
  * 
  * 2023-01-09
- * 6.11.5
  * fixed deprecation errors
  * 
  */
-
-error_reporting(E_ALL);
-ini_set('display_errors', true);
 
 /* start session ----------------------------- */
 session_start();
@@ -36,7 +26,7 @@ require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
+/* if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php"); */
 require ("./data/include/funcs.inc.php");
 /* checkParamVar ----------------------------- */
 

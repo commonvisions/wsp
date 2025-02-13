@@ -1,8 +1,7 @@
 <?php
 /**
  * RSS-Entry???
- * @author s.haendler@covi.de
- * @copyright (c) 2014, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
  * @version 6.8
  * @lastchange 2019-01-25

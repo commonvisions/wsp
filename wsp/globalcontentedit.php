@@ -1,11 +1,9 @@
 <?php
 /**
  * Globale Inhalte editieren
- * @author COVI
- * @copyright (c) 2021, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
  * @version 6.9
- * @lastchange 2021-05-06
  */
 
 /* start session ----------------------------- */

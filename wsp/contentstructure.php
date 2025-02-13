@@ -1,11 +1,8 @@
 <?php
 /**
- * Verwaltung von Contentelementen
- * @author info@covi.de
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11.1
- * @lastchange 2013-01-09
+ * @version GIT
  * 
  * 2013-01-09
  * 6.11

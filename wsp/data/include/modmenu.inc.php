@@ -1,8 +1,7 @@
 <?php
 /**
  * aufbau des dynamischen menues fuer modulare menueeintraege
- * @author s.haendler@covi.de
- * @copyright (c) 2018, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
  * @version 6.7
  * @lastchange 2018-09-18

@@ -1,8 +1,6 @@
 <?php
 /**
- * @description WSP3 install page
- * @author s.haendler@covi.de
- * @copyright (c) 2011, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
  * @version 5.0
  * @lastchange 2011-09-02

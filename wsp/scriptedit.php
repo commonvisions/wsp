@@ -1,8 +1,7 @@
 <?php
 /**
  * Bearbeiten von JavaScript
- * @author s.haendler@covi.de
- * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.4
  * @version 6.8
  * @lastchange 2019-01-24

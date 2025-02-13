@@ -1,7 +1,7 @@
 <?php
 /**
 * sysrun describes changes from version to version
-* @author s.haendler@covi.de
+* @author stefan@covi.de
 * @copyright (c) 2018, Common Visions Media.Agentur (COVI)
 * @since 5.0
 * @version 6.7

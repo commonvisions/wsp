@@ -2,7 +2,6 @@
 /**
  *
  * @author s.haendler
- * @copyright (c) 2021, Common Visions Media.Agentur (COVI)
  * @since 3.1
  * @version 6.9
  * @lastchange 2021-01-19

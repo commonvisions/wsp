@@ -1,12 +1,10 @@
 <?php
 /**
- * 
- * @author info@covi.de
- * @copyright (c) 2018, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.8
- * @lastchange 2018-09-18
+ * @version GIT
  */
+
 header( 'Cache-Control: no-store, no-cache, must-revalidate' ); 
 header( 'Cache-Control: post-check=0, pre-check=0', false ); 
 header( 'Pragma: no-cache' );

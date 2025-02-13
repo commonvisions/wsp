@@ -1,9 +1,8 @@
 <?
 /**
  * class to export wsp-data in xml
- * @author COVI
- * @copyright (c) 2022, Common Visions Media.Agentur (COVI)
- * @since 3.1
+ * @author stefan@covi.de
+  * @since 3.1
  * @version 6.11
  * @lastchange 2022-11-17
  */

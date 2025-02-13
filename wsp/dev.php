@@ -1,11 +1,8 @@
 <?php
 /**
- * @description developer tools
- * @author s.haendler@covi.de
- * @copyright (c) 2022, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11
- * @lastchange 2022-11-16
+ * @version GIT
  */
 
 // start session -----------------------------

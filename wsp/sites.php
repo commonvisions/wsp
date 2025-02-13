@@ -1,8 +1,7 @@
 <?php
 /**
  * global site-setup
- * @author s.haendler@covi.de
- * @copyright (c) 2018, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 6.0
  * @version 6.8
  * @lastchange 2019-01-22

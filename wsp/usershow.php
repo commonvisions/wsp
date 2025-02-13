@@ -5,7 +5,7 @@
  * @version GIT
  * 
  * 2025-02-11
- * - fixed bug with undefined $wspvars['usevar']
+ * fixed bug with undefined $wspvars['usevar']
  * 
  */
 

@@ -1,11 +1,8 @@
 <?php
 /**
- * Verwaltung von Fonts
- * @author s.haendler@covi.de
- * @copyright (c) 2022, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 6.8
- * @version 6.11
- * @lastchange 2022-11-04
+ * @version GIT
  */
 
 /* start session ----------------------------- */

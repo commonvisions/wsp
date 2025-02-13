@@ -1,7 +1,7 @@
 <?php
 /**
  * based on phpdomxml-0.9.0 - an XML Document Object Model implementation for PHP 4.10+.
- * @author s.haendler@covi.de
+ * @author stefan@covi.de
  * @copyright (c) 2019, webtweakers.com. All rights reserved.
  * @since 3.2
  * @version 6.9

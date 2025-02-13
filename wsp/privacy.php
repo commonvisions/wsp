@@ -1,12 +1,10 @@
 <?php
 /**
  * privacy-setup
- * @author s.haendler@covi.de
- * @copyright (c) 2022, Common Visions Media.Agentur (COVI)
- * @since 6.11
+ * @author stefan@covi.de
+  * @since 6.11
  * @version 6.11.1
- * @lastchange 2022-11-10
- */
+  */
 
 // start session -----------------------------
 session_start();

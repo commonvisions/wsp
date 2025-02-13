@@ -1,9 +1,8 @@
 <?php
 /**
  * Templates bearbeiten
- * @author COVI
- * @copyright (c) 2022, Common Visions Media.Agentur (COVI)
- * @since 3.2.4
+ * @author stefan@covi.de
+  * @since 3.2.4
  * @version 6.11
  * @lastchange 2022-10-25
  */

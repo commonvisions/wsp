@@ -1,19 +1,12 @@
 <?php
 /**
- * manage sitestructure
- * @author info@covi.de
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11.2
- * @lastchange 2023-01-09
+ * @version GIT
  * 
  * 2023-01-09
- * 6.11.1
  * fixed overwriting errormsg on creation failure
- * 
- * 6.11.2
  * fixed error when duplicating contents
- * 
  */
 
 /* start session ----------------------------- */

@@ -1,16 +1,13 @@
 <?php
 /**
  * showpreview
- * @author s.haendler@covi.de
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.3
  * @version 6.11
- * @lastchange 2023-01-08
  * 
- * 6.11
  * 2023-01-08
- * - minor deprecation fixes
- * - preview request changed to curl if available
+ * minor deprecation fixes
+ * preview request changed to curl if available
  * 
  */
 

@@ -2,10 +2,8 @@
 /**
  * @description connection and access data
  * @author wsp@covi.de
- * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
  * @since 3.3.0
  * @version 6.8
- * @lastchange 2019-01-20
  */
 
 /* start session ----------------------------- */

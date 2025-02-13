@@ -1,6 +1,6 @@
 <?php
 /**
-* @author s.haendler@covi.de
+* @author stefan@covi.de
 * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
 * @since 3.1
 * @version 6.9.2

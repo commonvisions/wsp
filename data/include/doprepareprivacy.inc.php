@@ -1,10 +1,8 @@
 <?php
 /**
-* @author s.haendler@covi.de
-* @copyright (c) 2022, Common Visions Media.Agentur (COVI)
+* @author stefan@covi.de
 * @since 6.9
-* @version 6.11.1
-* @lastchange 2022-11-10
+* @version GIT
 */
 
 if (isset($_REQUEST['set_privacy'])) {

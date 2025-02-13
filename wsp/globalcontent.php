@@ -1,11 +1,8 @@
 <?php
 /**
- * Verwaltung von Globalen Inhalten
- * @author info@covi.de
- * @copyright (c) 2023, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.11
- * @lastchange 2023-01-06
+ * @version GIT
  */
 
 /* start session ----------------------------- */

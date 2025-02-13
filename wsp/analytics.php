@@ -1,11 +1,8 @@
 <?php
 /**
- * google-setup
- * @author s.haendler@covi.de
- * @copyright (c) 2022, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 4.0
- * @version 6.11
- * @lastchange 2022-10-25
+ * @version GIT
  */
 
 // start session -----------------------------

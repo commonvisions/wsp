@@ -1,11 +1,9 @@
 <?php
 /**
  * queue
- * @author s.haendler@covi.de
- * @copyright (c) 2012, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
  * @version 6.7.1
- * @lastchange 2018-12-21
  */
 
 /* start session ----------------------------- */
@@ -23,7 +21,6 @@ if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ft
 require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/funcs.inc.php");
 require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/filesystemfuncs.inc.php");
 /* checkParamVar ----------------------------- */
-
 
 require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/checkuser.inc.php");
 require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/errorhandler.inc.php");
