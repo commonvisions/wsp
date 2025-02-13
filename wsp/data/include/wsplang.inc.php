@@ -39,7 +39,7 @@ if (!function_exists('returnIntLang')):
 		if (!(isset($_SESSION['wspvars']['locallang'])) || $_SESSION['wspvars']['locallang'] == ''):
 			$_SESSION['wspvars']['locallang'] = 'de';
 		endif;
-		if (array_key_exists('lang', $GLOBALS) && is_array($GLOBALS['lang'][($_SESSION['wspvars']['locallang'])])):
+		if (array_key_exists('lang', $GLOBALS) && is_array($GLOBALS['lang'][($_SESSION['wspvars']['locallang'])] ?? null)):
 			if (array_key_exists($internationalize, $GLOBALS['lang'][($_SESSION['wspvars']['locallang'])])):
 				return setUTF8($GLOBALS['lang'][($_SESSION['wspvars']['locallang'])][$internationalize]);
 			else:
@@ -51,9 +51,9 @@ if (!function_exists('returnIntLang')):
 			endif;
 		else:
 			if ($textoutput):
-				return "<em style=\"color: red;\">[".$_SESSION['wspvars']['locallang']."] not installed</em>";
+				return "<span style='color: red;'>" . $internationalize . " [-".$_SESSION['wspvars']['locallang']."-]</span>";
 			else:
-				return "[".$_SESSION['wspvars']['locallang']."] not installed";
+				return $internationalize . "[-".$_SESSION['wspvars']['locallang']."-]";
 			endif;
 		endif;
 		}
