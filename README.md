@@ -3,11 +3,15 @@ WebSitePreview
 
 ## 6.25.2
 
-- removed external sources fonts
-- extended check for ftp-usage
+- removed external sources requests
+- removed RSS support on publishing
+
+- changed checks for ftp-usage
 - changed ftp connection management
-- extended support for local file system
-- updated jquery
+- changed support for local file system writing
+
+- updated libraries
+
 - bug fixes
 - security fixes
 - maintenance
