@@ -1,10 +1,6 @@
 <?php
 /**
- * Funktionen für die Module
- * @author COVI
- * @copyright (c) 2009, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 3.1
- * @version 6.0
- * @lastchange 2014-03-21
+ * @version GIT
  */
-?>
