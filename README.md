@@ -5,6 +5,7 @@ WebSitePreview
 
 - removed external sources requests
 - removed RSS support on publishing
+- removed self-hostet update service
 
 - changed checks for ftp-usage
 - changed ftp connection management
