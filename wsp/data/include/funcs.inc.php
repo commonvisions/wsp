@@ -16,6 +16,9 @@
  * added backtrace and error message to sql error message output
  * fixed call of utf8_decode
  * 
+ * 2025-02-14
+ * bugfixes
+ * 
  */
 
 // OLD MYSQL functions

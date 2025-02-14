@@ -1,33 +1,29 @@
 <?php
 /**
- * Allgemeine parser-functions
  * @author stefan@covi.de
  * @since 3.1
- * @version 6.11.5
- * @lastchange 2023-02-02
+ * @version GIT
  */
 
 /*
  * 2021-03-02
- * 6.10
  * removed parsing of contents if header location is set
  * removed sitekeys param
  *
  * 2022-10-25
- * 6.11
  * added privacy stuff
  * 
  * 2023-01-04
- * 6.11.3
  * fixed file system copy problems
  * 
  * 2023-01-13
- * 6.11.4
  * fixed error with non-ZERO externpage
  * 
  * 2023-02-02
- * 6.11.5
  * fixed bug with external forwarding = 0
+ * 
+ * 2025-02-14
+ * bugfixes
  * 
  */
 
@@ -955,7 +951,7 @@ function publishSites($pubid, $mode = 'publish', $lang = 'de', $newendmenu = fal
     
     					// close container
 						if (intval($coresv['container'])!=4):
-							$content[intval($coresv['content_area'])].= "</".$ccarray[intval($coresv['container'])].">";	
+							$content[intval($coresv['content_area'] ?? 0)].= "</".$ccarray[intval($coresv['container'] ?? 0)].">";	
 						endif;
     
 						// close time based visibility
@@ -1629,7 +1625,9 @@ function publishSites($pubid, $mode = 'publish', $lang = 'de', $newendmenu = fal
 						if (!empty($ftp)) {
 							createFTPPath($ftp, returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang));
 						} else {
-							addWSPMsg('errormsg', "the directory could not be created. update will follow soon.");
+							if (!mkdir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT'] . '/'. $_SESSION['wspvars']['wspbasediradd']. '/' . returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang))), 0755, true)) {
+								addWSPMsg('errormsg', sprintf("the directory %s could not be created. update will follow soon.", returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang)));
+							}
 						}
 
 						// creating index.php

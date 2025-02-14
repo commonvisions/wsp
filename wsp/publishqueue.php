@@ -103,11 +103,11 @@ include ("./data/include/wspmenu.inc.php");
 								else {
 									$langdesc = unserializeBroken($mnuinfo_res['set'][0]['langdescription']);
 									if (is_array($langdesc) && count($langdesc)>0) {
-										if (isset($langdesc[trim($qresv['lang'])])) {
+										if (isset($langdesc[trim($qresv['lang'] ?? '0')])) {
 											echo trim($langdesc[trim($qresv['lang'])]);
 										}
 										else {
-											echo trim($mnuinfo_res['set'][0]['description'])." [".trim($qresv['lang'])."]";
+											echo trim($mnuinfo_res['set'][0]['description'])." [".trim($qresv['lang'] ?? '-')."]";
 										}
 									}
 									else {
@@ -131,7 +131,7 @@ include ("./data/include/wspmenu.inc.php");
                         }
 							
 						?></td>
-						<td class="tablecell one info"><?php if (intval($qresv['timeout'])>0): echo date('d.m.Y H:i', intval($qresv['timeout'])); else: echo returnIntLang('queue timeout running'); endif; ?></td>
+						<td class="tablecell one info"><?php if (intval($qresv['timeout'] ?? (time()+60))>0): echo date('d.m.Y H:i', intval($qresv['timeout'] ?? (time()+60))); else: echo returnIntLang('queue timeout running'); endif; ?></td>
 						<td class="tablecell"><a onclick="document.getElementById('jobid').value = <?php echo intval($qresv['id']); ?>; document.getElementById('killjob').submit();"><span class="bubblemessage red"><?php echo returnIntLang('queue kill job', false); ?></span></a></td>
 					</tr>
 				<?php endforeach; ?>

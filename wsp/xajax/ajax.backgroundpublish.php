@@ -1,24 +1,27 @@
 <?php
 /**
- * publishing files in background
  * @author stefan@covi.de
-  * @since 6.0
- * @version 6.11.1
- * @lastchange 2023-01-02
+ * @since 6.0
+ * @version GIT
+ * 
+ * 2025-02-14
+ * fixed bug creating directory w/o ftp
+ * 
  */
 
-session_start();
+if (!empty($_SERVER['HTTP_REFERER'] ?? null)) {
+	session_start();
+	$wspdir = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".($_SESSION['wspvars']['wspbasediradd'] ?? "")."/".($_SESSION['wspvars']['wspbasedir'] ?? "")));
 
-if (isset($_SESSION['wspvars'])) {
-	include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/globalvars.inc.php";
-	include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/wsplang.inc.php";
-	include $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/errorhandler.inc.php';
-	include $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/funcs.inc.php';
-	include $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/dbaccess.inc.php';
-	include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/ftpaccess.inc.php";
-	include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/filesystemfuncs.inc.php";
-	include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/menuparser.inc.php";
-	include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/fileparser.inc.php";
+	include $wspdir."/data/include/globalvars.inc.php";
+	include $wspdir."/data/include/wsplang.inc.php";
+	include $wspdir.'/data/include/errorhandler.inc.php';
+	include $wspdir.'/data/include/funcs.inc.php';
+	include $wspdir.'/data/include/dbaccess.inc.php';
+	if (file_exists($wspdir."/data/include/ftpaccess.inc.php")) include $wspdir."/data/include/ftpaccess.inc.php";
+	include $wspdir."/data/include/filesystemfuncs.inc.php";
+	include $wspdir."/data/include/menuparser.inc.php";
+	include $wspdir."/data/include/fileparser.inc.php";
     
     // get time to put action to the end of the queue
     $queue_sql = "SELECT MAX(`timeout`) AS `time` FROM `wspqueue` WHERE `done` = 0";
