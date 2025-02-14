@@ -35,11 +35,8 @@ endif;
 if (file_exists("data/include/rootphrase.inc.php")):
 	require ("data/include/rootphrase.inc.php");
 else:
-	$ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])));
-    if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }}
-    if (isset($_SESSION['wspvars']['ftppasv'])) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
-	$ftpcon = ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass']);
-	if ($ftpcon):
+	$ftp = doFTP();
+	if ($ftp):
 		$fh = fopen("./tmp/rootphrase.inc.php", "w+");
 		fwrite($fh, "<?php
 /**
@@ -133,11 +130,8 @@ if ((isset($sitedata['wsprobots']) && $sitedata['wsprobots']==1) || (isset($site
 	endif;
 	$disallow = implode("\n", $disallow);
 	// create ftp-connect
-    $ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])));
-    if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }}
-    if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv'] ?? true); }
-	$ftpcon = ($ftp) ? ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass']) : false;
-	if ($ftpcon):
+    $ftp = doFTP();
+	if ($ftp):
 		// create file content
 		$fh = fopen("./tmp/robots.txt", "w+");
 		fwrite($fh, $disallow);
