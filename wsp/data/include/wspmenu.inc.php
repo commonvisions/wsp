@@ -517,12 +517,12 @@ function mobileJump(jumpValue) {
 				// show publisher and queue link as submenupoints
 				if ($fsaccess) {
 				?>
-				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed publisher'); ?></a><?php if($queue_num>0): echo "<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; endif; ?> <ul class="basic level1">
+				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed publisher'); ?> <?php if($queue_num>0): echo "&nbsp;<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; endif; ?></a> <ul class="basic level1">
 					<li class="level1" id="m_<?php echo $mp; ?>_0">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed'); ?></a>
 					</li>
 					<li class="level1" id="m_<?php echo $mp; ?>_1">
-						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publishqueue.php"><?php echo returnIntLang('menu changed queue'); ?></a><?php if($queue_num>0): echo "<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;&nbsp;"; endif; ?>
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publishqueue.php"><?php echo returnIntLang('menu changed queue'); ?><?php if($queue_num>0): echo "&nbsp;&nbsp;&nbsp;<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; endif; ?></a>
 					</li>
 				</ul></li>
 				<?php 

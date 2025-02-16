@@ -70,6 +70,8 @@ flush();flush();flush();
 	<fieldset><h1><?php echo returnIntLang('system headline'); ?></h1></fieldset>
 	<?php 
 
+	$gitData = false;
+
 	if (_isCurl()) {
 		$gitInfo = array( 
 			CURLOPT_URL => "https://api.github.com/repos/commonvisions/wsp/releases/latest", 

@@ -1622,11 +1622,13 @@ function publishSites($pubid, $mode = 'publish', $lang = 'de', $newendmenu = fal
 						// if setup is to create directories instead of files
 						// create ftp-based path for missing directories
 						// call 1-function because structure is needed down to a directory
-						if (!empty($ftp)) {
-							createFTPPath($ftp, returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang));
-						} else {
-							if (!mkdir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT'] . '/'. $_SESSION['wspvars']['wspbasediradd']. '/' . returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang))), 0755, true)) {
-								addWSPMsg('errormsg', sprintf("the directory %s could not be created. update will follow soon.", returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang)));
+						if (!is_dir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT'] . '/'. $_SESSION['wspvars']['wspbasediradd']. '/' . returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang))))) {
+							if (!empty($ftp)) {
+								createFTPPath($ftp, returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang));
+							} else {
+								if (!mkdir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT'] . '/'. $_SESSION['wspvars']['wspbasediradd']. '/' . returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang))), 0755, true)) {
+									addWSPMsg('errormsg', sprintf(returnIntLang("the directory %s could not be created for unknown reason", false), returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang)));
+								}
 							}
 						}
 
@@ -1638,8 +1640,6 @@ function publishSites($pubid, $mode = 'publish', $lang = 'de', $newendmenu = fal
 								// SET filename to index.php
 								$ftppath = str_replace("//", "/", str_replace("//", "/", returnPath(intval($mid_res['set'][0]['mid']), 0, '', $lang)."/index.php"));
 								// ftp copy function
-
-								addWSPMsg('errormsg', var_export($ftppath, true));
 
 								if (!empty($ftp) && ftp_put($ftp, str_replace("//","/",$_SESSION['wspvars']['ftpbasedir'].$ftppath), $tmpfile, FTP_BINARY)) {
 									$returnstat = true;

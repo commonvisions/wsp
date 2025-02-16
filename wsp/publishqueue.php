@@ -93,7 +93,7 @@ include ("./data/include/wspmenu.inc.php");
 							$mnuinfo_sql = "SELECT `description`, `langdescription` FROM `menu` WHERE `mid` = ".intval($qresv['param']);
 							$mnuinfo_res = doSQL($mnuinfo_sql);
 							if ($mnuinfo_res['num']>0) {
-								if (trim($mnuinfo_res['set'][0]['langdescription'])=='') {
+								if (trim($mnuinfo_res['set'][0]['langdescription'] ?? '')=='') {
 									if (strpos($mnuinfo_res['set'][0]['description'], 'tofile-')==2) {
 										echo returnIntLang('queue autofile');
 									} else {
