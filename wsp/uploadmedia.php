@@ -1,8 +1,7 @@
 <?php
 /**
  * Upload Media Files
- * @author s.haendler@covi.de
- * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
+ * @author stefan@covi.de
  * @since 6.0
  * @version 6.8
  * @lastchange 2019-01-22
@@ -132,15 +131,16 @@ class qqFileUploader {
         $pathinfo = pathinfo($this->file->getName());
         $filename = removeSpecialChar($pathinfo['filename']);
         $ext = strtolower($pathinfo['extension']);
-		
+
 		$uploadFtpTmbDirectory = '';
 		$uploadFtpOrgDirectory = '';
 		$uploadFtpPrevDirectory = '';
 		
 		$uploadBaseTarget = $_SESSION['wspvars']['upload']['basetarget'];
+		$uploadTmbDirectory = $uploadOrgDirectory = $uploadPrevDirectory = $uploadTargetFolder;
 
 		// thumbnail directory if image processing 
-		if ($uploadBaseTarget=='screen' || $uploadBaseTarget=='images' || $uploadBaseTarget=='download'):
+		if ($uploadBaseTarget=='screen' || $uploadBaseTarget=='images' || $uploadBaseTarget=='download') {
 			$uploadTmbDirectory = str_replace("//", "/", str_replace("//", "/", "/".
 				str_replace(
 					"/media/".$uploadBaseTarget."/", 
@@ -148,7 +148,7 @@ class qqFileUploader {
 					$uploadTargetFolder
 				)
 			));
-        endif;
+        }
 
 		// original directory if image processing
         if ($uploadBaseTarget=='images'):
@@ -162,9 +162,9 @@ class qqFileUploader {
 		endif;
 
         // preview directory if pdf processing
-		if ($_SESSION['wspvars']['upload']['preview']):
-			$uploadPrevDirectory = str_replace("//", "/", str_replace("//", "/", "/".str_replace("/media/download/", "/media/images/preview/", $uploadTargetFolder)));
-	    endif;
+		if ($_SESSION['wspvars']['upload']['preview']) {
+			$uploadPrevDirectory = str_replace("//", "/", str_replace("//", "/", "/".str_replace("/media/download/", "/media/download/preview/", $uploadTargetFolder)));
+	    }
         
         // check for right extensions
         if($this->allowedExtensions && !in_array(strtolower($ext), $this->allowedExtensions) && !count($this->allowedExtensions)>0) {
@@ -181,31 +181,85 @@ class qqFileUploader {
             }
 		}
         
+		$handleFile = md5($filename);
 		// tmp save the file
-		$fileSave = $this->file->save($uploadTmpDirectory . $filename . '.' . $ext);		
-		
-        if ($fileSave):
+		$fileSave = $this->file->save($uploadTmpDirectory . $handleFile . '.' . $ext);
+
+		$fileData = array(
+			'name' => $filename . '.' . $ext,
+			'src' => str_replace("//", "/", $uploadTmpDirectory . '/' . $handleFile . '.' . $ext)
+		);
+
+		if ($fileSave) {
+
+			$prvData = null;
+			$tmbData = null;
+			$orgData = null;
 
 			// optional pdf conversion
 			if ($_SESSION['wspvars']['upload']['preview'] && $ext=="pdf" && function_exists('exec')) {
-				if ($_SESSION['wspvars']['createimagefrompdf']!='nocheck') {
-					// try create image from pdf-file 							
-				 	@exec("/usr/bin/gs -q -dNOPAUSE -dBATCH -sDEVICE=jpeg -sOutputFile=".$uploadTmpDirectory.$filename.".jpg ".$uploadTmpDirectory.$filename.'.'.$ext);
+				@exec("/usr/bin/gs -q -dNOPAUSE -dBATCH -sDEVICE=jpeg -sOutputFile=".$uploadTmpDirectory.$handleFile.".jpg " . $fileData['src']);
+				if (file_exists($uploadTmpDirectory.$handleFile.".jpg")) {
+					$prvData = [
+						'name' => $filename . '.jpg',
+						'src' => str_replace("//", "/", $uploadTmpDirectory . '/' . $handleFile . '.jpg')
+					];
 				}
 			}
 			
-			// resizing and copying
-			if (function_exists('resizeGDimage') && 
-				($ext=="gif" || $ext=="png" || $ext=="jpg" || $ext=="jpeg" || $ext=="pdf")) {
-				$preview = null;
-				$thumb = null;
-				$original = null;
-				$filedata = array(
-					'size' => '', 
-					'filesize' => $size, 
-					'lastchange' => time(), 
-					'md5key' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext)))
-				);
+			// resizing, preview, thumbnail
+			if (function_exists('resizeGDimage') && ($ext=="gif" || $ext=="png" || $ext=="jpg" || $ext=="jpeg")) {
+				$fileInfo = @getimagesize($fileData['src']);
+				$orgScale = $orgCheck = (($fileInfo[0] ?? 0)>0 && ($fileInfo[1] ?? 0)> 0) ? [
+					intval($fileInfo[0]), intval($fileInfo[1])
+				] : [0,0];
+				$defThumb = intval($_REQUEST['thumbsize'] ?? '300');
+				$preScale = explode('x', trim($_REQUEST['prescale'] ?? '1600x900'));
+				// switch sides on portrait mode
+				asort($orgCheck);
+				if ($orgCheck===$orgScale) asort($preScale);
+				// check for resizing option
+				$sizeFactor = 1;
+				if (count($orgScale) == 2 && count($preScale) == 2) {
+					$widthFactor = ($orgScale[0]>$preScale[0]) ? ($preScale[0] / $orgScale[0]) : 1;
+					$heightFactor = ($orgScale[1]>$preScale[1]) ? ($preScale[1] / $orgScale[1]) : 1;
+					$sizeFactor = $widthFactor < $heightFactor ? $widthFactor : $heightFactor;
+				}
+				$thumbFactor = 1;
+				if (count($orgScale) == 2) {
+					$widthFactor = ($orgScale[0]>$defThumb) ? ($defThumb / $orgScale[0]) : 1;
+					$heightFactor = ($orgScale[1]>$defThumb) ? ($defThumb / $orgScale[1]) : 1;
+					$thumbFactor = $widthFactor < $heightFactor ? $widthFactor : $heightFactor;
+				}
+				// do resizing (if factor)
+				if ($sizeFactor < 1 && $sizeFactor > 0) {
+					$resized = resizeGDimage(
+						($uploadTmpDirectory. $handleFile.'.'.$ext), 
+						($uploadTmpDirectory.$handleFile.'-org.'.$ext), 
+						round($sizeFactor, 4), null, null, true
+					);
+					if ($resized) {
+						$orgData = array(
+							'name' => $filename . '.' . $ext,
+							'src' => str_replace("//", "/", $uploadTmpDirectory . '/' . $handleFile . '-org.' . $ext)
+						);
+					}
+				}
+				if ($thumbFactor < 1 && $thumbFactor > 0) {
+					$resized = resizeGDimage(
+						($uploadTmpDirectory . $handleFile . '.' . $ext), 
+						($uploadTmpDirectory . $handleFile . '-tmb.' . $ext), 
+						round($thumbFactor, 4), null, null, true
+					);
+					if ($resized) {
+						$tmbData = array(
+							'name' => $filename . '.' . $ext,
+							'src' => str_replace("//", "/", $uploadTmpDirectory . '/' . $handleFile . '-tmb.' . $ext)
+						);
+					}
+				}
+			} else if (function_exists('resizeGDimage') &&  $ext=="pdf" && $prvData) {
+				error_log('resizeGDimage called for pdf thumb ' . $prvData['src'] . ' but not done');
 			}
 
 			$ftp = doFTP();
@@ -223,16 +277,63 @@ class qqFileUploader {
 					($_SESSION['wspvars']['ftpbasedir'] ?? '') . "/" . $uploadTargetFolder . 
 					'/' . $filename . '.' . $ext));
 				
-				if ($preview) {
-
+				if ($prvData) {
+					if (@ftp_put($ftp, $uploadFtpPrevPath, $prvData['src'], FTP_BINARY)) {
+						error_log('prvFile copied by ftp to ' . $uploadFtpPrevPath);
+						/*
+						$createdfile[] = [
+							'mediatype' => 'download',
+							'mediafolder' => 'download',
+							'filefolder' => trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))),
+							'filename' => trim($filename.'.jpg'),
+							'filetype' => 'jpg',
+							'filekey' => md5(str_replace("//", "/", 
+								trim($_REQUEST['targetfolder'])."/".trim($filename.'.jpg')
+							)),
+							'filedata' => serialize([]),
+							'filesize' => null,
+							'filedate' => time(),
+							'thumb' => !empty($tmbData),
+							'preview' => !empty($prvData), 
+							'original' => !empty($orgData),
+							'embed' => 0,
+							'lastchange' => time(), 
+						];
+						*/
+					}
 				}
-				if ($thumb) {
-					
+				if ($tmbData) {
+					if (@ftp_put($ftp, $uploadFtpTmbPath, $tmbData['src'], FTP_BINARY)) {
+						error_log('prvFile copied by ftp to ' . $uploadFtpTmbPath);
+					}
 				}
-				if ($original) {
-					
+				if ($orgData) {
+					if (@ftp_put($ftp, $uploadFtpOrgPath, $orgData['src'], FTP_BINARY)) {
+						error_log('prvFile copied by ftp to ' . $uploadFtpPOrgPath);
+					}
 				}
 				// finally copy the (processed) upload to folder
+				if (@ftp_put($ftp, $uploadFtpPath, $fileData['src'], FTP_BINARY)) {
+					$createdfile[] = [
+						'mediatype' => trim($_REQUEST['mediafolder']),
+						'mediafolder' => trim($_REQUEST['targetfolder']),
+						'filefolder' => trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))),
+						'filename' => trim($filename.'.'.$ext),
+						'filetype' => trim($ext),
+						'filekey' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext))),
+						'filedata' => serialize([]),
+						'filesize' => null,
+						'filedate' => time(),
+						'thumb' => !empty($tmbData),
+						'preview' => !empty($prvData), 
+						'original' => !empty($orgData),
+						'embed' => 0,
+						'lastchange' => time(), 
+					];
+				} else {
+					$return = ['success' => false, 'params' => serialize($_REQUEST)];
+				}
+				ftp_close($ftp);
 
 			} else {
 				$uploadPrevPath = str_replace("//", "/", str_replace("//", "/", 
@@ -248,211 +349,68 @@ class qqFileUploader {
 					$_SERVER['DOCUMENT_ROOT'] . "/" . $_SESSION['wspvars']['wspbasediradd'] . "/" . 
 					$uploadTargetFolder . '/' . $filename . '.' . $ext));
 
-				$myFile = $uploadTmpDirectory . $filename . '.' . $ext;
-
-				// finally copy the (processed) upload to folder
-				/*
-				$directCopy = $this->file->save($uploadPath);
-				if ($directCopy) {
-					$filedata = array('size' => '', 'filesize' => $size, 'lastchange' => time(), 'md5key' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext))));
-					// check if file was just overwritten
-					$e_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".escapeSQL(trim($_REQUEST['mediafolder']))."' AND `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."' AND `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."' AND `filename` = '".escapeSQL(trim($filename.'.'.$ext))."' AND `filetype` = '".trim($ext)."'";
-					$e_res = doSQL($e_sql);
-					if ($e_res['num']>0):
-						// use update statement
-						$sql = "UPDATE `wspmedia` ";
-					else:
-						// use insert statement
-						$sql = "INSERT INTO `wspmedia` ";
-					endif;
-					$sql.= " SET `mediatype` = '".escapeSQL($_REQUEST['mediafolder'])."', `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."', `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."', `filename` = '".escapeSQL(trim($filename.'.'.$ext))."', `filetype` = '".trim($ext)."', `filekey` = '".md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext)))."', `filedata` = '".serialize($filedata)."', `filesize` = ".intval($size).",`filedate` = ".time().", `thumb` = 0, `preview` = 0, `original` = 0, `embed` = 0, `lastchange` = ".time();
-					if ($e_res['num']>0):
-						// use update statement
-						$sql.= " WHERE `mid` = ".intval($e_res['set'][0]['mid']);
-					endif;
-					doSQL($sql);
-					return array('success' => true);
-				} else {
-					return array('success' => false, 'params' => serialize($_REQUEST), 'state' => 'no ftp, no direct copy');
-				}
-				*/
-
-			}
-
-			if ()
-
-
-			/*
-			if (function_exists('resizeGDimage') && ($ext=="gif" || $ext=="png" || $ext=="jpg" || $ext=="jpeg" || $ext=="pdf")):
-				$ftp = doFTP();
-				if ($ftp):
-					$preview = 0;
-					$thumb = 0;
-					$original = 0;
-					$filedata = array('size' => '', 'filesize' => $size, 'lastchange' => time(), 'md5key' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext))));
-					if ($ext=="gif" || $ext=="png" || $ext=="jpg" || $ext=="jpeg"):
-						// copy original IMAGES to destination
-						if (trim($uploadFtpOrgDirectory)!=''):
-							// try to create orig directory
-							@ftpCreateDir('', $uploadFtpOrgDirectory);
-							if (@ftp_put($ftp, $uploadFtpOrgDirectory."/".$filename.'.'.$ext, $uploadTmpDirectory."/".$filename.'.'.$ext, FTP_BINARY)):
-								$original = 1;
-							endif;
-						endif;
-					endif;
-					// resize IMAGES if prescale defined
-					if(trim($_REQUEST['prescale'])!="" && ($ext=="gif" || $ext=="png" || $ext=="jpg" || $ext=="jpeg")):
-						$dimensions = array();
-						$org_dimensions = array();
-						$dimensions = explode("x", trim($_REQUEST['prescale']));
-						$width = intval($dimensions[0]);
-						$height = intval($dimensions[1]);
-						if($height>0 && $width>0):
-							$org_dimensions = @getimagesize($uploadTmpDirectory.$filename.'.'.$ext);
-							$filedata['size'] = $org_dimensions[0].' x '.$org_dimensions[1];
-							if((intval($org_dimensions[0])>$width) || (intval($org_dimensions[1])>$height)):
-								resizeGDimage($uploadTmpDirectory.$filename.'.'.$ext, $uploadTmpDirectory.$filename.'.'.$ext, 0, $width, $height, 1);
-								$filedata['size'] = $width.' x '.$height;
-							endif;
-						endif;
-					endif;
-					// copy document to destination
-					if (@ftp_put($ftp, $uploadFtpDirectory."/".$filename.'.'.$ext, $uploadTmpDirectory."/".$filename.'.'.$ext, FTP_BINARY)):
-						// try to copy PDF preview
-						if($ext=="pdf" && $_SESSION['wspvars']['createimagefrompdf']!='nocheck'):
-							// try create preview directory
-							@ftpCreateDir('', $uploadFtpPrevDirectory);
-							// copy file to preview directory
-							if (@ftp_put($ftp, $uploadFtpPrevDirectory."/".$filename.'.jpg', $uploadTmpDirectory."/".$filename.'.jpg', FTP_BINARY)):
-								$preview = 1;
-								$prevsize = @ftp_size($ftp, $uploadFtpPrevDirectory."/".$filename.'.jpg');
-								// check for existing entry om database
-								$p_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = 'images' AND `mediafolder` = '".escapeSQL(trim($uploadPrevDirectory))."' AND `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/images/","/",trim($uploadPrevDirectory))))))."' AND `filename` = '".escapeSQL(trim($filename.'.jpg'))."' AND `filetype` = 'jpg'";
-								$p_res = doSQL($p_sql);
-								if (!(isset($_SESSION['wspvars']['showsql']))): $_SESSION['wspvars']['showsql'] = array(); endif;
-								if (!(is_array($_SESSION['wspvars']['showsql']))): $_SESSION['wspvars']['showsql'] = array(); endif;
-								if ($p_res['num']>0):
-									// use update statement
-									$sql = "UPDATE `wspmedia` ";
-								else:
-									// use insert statement
-									$sql = "INSERT INTO `wspmedia` ";
-								endif;
-								$sql.= " SET `mediatype` = 'images', `mediafolder` = '".trim($uploadPrevDirectory)."', `filefolder` = '".trim(str_replace("//","/",str_replace("//","/",str_replace("/media/images/","/",trim($uploadPrevDirectory)))))."', `filename` = '".trim($filename.'.jpg')."', `filetype` = 'jpg', `filekey` = '".md5(str_replace("//", "/", trim($uploadPrevDirectory)."/".trim($filename.'.jpg')))."', `filesize` = ".$prevsize.", `filedate` = ".time().", `embed` = 0, `lastchange` = ".time();
-								if ($p_res['num']>0):
-									// use update statement
-									$sql.= " WHERE `mid` = ".intval($p_res['set'][0]['mid']);
-								endif;
-								doSQL($sql);
-							endif;
-						elseif ($ext=="gif" || $ext=="png" || $ext=="jpg" || $ext=="jpeg"):
-							if (intval($_REQUEST['thumbsize'])==0):
-								$thumbsize = 100;
-							else:
-								$thumbsize = intval($_REQUEST['thumbsize']);
-							endif;
-							$dimensions = array();
-							$org_dimensions = array();
-							$width = intval($thumbsize);
-							$height = intval($thumbsize);
-							if($height>0 && $width>0):
-								$org_dimensions = @getimagesize($uploadTmpDirectory.$filename.'.'.$ext);
-								if((intval($org_dimensions[0])>$width) || (intval($org_dimensions[1])>$height)):
-									resizeGDimage($uploadTmpDirectory.$filename.'.'.$ext, $uploadTmpDirectory.$filename.'.'.$ext, 0, $width, $height, 1);
-								endif;
-							endif;
-							// try to create tmbdir
-							@ftpCreateDir('', $uploadFtpTmbDirectory);
-							if(@ftp_put($ftp, $uploadFtpTmbDirectory."/".$filename.'.'.$ext, $uploadTmpDirectory."/".$filename.'.'.$ext, FTP_BINARY)):	
-								@unlink($uploadTmpDirectory."/".$filename.'.'.$ext);
-								$thumb = 1;
-							endif;
-						endif;
-						
-						// check if file was just overwritten
-						$e_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".$_REQUEST['mediafolder']."' AND `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."' AND `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."' AND `filename` = '".escapeSQL(trim($filename.'.'.$ext))."' AND `filetype` = '".trim($ext)."'";
-						$e_res = doSQL($e_sql);
-						if ($e_res['num']>0):
-							// use update statement
-							$sql = "UPDATE `wspmedia` ";
-						else:
-							// use insert statement
-							$sql = "INSERT INTO `wspmedia` ";
-						endif;
-						$sql.= " SET `mediatype` = '".escapeSQL(trim($_REQUEST['mediafolder']))."', `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."', `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."', `filename` = '".escapeSQL(trim($filename.'.'.$ext))."', `filetype` = '".trim($ext)."', `filekey` = '".md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext)))."', `filedata` = '".escapeSQL(serialize($filedata))."', `filesize` = ".intval($size).",`filedate` = ".time().", `thumb` = ".$thumb.", `preview` = ".$preview.", `original` = ".$original.", `embed` = 0, `lastchange` = ".time();
-						if ($e_res['num']>0):
-							// use update statement
-							$sql.= " WHERE `mid` = ".intval($e_res['set'][0]['mid']);
-						endif;
-						doSQL($sql);
-						return array('success' => true);
-					else:  // ftp move of file wasn't possible
-						return array('success' => false);
-					endif;
-				endif;
-				ftp_close($ftp);
-			else:
-			*/
-				// resizing isn't possible
-				// files could be handled in any other way
-				
-				if ($ftp):
-					if (@ftp_put($ftp, $uploadFtpDirectory."/".$filename.'.'.$ext, $uploadTmpDirectory."/".$filename.'.'.$ext, FTP_BINARY)):
-						$filedata = array('size' => '', 'filesize' => $size, 'lastchange' => time(), 'md5key' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext))));
-						// check if file was just overwritten
-						$e_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".escapeSQL(trim($_REQUEST['mediafolder']))."' AND `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."' AND `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."' AND `filename` = '".escapeSQL(trim($filename.'.'.$ext))."' AND `filetype` = '".trim($ext)."'";
-						$e_res = doSQL($e_sql);
-						if ($e_res['num']>0):
-							// use update statement
-							$sql = "UPDATE `wspmedia` ";
-						else:
-							// use insert statement
-							$sql = "INSERT INTO `wspmedia` ";
-						endif;
-						$sql.= " SET `mediatype` = '".escapeSQL($_REQUEST['mediafolder'])."', `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."', `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."', `filename` = '".escapeSQL(trim($filename.'.'.$ext))."', `filetype` = '".trim($ext)."', `filekey` = '".md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext)))."', `filedata` = '".serialize($filedata)."', `filesize` = ".intval($size).",`filedate` = ".time().", `thumb` = 0, `preview` = 0, `original` = 0, `embed` = 0, `lastchange` = ".time();
-						if ($e_res['num']>0):
-							// use update statement
-							$sql.= " WHERE `mid` = ".intval($e_res['set'][0]['mid']);
-						endif;
-						doSQL($sql);
-						return array('success'=> true);
-					else:
-						return array('success'=> false, 'params' => serialize($_REQUEST));
-					endif;
-					ftp_close($ftp);
-				else:
-					$targetCopy = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$uploadTargetFolder."/".$filename.".".$ext));
-					$directCopy = $this->file->save($targetCopy);
-					if ($directCopy) {
-						$filedata = array('size' => '', 'filesize' => $size, 'lastchange' => time(), 'md5key' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext))));
-						// check if file was just overwritten
-						$e_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".escapeSQL(trim($_REQUEST['mediafolder']))."' AND `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."' AND `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."' AND `filename` = '".escapeSQL(trim($filename.'.'.$ext))."' AND `filetype` = '".trim($ext)."'";
-						$e_res = doSQL($e_sql);
-						if ($e_res['num']>0):
-							// use update statement
-							$sql = "UPDATE `wspmedia` ";
-						else:
-							// use insert statement
-							$sql = "INSERT INTO `wspmedia` ";
-						endif;
-						$sql.= " SET `mediatype` = '".escapeSQL($_REQUEST['mediafolder'])."', `mediafolder` = '".escapeSQL(trim($_REQUEST['targetfolder']))."', `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))))."', `filename` = '".escapeSQL(trim($filename.'.'.$ext))."', `filetype` = '".trim($ext)."', `filekey` = '".md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext)))."', `filedata` = '".serialize($filedata)."', `filesize` = ".intval($size).",`filedate` = ".time().", `thumb` = 0, `preview` = 0, `original` = 0, `embed` = 0, `lastchange` = ".time();
-						if ($e_res['num']>0):
-							// use update statement
-							$sql.= " WHERE `mid` = ".intval($e_res['set'][0]['mid']);
-						endif;
-						doSQL($sql);
-						return array('success' => true);
-					} else {
-						return array('success' => false, 'params' => serialize($_REQUEST), 'state' => 'no ftp, no direct copy');
+				if ($prvData) {
+					if (copy($prvData['src'], $uploadPrevPath)) {
+						error_log('prvFile copied to ' . $uploadPrevPath);
 					}
-				endif;
-				return array('success' => false, 'params' => serialize($_REQUEST));
-			/* endif; */
-		else:
+				}
+				if ($tmbData) {
+					if (copy($tmbData['src'], $uploadTmbPath)) {
+						error_log('tmbFile copied to ' . $uploadTmbPath);
+					}
+				}
+				if ($orgData) {
+					if (copy($orgData['src'], $uploadOrgPath)) {
+						error_log('orgFile copied to ' . $uploadOrgPath);
+					}
+				}
+				// finally copy the (processed) upload to folder
+				if (copy($fileData['src'], $uploadPath)) {
+					error_log('File copied to ' . $uploadPath);
+					$createdfile[] = [
+						'mediatype' => trim($_REQUEST['mediafolder']),
+						'mediafolder' => trim($_REQUEST['targetfolder']),
+						'filefolder' => trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$_REQUEST['mediafolder']."/","/",trim($_REQUEST['targetfolder']))))),
+						'filename' => trim($filename.'.'.$ext),
+						'filetype' => trim($ext),
+						'filekey' => md5(str_replace("//", "/", trim($_REQUEST['targetfolder'])."/".trim($filename.'.'.$ext))),
+						'filedata' => serialize([]),
+						'filesize' => null,
+						'filedate' => time(),
+						'thumb' => !empty($tmbData),
+						'preview' => !empty($prvData), 
+						'original' => !empty($orgData),
+						'embed' => 0,
+						'lastchange' => time(), 
+					];
+				}
+			}
+			
+			if (count($createdfile)>0) {
+				// do the db inserts
+				foreach ($createdfile as $file) {
+					// check if file was just overwritten
+					$e_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".escapeSQL($file['mediatype'])."' AND `mediafolder` = '".escapeSQL($file['mediafolder'])."' AND `filefolder` = '".escapeSQL($file['filefolder'])."' AND `filename` = '".escapeSQL($file['filename'])."' AND `filetype` = '".escapeSQL($file['filetype'])."'";
+					$e_res = doSQL($e_sql);
+					// updating ?
+					$sql = ($e_res['num']>0) ? "UPDATE `wspmedia` " : "INSERT INTO `wspmedia` ";
+					// statement
+					$sql.= " SET `mediatype` = '".escapeSQL($file['mediatype'])."', `mediafolder` = '".escapeSQL($file['mediafolder'])."', `filefolder` = '".escapeSQL($file['filefolder'])."', `filename` = '".escapeSQL($file['filename'])."', `filetype` = '".escapeSQL($file['filetype'])."', `filekey` = '".escapeSQL($file['filekey'])."', `filedata` = '".escapeSQL(serialize($file['filedata']))."', `filesize` = ".intval($file['filesize']).", `filedate` = " . time() . ", `thumb` = " . intval($file['thumb']) . ", `preview` = " . intval($file['preview']) . ", `original` = " . intval($file['original']) . ", `embed` = " . intval($file['embed']) . ", `lastchange` = ".time();
+					// updating ?
+					$sql.= ($e_res['num']>0) ? " WHERE `mid` = ".intval($e_res['set'][0]['mid']) : '';
+					doSQL($sql);
+				}
+				return ['success' => true];
+			} else {
+				// no file could be copied
+				return $return ?? ['success' => false];
+			}
+		} else {
 			return array('success' => false, 'params' => serialize($_REQUEST), 'state' => 'tmp saving did not work');
-		endif;
-	    }
+		}
+
 	}
+}
 
 // list of valid extensions, ex. array("jpeg", "xml", "bmp")
 $allowedExtensions = explode(";", $_SESSION['wspvars']['upload']['extensions']);
