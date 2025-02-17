@@ -3081,26 +3081,7 @@ endif;
  */
 if (!(function_exists('imgResize'))):
 	function imgResize($src, $dest, $width, $height) {
-		$imgsize = getimagesize($src);
-	
-		if (($imgsize[0] == 0) || ($imgsize[1] == 0)) {
-			$tnwidth  = $width;
-			$tnheight = $height;
-		}
-		else if (($imgsize[0]/$imgsize[1]) > ($width/$height)) {
-			$tnwidth  = $width;
-			$tnheight = round($width*$imgsize[1]/$imgsize[0]);
-		}
-		else if (($imgsize[0]/$imgsize[1]) < ($width/$height)) {
-			$tnwidth  = round($height*$imgsize[0]/$imgsize[1]);
-			$tnheight = $height;
-		}
-		else {
-			$tnwidth  = $width;
-			$tnheight = $height;
-		}	// if
-	
-		exec("/usr/bin/convert $src -resize ".$tnwidth."x$tnheight $dest");
+		addWSPMsg('errormsg', 'usage of function imgResize is deprecated');
 	}	// imgResize()
 endif;
 
@@ -4193,82 +4174,101 @@ endif;
 // new thumbnail function with gdlib
 //
 if (!(function_exists('resizeGDimage'))) {
-	function resizeGDimage($orig, $dest, $factor=0, $width=0, $height=0, $format=1) {
-        $imgsize = @getimagesize($orig);
+	function resizeGDimage(string $orig, string $dest, $factor = null, ?int $width = null, ?int $height = null, $format = true) {
+		
+		$imgData = @getimagesize($orig);
+		if (empty($imgData)) return false;
+
+		error_log(var_export('imgData', true));
+		error_log(var_export($imgData, true));
+		error_log(var_export(($orig ?? 'no orig'), true));
+		error_log(var_export(($dest ?? 'no dest'), true));
+		error_log(var_export(($factor ?? 0), true));
+		
         /*
-        $imgsize[0] = orig width
-        $imgsize[1] = orig height
-        $imgsize['mime'] = type
+        $imgData[0] = orig width
+        $imgData[1] = orig height
+        $imgData['mime'] = type
         */
         $error = false;
-        if ($imgsize['mime']=="image/jpeg") {
+        if ($imgData['mime']=="image/jpeg") {
             $img = imagecreatefromjpeg($orig);
-        } else if ($imgsize['mime']=="image/gif") {
+        } else if ($imgData['mime']=="image/gif") {
             $img = @imagecreatefromgif($orig);
-        } else if ($imgsize['mime']=="image/png") {
+        } else if ($imgData['mime']=="image/png") {
             $img = @imagecreatefrompng($orig);
         } else {
-            $error = true;
-            $_SESSION['wspvars']['errormsg'].= "<p>Beim &uuml;bergebenen Bildmaterial handelte es sich nicht um ein unterst&uuml;tztes Dateiformat.</p>";
+			addWSPMsg('errormsg', '<p>' . returnIntLang('file format is not supported', false) . '</p>');
+			return false;
         }
-        if (intval($imgsize[0])==0 || intval($imgsize[1])==0):
-            $error = true;
-            $_SESSION['wspvars']['errormsg'].= "<p>Fehler bei der Bildkonvertierung [Bildgr&ouml;&szlig;e]</p>";
-        endif;
-        if (intval($factor)>0) {
-            // faktorierte skalierung
-            $newwidth = ceil((intval($factor)/100)*intval($imgsize[0]));
-            $newheight = ceil((intval($factor)/100)*intval($imgsize[1]));
-        } else if ((intval($width)>0 || intval($height)>0) && $format==1) {
+        if (intval($imgData[0])==0 || intval($imgData[1])==0) {
+            addWSPMsg('errormsg', '<p>' . returnIntLang('could not detect filesize', false) . '</p>');
+			return false;
+		}
+		$imgData[0] = intval($imgData[0]);
+		$imgData[1] = intval($imgData[1]);
+		if (floatval($factor)>0) {
+            // factor based scaling
+            $newwidth = ceil($factor * $imgData[0]);
+            $newheight = ceil($factor * $imgData[1]);
+
+			error_log(var_export(($factor ?? 0), true));
+			error_log(var_export(($newwidth ?? 0), true));
+			error_log(var_export(($newheight ?? 0), true));
+
+
+        } else if ((intval($width)>0 || intval($height)>0) && $format == true) {
             // breite und/oder hoehe gegeben und format bleibt erhalten
             if (intval($width)>0 && intval($height)==0) {
                 // breite gegeben
                 $newwidth = intval($width);
-                $scale = $newwidth/intval($imgsize[0]);
-                $newheight = ceil($scale*intval($imgsize[1]));
+                $scale = $newwidth/$imgData[0];
+                $newheight = ceil($scale*$imgData[1]);
             } else if (intval($width)==0 && intval($height)>0) {
                 // hoehe gegeben
                 $newheight = intval($height);
-                $scale = $newheight/intval($imgsize[1]);
-                $newwidth = ceil($scale*intval($imgsize[0]));
+                $scale = $newheight/$imgData[1];
+                $newwidth = ceil($scale*$imgData[0]);
             } else if (intval($width)>0 && intval($height)>0) {
                 $newwidth = intval($width);
-                $scale = $newwidth/intval($imgsize[0]);
-                $newheight = ceil($scale*intval($imgsize[1]));
+                $scale = $newwidth/$imgData[0];
+                $newheight = ceil($scale*$imgData[1]);
                 if ($newheight>$height) {
                     $newheight = intval($height);
-                    $scale = $newheight/intval($imgsize[1]);
-                    $newwidth = ceil($scale*intval($imgsize[0]));
+                    $scale = $newheight/$imgData[1];
+                    $newwidth = ceil($scale*$imgData[0]);
                 }
             } else {
-                $error = true;
-                $_SESSION['wspvars']['errormsg'].= "<p>Fehler bei der Bildkonvertierung [Bildgr&ouml;&szlig;e]</p>";
+                addWSPMsg('errormsg', '<p>' . returnIntLang('error resizing image', false) . '</p>');
+				return false;
             }
         } else if (intval($width)>0 && intval($height)>0) {
-            // breite und hoehe gegeben
+            // given sizes
             $newwidth = intval($width);
             $newheight = intval($height);
         } else {
-            $error = true;
-            addWSPMsg('errormsg', "Fehler bei der Bildkonvertierung [Skalierung]");
+            addWSPMsg('errormsg', '<p>' . returnIntLang('error scaling image', false) . '</p>');
+			return false;
         }
-        if (!$error && $img) {
-            if ($imgsize['mime']=="image/gif") {
+        if ($img && $newwidth > 0 && $newheight > 0) {
+            if ($imgData['mime']=="image/gif") {
                 $new = imagecreate($newwidth, $newheight);
-                imagecopyresized($new, $img, 0, 0, 0, 0, $newwidth, $newheight, $imgsize[0], $imgsize[1]);
+                imagecopyresized($new, $img, 0, 0, 0, 0, $newwidth, $newheight, $imgData[0], $imgData[1]);
                 imagegif($new, $dest);
-            } else if ($imgsize['mime']=="image/png") {
+            } else if ($imgData['mime']=="image/png") {
                 // creating jpg-type cause error with transparent pngs
                 $colortype = imagecolorstotal($img);
                 $new = imagecreatetruecolor($newwidth, $newheight);
-                imagecopyresized($new, $img, 0, 0, 0, 0, $newwidth, $newheight, $imgsize[0], $imgsize[1]);
+                imagecopyresized($new, $img, 0, 0, 0, 0, $newwidth, $newheight, $imgData[0], $imgData[1]);
                 imagejpeg($new, $dest, 90);
             } else {
                 $new = imagecreatetruecolor($newwidth, $newheight);
-                imagecopyresampled($new, $img, 0, 0, 0, 0, $newwidth, $newheight, $imgsize[0], $imgsize[1]);
+                imagecopyresampled($new, $img, 0, 0, 0, 0, $newwidth, $newheight, $imgData[0], $imgData[1]);
                 imagejpeg($new, $dest, 90);
             }
+			return true;
         }
+		return false;
     }
 }
 
