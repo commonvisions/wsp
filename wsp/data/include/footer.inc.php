@@ -158,7 +158,7 @@ if (isset($_SESSION['wspvars']['devstat']) && $_SESSION['wspvars']['devstat']===
 <div id="footer">
 	<p class="rightpos"><?php echo returnIntLang('worksbestwith'); ?></p>
 	<p class="leftpos"><?php echo returnIntLang('footerquicklinks'); ?></p>
-	<p><strong><a href="http://www.websitepreview.de" target="_blank">WebSitePreview</a> 6.11</strong> &copy; <a href="http://www.covi.de" target="_blank">Common Visions Media.Agentur</a><span class="cleardate"> </span>2001 - 2022 &middot; <a href="http://www.covi.de" target="_blank">www.covi.de</a></p>
+	<p><strong><a href="http://www.websitepreview.de" target="_blank">WebSitePreview</a></strong> &copy; <a href="http://www.covi.de" target="_blank">COVI</a><span class="cleardate"> </span>2001 - 2025</p>
 </div>
 <script type="text/javascript">
 <!--
