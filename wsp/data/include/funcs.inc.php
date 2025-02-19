@@ -19,6 +19,9 @@
  * 2025-02-14
  * bugfixes
  * 
+ * 2025-02-19
+ * removed "group replacement" in exchange to well formed sql statements 
+ * 
  */
 
 // OLD MYSQL functions
@@ -182,6 +185,7 @@ if (!(function_exists('doSQL'))) {
     function doSQL($statement) {
 		$set = array('res'=>false,'aff'=>0,'num'=>0,'set'=>array(),'sql'=>$statement,'inf'=>'','err'=>'','mysqli'=>false);
         if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {			
+			/*
 			if (mysqli_get_server_info($_SESSION['wspvars']['db'])>=8) {
 				// grep the group by part 
 				$grp = '/(GROUP BY \`[a-zA-Z_\-0-9]*\`)/i';
@@ -205,6 +209,7 @@ if (!(function_exists('doSQL'))) {
 					}
 				}
 			}
+			*/
 			try {
 				$res = $_SESSION['wspvars']['db']->query($statement);
 			}
