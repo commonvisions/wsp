@@ -3,26 +3,19 @@
  * Verwaltung von Bildern
  * @author stefan@covi.de
  * @since 3.1
- * @version 6.11
+ * @version 7.0
+ * @lastchange 2019-07-31
  */
 
-/* start session ----------------------------- */
+// start session -----------------------------
 session_start();
-/* base includes ----------------------------- */
+// base includes -----------------------------
 require ("./data/include/usestat.inc.php");
 require ("./data/include/globalvars.inc.php");
-/* first includes ---------------------------- */
-require ("./data/include/wsplang.inc.php");
-require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
-require ("./data/include/funcs.inc.php");
-require ("./data/include/filesystemfuncs.inc.php");
-/* checkParamVar ----------------------------- */
-$op = checkParamVar('op', '');
-$extern = checkParamVar('extern', 0);
-/* define actual system position ------------- */
+// define actual system position -------------
 $_SESSION['wspvars']['mgroup'] = 6;
 $_SESSION['wspvars']['lockstat'] = 'images';
+$_SESSION['wspvars']['pagedesc'] = array('far fa-copy',returnIntLang('menu files'),returnIntLang('menu files images'));
 $_SESSION['wspvars']['fposition'] = $_SERVER['PHP_SELF'];
 $_SESSION['wspvars']['fpos'] = $_SERVER['PHP_SELF'];
 $_SESSION['wspvars']['fposcheck'] = false;
@@ -32,16 +25,13 @@ require ("./data/include/errorhandler.inc.php");
 require ("./data/include/siteinfo.inc.php");
 /* define page specific vars ----------------- */
 $mediafolder = "images";
-$mediadesc = "Bilder";
+$mediadesc = returnIntLang('str images');
 // define upload based vars
-$_SESSION['wspvars']['upload']['basetarget'] = 'images';
-$_SESSION['wspvars']['upload']['extensions'] = 'jpg;jpeg;png;gif;bmp;tif;tiff';
+$_SESSION['wspvars']['upload']['basetarget'] = '/media/images/';
+$_SESSION['wspvars']['upload']['hiddendir'] = array('thumbs');
+$_SESSION['wspvars']['upload']['extensions'] = 'jpg;jpeg;png;gif';
 $_SESSION['wspvars']['upload']['scale'] = true;
 $_SESSION['wspvars']['upload']['thumbs'] = true;
 $_SESSION['wspvars']['upload']['preview'] = false;
-
-// define required folders to handle that page
-$requiredstructure = array("media","/media/images","/media/images/thumbs","/media/images/originals");
-
 include ("filemanagement.php");
-// EOF ?>
+?>

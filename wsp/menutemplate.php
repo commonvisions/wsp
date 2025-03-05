@@ -2,9 +2,9 @@
 /**
  * Templates bearbeiten
  * @author stefan@covi.de
-  * @since 3.2.4
- * @version 6.11
- * @lastchange 2022-10-25
+ * @since 3.2.4
+ * @version 7.0
+ * @lastchange 2019-01-22
  */
 
 /* start session ----------------------------- */
@@ -15,7 +15,7 @@ require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
+require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 /* checkParamVar ----------------------------- */
 $op = checkParamVar('op', '');
@@ -70,16 +70,16 @@ elseif ($op=="delete"):
 	$menu_res = doSQL($menu_sql);
 	if ($menu_res['num']>0) {
         foreach ($menu_res['set'] AS $mresk => $mresv) {
-			$template_sql = "SELECT * FROM `templates` WHERE `template` LIKE '".('%[%MENUVAR:'.trim($mresv['guid']).'%]%')."'";
+			$template_sql = "SELECT * FROM `templates` WHERE `template` LIKE '%[%MENUVAR:".trim($mresv['guid'])."%]%'";
 			$template_res = doSQL($template_sql);
 			if ($template_res['num']>0) {
 				foreach ($template_res['set'] AS $tresk => $tresv) {
 					$removefrom[] = '"'.$tresv['name'].'"';
                 }
 				// replace menuvar with empty value
-                doSQL("UPDATE `templates` SET `template` = REPLACE( `template` , '" . ('[%MENUVAR:'.strtoupper(trim($mresv['guid'])).'%]') . "', '' ) WHERE `template` LIKE '%[%MENUVAR:".trim($mresv['guid'])."%]%'");
+                doSQL("UPDATE `templates` SET `template` = REPLACE( `template` , '[%MENUVAR:".strtoupper(trim($mresv['guid']))."%]', '' ) WHERE `template` LIKE '%[%MENUVAR:".trim($mresv['guid'])."%]%'");
                 // remove menuvar style < wsp6 
-				doSQL("UPDATE `templates` SET `template` = REPLACE( `template` , '" . ('[%MENUVAR:'.strtoupper(trim($mresv['guid'])).'%]') . "', '' ) WHERE `template` LIKE '%[%MENUVAR ".trim($mresv['guid'])."%]%'");
+				doSQL("UPDATE `templates` SET `template` = REPLACE( `template` , '[%MENUVAR ".strtoupper(trim($mresv['guid']))."%]', '' ) WHERE `template` LIKE '%[%MENUVAR ".trim($mresv['guid'])."%]%'");
 				// markup menupoints using that template
 				addWSPMsg('errormsg', "Das von Ihnen gel&ouml;schte Men&uuml; wurde aus ".(($template_res['num']==1)?"dem Template ".$removefrom[0]:"den Templates ".implode(", ", $removefrom))."entfernt.");
             }
@@ -155,7 +155,7 @@ include ("data/include/wspmenu.inc.php");
 	<?php 
 	endif;
 	
-	$editmenu_sql = "SELECT * FROM `templates_menu` WHERE `id` = ".(isset($_POST['id']) ? intval($_POST['id']) : 0);
+	$editmenu_sql = "SELECT * FROM `templates_menu` WHERE `id` = ".intval($_POST['id']);
 	$editmenu_res = doSQL($editmenu_sql);
 	if ($editmenu_res['num']>0):
 		$title = prepareTextField(stripslashes(trim($editmenu_res['set'][0]['title'])));
@@ -171,7 +171,7 @@ include ("data/include/wspmenu.inc.php");
 			$jobkind = "save";
 		endif;
 	else:
-		$title = "Menütitel";
+		$title = "Men&uuml;titel";
 		$desc = "Kurze Beschreibung";
 		$slevel = 1;
 		$code = "";

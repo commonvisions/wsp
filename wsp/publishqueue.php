@@ -1,12 +1,10 @@
 <?php
 /**
+ * @description website publisher queue
  * @author stefan@covi.de
  * @since 3.1
- * @version GIT
- * 
- * 2025-02-13
- * fixed sql GROUP BY bug
- * 
+ * @version 7.0
+ * @lastchange 2020-03-11
  */
 
 /* start session ----------------------------- */
@@ -14,18 +12,13 @@ session_start();
 /* base includes ----------------------------- */
 require ("./data/include/usestat.inc.php");
 require ("./data/include/globalvars.inc.php");
-require ("./data/include/wsplang.inc.php");
-require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
-require ("./data/include/funcs.inc.php");
-/* checkParamVar ----------------------------- */
-
 /* define actual system position ------------- */
 $_SESSION['wspvars']['lockstat'] = 'publisherqueue';
 $_SESSION['wspvars']['mgroup'] = 7;
 $_SESSION['wspvars']['fpos'] = $_SERVER['PHP_SELF'];
 $_SESSION['wspvars']['fposcheck'] = false;
 $_SESSION['wspvars']['preventleave'] = false;
+$_SESSION['wspvars']['pagedesc'] = array('fa fa-globe',returnIntLang('menu changed publisher'),returnIntLang('menu changed queue'));
 /* second includes --------------------------- */
 require ("./data/include/checkuser.inc.php");
 require ("./data/include/errorhandler.inc.php");
@@ -37,119 +30,166 @@ require ("./data/include/siteinfo.inc.php");
 // temporaere loesung, bis ueberall das neue
 // rechtesystem umgesetzt werden kann
 
-if (isset($_POST) && array_key_exists('jobid', $_POST) && intval($_POST['jobid'])>0):
-	$cpsql = "DELETE FROM `wspqueue` WHERE `id` = ".intval($_POST['jobid']);
-	doSQL($cpsql);
+if (isset($_POST['killjobid']) && intval($_POST['killjobid'])>0):
+	doSQL("DELETE FROM `wspqueue` WHERE `id` = ".intval($_POST['killjobid']));
 endif;
+
+$_SESSION['publishrun'] = 0;
 
 // head der datei
 include ("./data/include/header.inc.php");
-include ("./data/include/wspmenu.inc.php");
-
+include ("./data/include/navbar.inc.php");
+include ("./data/include/sidebar.inc.php");
 ?>
-<div id="contentholder">
-	<pre id="debugcontent"></pre>
-	<fieldset><h1><?php echo returnIntLang('queue headline'); ?></h1></fieldset>
-	<?php
-	
-	$_SESSION['publishrun'] = 0;
-	
-	$queue_sql = "SELECT MIN(`id`) AS `id`, MAX(`priority`) AS `priority`, MIN(`uid`) AS `uid`, `param`, MIN(`done`) AS `done`, MIN(`action`) AS `action`, MIN(`set`) AS `set`
-		FROM `wspqueue` 
-		WHERE `done` = 0 
-		GROUP BY `param`
-		ORDER BY `priority` DESC, `action` ASC, `set` ASC, `id` ASC";
-	$queue_res = doSQL($queue_sql);
+<div class="main">
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="content-heading clearfix">
+            <div class="heading-left">
+                <h1 class="page-title"><?php echo returnIntLang('queue headline'); ?></h1>
+                <p class="page-subtitle"><?php echo returnIntLang('queue info'); ?></p>
+            </div>
+            <ul class="breadcrumb">
+                <li><i class="<?php echo $_SESSION['wspvars']['pagedesc'][0]; ?>"></i> <?php echo $_SESSION['wspvars']['pagedesc'][1]; ?></li>
+                <li><?php echo $_SESSION['wspvars']['pagedesc'][2]; ?></li>
+            </ul>
+        </div>
+        <div class="container-fluid">
+            <?php showWSPMsg(1); ?>
+            <?php
 
-	if ($queue_res['num']>0):
-		?>
-		<fieldset>
-			<legend><?php echo returnIntLang('publisher queue', true); ?></legend>
-			
-			<table class="tablelist">
-				<tr>
-					<td class="tablecell head one info"><?php echo returnIntLang('queue setuptime'); ?></td>
-					<td class="tablecell head two info"><?php echo returnIntLang('queue user'); ?></td>
-					<td class="tablecell head one info"><?php echo returnIntLang('queue action'); ?></td>
-					<td class="tablecell head two info"><?php echo returnIntLang('queue param'); ?></td>
-					<td class="tablecell head one info"><?php echo returnIntLang('queue timeout'); ?></td>
-					<td class="tablecell head one info"><?php echo returnIntLang('str action'); ?></td>
-				</tr>
-				<?php foreach ($queue_res['set'] AS $qresk => $qresv): ?>
-					<tr>
-						<td class="tablecell one"><?php echo date('d.m.Y H:i', intval($qresv['set'])); ?> <?php if (intval($qresv['priority'])>1): echo "<span class='bubblemessage red'>".intval($qresv['priority'])."</span>"; endif; ?></td>
-						<td class="tablecell two info"><?php 
-						
-						$usrinfo_sql = "SELECT `realname` FROM `restrictions` WHERE `rid` = ".intval($qresv['uid']);
-						$usrinfo_res = doResultSQL($usrinfo_sql);
-						if (trim($usrinfo_res)!=''): echo trim($usrinfo_res); else: echo returnIntLang('queue user system', false); endif;
-						
-						?></td>
-						
-						<td class="tablecell one"><?php echo returnIntLang('queue action '.$qresv['action']); ?></td>
-						<td class="tablecell two"><?php 
-						
-						if (intval($qresv['param'])==$qresv['param']) {
-							$mnuinfo_sql = "SELECT `description`, `langdescription` FROM `menu` WHERE `mid` = ".intval($qresv['param']);
-							$mnuinfo_res = doSQL($mnuinfo_sql);
-							if ($mnuinfo_res['num']>0) {
-								if (trim($mnuinfo_res['set'][0]['langdescription'] ?? '')=='') {
-									if (strpos($mnuinfo_res['set'][0]['description'], 'tofile-')==2) {
-										echo returnIntLang('queue autofile');
-									} else {
-										echo trim($mnuinfo_res['set'][0]['description']);
-									}
-								}
-								else {
-									$langdesc = unserializeBroken($mnuinfo_res['set'][0]['langdescription']);
-									if (is_array($langdesc) && count($langdesc)>0) {
-										if (isset($langdesc[trim($qresv['lang'] ?? '0')])) {
-											echo trim($langdesc[trim($qresv['lang'])]);
-										}
-										else {
-											echo trim($mnuinfo_res['set'][0]['description'])." [".trim($qresv['lang'] ?? '-')."]";
-										}
-									}
-									else {
-										if (strpos($mnuinfo_res['set'][0]['description'], 'tofile-')==2) {
-											echo returnIntLang('queue autofile');
-										} else {
-											echo trim($mnuinfo_res['set'][0]['description']);
-										}
-									}
-								}
-							}
-							else {
-								echo trim($qresv['param']); 
-								if(trim($qresv['lang'])!='') { 
-									echo " ; ".trim($qresv['lang']); 
-								}
-							}
-                        }
-                        else {
-							echo $qresv['param']; ?> <?php if(trim($qresv['lang'])!=''): echo " ; ".trim($qresv['lang']); endif; 
-                        }
-							
-						?></td>
-						<td class="tablecell one info"><?php if (intval($qresv['timeout'] ?? (time()+60))>0): echo date('d.m.Y H:i', intval($qresv['timeout'] ?? (time()+60))); else: echo returnIntLang('queue timeout running'); endif; ?></td>
-						<td class="tablecell"><a onclick="document.getElementById('jobid').value = <?php echo intval($qresv['id']); ?>; document.getElementById('killjob').submit();"><span class="bubblemessage red"><?php echo returnIntLang('queue kill job', false); ?></span></a></td>
-					</tr>
-				<?php endforeach; ?>
-			</table>
-			<form name="killjob" id="killjob" method="post"><input type="hidden" name="jobid" id="jobid" value="" /></form>
-		</fieldset>
-	<?php else: 
-		echo '<fieldset id="showqueue"><p>'.returnIntLang('queue no jobs in queue').'</p></fieldset>';
-	endif; 
-	
-	$subqueue_sql = "SELECT MAX(`id`) AS `id`, `param` FROM `wspqueue` WHERE `done` = -1 GROUP BY `param`";
-	$subqueue_res = doSQL($subqueue_sql);
-	
-	if ($subqueue_res['num']>0) {
-		echo '<fieldset id="showqueue"><p>'.returnIntLang('queue jobs in subqueue').'</p></fieldset>';
-	}
-	
-	?>
+            $queue_sql = "SELECT * FROM `wspqueue` WHERE `done` = 0 ORDER BY `priority` DESC, `timeout` ASC, `action` ASC, `set` ASC, `param` ASC, `id` ASC";
+            $queue_res = doSQL($queue_sql);
+            if ($queue_res['num']>0) {
+            ?>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><?php echo returnIntLang('publisher queue'); ?></h3>
+                            <p class="panel-subtitle"><?php echo (($queue_res['num']==1)?(returnIntLang('publisher job in queue1')." 1 ".returnIntLang('publisher job in queue2')):(returnIntLang('publisher jobs in queue1')." ".(intval($queue_res['num']))." ".returnIntLang('publisher jobs in queue2'))); ?> <a href="./publishlog.php">QueueLog</a></p>
+                        </div>
+                        <div class="panel-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th><?php echo returnIntLang('queue setuptime'); ?></th>
+                                        <th><?php echo returnIntLang('queue user'); ?></th>
+                                        <th><?php echo returnIntLang('queue action'); ?></th>
+                                        <th><?php echo returnIntLang('queue param'); ?></th>
+                                        <th><?php echo returnIntLang('queue timeout'); ?></th>
+                                        <th><?php echo returnIntLang('str action'); ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($queue_res['set'] AS $qrk => $qrv) { ?>
+                                    <tr id="queuerow-<?php echo $qrv['id']; ?>">
+                                        <td><?php echo date(returnIntLang('format date time'), intval($qrv['set'])); ?></td>
+                                        <td><?php 
+
+                                        $usrinfo = doResultSQL("SELECT `realname` FROM `restrictions` WHERE `rid` = ".intval($qrv['uid']));
+                                        if ($usrinfo!==false && trim($usrinfo)!='') { echo trim($usrinfo); } else { echo returnIntLang('queue user system', false); }
+
+                                        ?></td>
+                                        <td nowrap="nowrap"><?php echo returnIntLang('queue action '.$qrv['action']); if($qrv['lang']!='') {
+                                            echo " » ".$qrv['lang'];
+                                        } ?></td>
+                                        <td><?php 
+
+                                        if (intval($qrv['param'])==$qrv['param']) {
+                                            // check for css publishing
+                                            if ($qrv['action']=='publishcss') {
+                                                $queue_sql = "SELECT * FROM `stylesheets` WHERE `id` = ".intval($qrv['param']);
+                                                $queue_res = doSQL($queue_sql);
+                                                if ($queue_res['num']>0) {
+                                                    if ($queue_res['set'][0]['cfolder']==$queue_res['set'][0]['lastchange']) {
+                                                        echo $queue_res['set'][0]['file'].".css";
+                                                    } else {
+                                                        echo returnIntLang('queue str folder1', false).$queue_res['set'][0]['cfolder'].returnIntLang('queue str folder2', false);
+                                                    }
+                                                } else {
+                                                    echo returnIntLang('str undefined', false);
+                                                }
+                                            }
+                                            // check for js publishing
+                                            else if ($qrv['action']=='publishjs') {
+                                            
+                                                $queue_sql = "SELECT * FROM `javascript` WHERE `id` = ".intval($qrv['param']);
+                                                $queue_res = doSQL($queue_sql);
+                                                if ($queue_res['num']>0) {
+                                                    if ($queue_res['set'][0]['cfolder']==$queue_res['set'][0]['lastchange']) {
+                                                        echo $queue_res['set'][0]['file'].".js";
+                                                    } else {
+                                                        echo returnIntLang('queue str folder1', false).$queue_res['set'][0]['cfolder'].returnIntLang('queue str folder2', false);
+                                                    }
+                                                } else {
+                                                    echo returnIntLang('str undefined', false);
+                                                }
+                                            
+                                            }
+                                            // check for rss publishing
+                                            // disabled in wsp 7.0 » will be back maybe
+                                            else if ($qrv['action']=='publishrss') {
+                                                echo "<em>function deprecated</em>";
+                                            } 
+                                            // check for site publishing
+                                            else {
+                                                $mnuinfo_sql = "SELECT `description`, `langdescription` FROM `menu` WHERE `mid` = ".intval($qrv['param']);
+                                                $mnuinfo_res = doSQL($mnuinfo_sql);
+                                                if ($mnuinfo_res['num']>0) {
+                                                    if (trim($mnuinfo_res['set'][0]['langdescription'])=='') {
+                                                        echo trim($mnuinfo_res['set'][0]['description']);
+                                                    }
+                                                    else {
+                                                        $langdesc = unserializeBroken(trim($mnuinfo_res['set'][0]['langdescription']));
+                                                        if (is_array($langdesc) && count($langdesc)>0) {
+                                                            if (isset($langdesc[$qrv['lang']])) {
+                                                                echo trim($langdesc[$qrv['lang']]);
+                                                            }
+                                                            else {
+                                                                echo trim($mnuinfo_res['set'][0]['description'])." [".$qrv['lang']."]";
+                                                            }
+                                                        }
+                                                        else {
+                                                            echo trim($mnuinfo_res['set'][0]['description']);
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            echo $qrv['param']; 
+                                        }
+                                                                                  
+                                        ?></td>
+                                        <td><?php if (intval($qrv['timeout'])>86400) { echo date(returnIntLang('format date time'), intval($qrv['timeout'])); } else { echo returnIntLang('queue timeout running'); } ?></td>
+                                        <td nowrap="nowrap">
+                                            <a onclick="$('#priojobid').val(<?php echo intval($qrv['id']); ?>); $('#priojob').submit();"><i class="fab fa-btn fa-hotjar"></i></a> 
+                                            <a onclick="$('#killjobid').val(<?php echo intval($qrv['id']); ?>); $('#killjob').submit();"><i class="far fa-btn fa-trash btn-danger"></i></a>
+                                        </td>
+                                    </tr>
+
+                                    <?php } ?>
+                                </tbody>
+                            </table>
+                            <form name="killjob" id="killjob" method="post"><input type="hidden" name="killjobid" id="killjobid" value="" /></form>
+                            <form action="./xajax/iframe.publisherreact.php" id="priojob" method="post" target="publisherpost"><input type="hidden" name="priojobid" id="priojobid" value="" /></form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php } else { ?>
+            <div class="row">
+                <div class="col-md-12">
+                    <h3 style="text-align: center; font-weight: 300"><?php echo returnIntLang('queue no jobs in queue'); ?></h3>
+                    <h1 style="text-align: center; font-size: 10vw;">
+                        <i class="fas fa-check-square"></i>
+                    </h1>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
 	</div>
-<?php include ("./data/include/footer.inc.php"); ?>
-<!-- EOF -->
+</div>
+<script> cT = 5000; </script>
+<?php require ("./data/include/footer.inc.php"); ?>

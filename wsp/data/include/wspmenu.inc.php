@@ -2,16 +2,10 @@
 /**
  * aufbau des menues
  * @author stefan@covi.de
+ * @copyright (c) 2021, Common Visions Media.Agentur (COVI)
  * @since 3.1
- * @version GIT
- * 
- * 2023-01-10
- * 6.11.1
- * Fixed error with "DELETE *"
- * 
- * 2024-01-08
- * Fixed error with GROUP BY statements
- * 
+ * @version 7.0
+ * @lastchange 2021-01-20
  */
 
 if (!function_exists('buildWSPMenu')):
@@ -116,8 +110,7 @@ function mobileJump(jumpValue) {
 					<?php endif; ?>
 					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/siteprefs.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/siteprefs.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu siteprefs generell', false); ?></option>
 					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/semanagement.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/semanagement.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu siteprefs seo', false); ?></option>
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/analytics.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/analytics.php'): echo " selected=\"selected\" "; endif; echo ">".returnIntLang('menu siteprefs analytics', false); ?></option>
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/privacy.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/privacy.php'): echo " selected=\"selected\" "; endif; echo ">".returnIntLang('menu siteprefs privacy', false); ?></option> 
+					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/analytics.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/analytics.php'): echo " selected=\"selected\" "; endif; echo ">".returnIntLang('menu siteprefs analytics', false); ?></option> 
 				</optgroup>
 				<?php endif; ?>
 				<?php if ($standardtemp>0): /* allow structure/contents only with defined standard template */ ?>
@@ -153,7 +146,7 @@ function mobileJump(jumpValue) {
 				
 				<?php if ($standardtemp>0): /* allow preview/publisher only with defined standard template */
 					
-					$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
+					$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`";
 					$queue_res = doSQL($queue_sql);
 					$queue_num = $queue_res['num'];
 					
@@ -400,11 +393,11 @@ function mobileJump(jumpValue) {
 				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/semanagement.php"><?php echo returnIntLang('menu siteprefs seo'); ?></a>
 			</li>
 			<li class="level1" id="m_<?php echo $mp; ?>_4">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/analytics.php"><?php echo returnIntLang('menu siteprefs google'); ?></a>
+				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/googletools.php"><?php echo returnIntLang('menu siteprefs google'); ?></a>
 			</li>
-			<li class="level1" id="m_<?php echo $mp; ?>_4">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/privacy.php"><?php echo returnIntLang('menu siteprefs privacy'); ?></a>
-			</li>
+			<!-- <div class="level1" id="m_<?php echo $mp; ?>_1">
+				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/sitelang.php" title="Spracheinstellungen" onmouseover="status='Spracheinstellungen'; return true;" onmouseout="status=''; return true;">Spracheinstellungen</a>
+			</div> -->
 		</ul>
 		</li>
 		<?php endif; ?>
@@ -414,11 +407,11 @@ function mobileJump(jumpValue) {
 			<?php if ($fsaccess) { ?><li class="level1" id="m_<?php echo $mp; ?>_0">
 				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/screenmanagement.php"><?php echo returnIntLang('menu design media'); ?></a>
 			</li>
-			<?php if ($isextended==1) { ?>
-				<li class="level1" id="m_<?php echo $mp; ?>_8">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/fontmanagement.php"><?php echo returnIntLang('menu design fonts'); ?></a>
-				</li>
 			<?php } ?>
+			<?php if ($fsaccess && $isextended==1) { ?>
+				<!-- <li class="level1" id="m_<?php echo $mp; ?>_8">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/fontmanagement.php"><?php echo returnIntLang('menu design fonts'); ?></a>
+				</li> -->
 			<?php } ?>
 			<li class="level1" id="m_<?php echo $mp; ?>_1">
 				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/designedit.php"><?php echo returnIntLang('menu design css'); ?></a>
@@ -447,17 +440,17 @@ function mobileJump(jumpValue) {
 			?>
 			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_6" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu files'); ?></a>
 			<ul id="m_6s" class="basic level1">
-				<?php if (($_SESSION['wspvars']['rights']['imagesfolder'] ?? 0)!="0") { ?>
+				<?php if ($_SESSION['wspvars']['rights']['imagesfolder']!="0") { ?>
 				<li class="level1" id="m_6_1">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/imagemanagement.php"><?php echo returnIntLang('menu files images'); ?></a>
 				</li>
 				<?php } ?>
-				<?php if (($_SESSION['wspvars']['rights']['downloadfolder'] ?? 0)!="0") { ?>
+				<?php if ($_SESSION['wspvars']['rights']['downloadfolder']!="0") { ?>
 				<li class="level1" id="m_6_2">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/documentmanagement.php"><?php echo returnIntLang('menu files docs'); ?></a>
 				</li>
 				<?php } ?>
-				<?php if (($_SESSION['wspvars']['rights']['videofolder'] ?? 0)!="0") { ?>
+				<?php if ($_SESSION['wspvars']['rights']['videofolder']!="0") { ?>
 				<li class="level1" id="m_6_3">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/videomanagement.php"><?php echo returnIntLang('menu files video'); ?></a>
 				</li>
@@ -509,7 +502,7 @@ function mobileJump(jumpValue) {
 		if ((array_key_exists('wspvars', $_SESSION) && array_key_exists('usertype', $_SESSION['wspvars']) && $_SESSION['wspvars']['usertype']==1) || (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('publisher', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['publisher']!=0 && $_SESSION['wspvars']['rights']['publisher']<100)):
 			if ($standardtemp>0): // allow preview/publisher only with defined standard template
 				
-				$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
+				$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`";
 				$queue_res = doSQL($queue_sql);
 				$queue_num = $queue_res['num'];
 				
@@ -517,12 +510,12 @@ function mobileJump(jumpValue) {
 				// show publisher and queue link as submenupoints
 				if ($fsaccess) {
 				?>
-				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed publisher'); ?> <?php if($queue_num>0): echo "&nbsp;<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; endif; ?></a> <ul class="basic level1">
+				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed publisher'); ?></a><?php if($queue_num>0): echo "<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; endif; ?> <ul class="basic level1">
 					<li class="level1" id="m_<?php echo $mp; ?>_0">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed'); ?></a>
 					</li>
 					<li class="level1" id="m_<?php echo $mp; ?>_1">
-						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publishqueue.php"><?php echo returnIntLang('menu changed queue'); ?><?php if($queue_num>0): echo "&nbsp;&nbsp;&nbsp;<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; endif; ?></a>
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publishqueue.php"><?php echo returnIntLang('menu changed queue'); ?></a><?php if($queue_num>0): echo "<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;&nbsp;"; endif; ?>
 					</li>
 				</ul></li>
 				<?php 
@@ -716,7 +709,7 @@ function mobileJump(jumpValue) {
 </div>
 <?php
 
-$msgcleanup = "DELETE FROM `wspmsg` WHERE `read` = 1";
+$msgcleanup = "DELETE * FROM `wspmsg` WHERE `read` = 1";
 doSQL($msgcleanup);
 
 ?>

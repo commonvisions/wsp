@@ -1,12 +1,10 @@
 <?php
 /**
+ * manage sitestructure
  * @author stefan@covi.de
  * @since 3.1
- * @version GIT
- * 
- * 2023-01-09
- * fixed overwriting errormsg on creation failure
- * fixed error when duplicating contents
+ * @version 7.0
+ * @lastchange 2019-01-24
  */
 
 /* start session ----------------------------- */
@@ -17,7 +15,7 @@ require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
+require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 /* checkParamVar ----------------------------- */
 $op = checkParamVar('op', '');
@@ -69,6 +67,8 @@ if (isset($_POST['op']) && $_POST['op']=='new' && isset($_POST['newmenuitem']) &
 		`filename` = '".escapeSQL($newfilename)."',
 		`templates_id` = ".intval($_POST['template']).",
 		`contentchanged` = 4,
+		`structurechanged` = ".time().",
+		`menuchangetime`= ".time().",
 		`changetime` = ".time().",
 		`isindex` = ".intval($newindex);
 	$sqlsuccess = doSQL($sql);
@@ -81,7 +81,10 @@ if (isset($_POST['op']) && $_POST['op']=='new' && isset($_POST['newmenuitem']) &
 			die();
 		endif;
 	else:
-		addWSPMsg('errormsg', "<p>".returnIntLang('structure error creating new menupoint', true)."</p>");
+		$_SESSION['wspvars']['errormsg'] = "<p>".returnIntLang('structure error creating new menupoint', true)."</p>";
+		if (defined('WSP_DEV') && WSP_DEV):
+			addWSPMsg('errormsg', var_export($sqlsuccess, true));
+		endif;
 	endif;
 elseif (isset($_POST['op']) && $_POST['op']=='new' && trim($_POST['newmenuitemlist'])!=""):
 	// create new list of menupoints
@@ -221,22 +224,17 @@ elseif (isset($_POST['op']) && $_POST['op']=='clone' && intval($_POST['mid'])>0)
 		foreach ($crv as $key => $value):
 			if($key=="valuefields"):
 				$scount = 0;
-				while(($scount<5) AND (!is_array(unserializeBroken($value)))):
+				while(($scount<5) AND (!is_array(unserialize($value)))):
 					$value = stripslashes($value);
 					$scount++;
 				endwhile;
 				$value = escapeSQL($value);
 			endif;
-			if (is_numeric($value) || empty($value)) {
-				$query.= "`".$key."` = " . intval($value) . ",";
-			} else {
-				$query.= "`".$key."` = '" . $value . "',";
-			}
+			$query.= "`".$key."` = '".$value."',";
 		endforeach;
 		$sql = "INSERT INTO `content` SET ".substr($query,0,-1);
 		$res = doSQL($sql);
         if (!($res['res'])) {
-			addWSPMsg('errormsg', var_export($sql, true));
             addWSPMsg('errormsg', 'menuedit error adding contents to duplicated menupoints');
         }
     }
@@ -453,15 +451,15 @@ function moveItem(movedMID, movedFrom, movedTo, listOrder) {
 				
 				$template_sql = "SELECT `id`, `name` FROM `templates` ORDER BY `name`";
 				$template_res = doSQL($template_sql);
-                if ($template_res['num']>0) {
-                    foreach ($template_res['set'] AS $rsk => $row) {
-                        if (isset($defaultTmpl) && $row['id']==$defaultTmpl) {
+                if ($template_res['num']>0):
+                    foreach ($template_res['set'] AS $rsk => $row):
+                        if ($row['id']==$defaultTmpl):
                             echo "<option value=\"".$row['id']."\" selected=\"selected\">".$row['name']." [".returnIntLang('structure standardtemplate', false)."]</option>\n";
-						} else {
+                        else:
                             echo "<option value=\"".$row['id']."\">".$row['name']."</option>\n";
-                        }
-                    }
-                }
+                        endif;
+                    endforeach;
+                endif;
                 
 				?>
 			</select></li>

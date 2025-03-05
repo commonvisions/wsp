@@ -1,798 +1,833 @@
 <?php
 /**
- * Verwaltung von Dateien
+ * @description (media) file management
  * @author stefan@covi.de
  * @since 3.1
- * @version GIT
- * 
- * 2023-01-05
- * Fixed error with undefined $thisimgdata
- * Fixed error with $used 
- * 2025-01-19
- * Fixed detection of php-files in media folders
- * 
+ * @version 7.0
+ * @lastchange 2021-09-15
  */
 
-if (!(function_exists("fileUsage"))):
-function fileUsage($path, $file) {
-	$used = array();
-	$replacefile = str_replace("/media/", "/", $file);
-	$replacefile = str_replace("/images/", "/", $replacefile);
-	$replacefile = str_replace("/screen/", "/", $replacefile);
-	$replacefile = str_replace("/download/", "/", $replacefile);
-	$replacefile = str_replace("/fonts/", "/", $replacefile);
-	$replacefile = str_replace("/video/", "/", $replacefile);
-	$replacefile = str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", $replacefile))));
-    $file = strtolower($replacefile);
-        
-	// check contents and menupoints
-	$sql = "SELECT c.`mid` FROM `content` AS c, `menu` AS m WHERE c.`valuefields` LIKE '%".$file."%' AND c.`trash` = 0 AND m.`trash` = 0 AND c.`mid` > 0 AND c.`mid` = m.`mid`";
-	$res = doSQL($sql);
-    if ($res['num']>0):
-        foreach ($res['set'] AS $rsk => $rsv):
-            $used[] = $rsv['mid'];
-            $usetype[] = 'content';
-        endforeach;
-    endif;
-    
-	$sql = "SELECT c.`mid` FROM `globalcontent` AS g, `content` AS c, `menu` AS m WHERE g.`id` = c.`globalcontent_id` AND (g.`valuefield` LIKE '%" . $file . "%') AND g.`trash` = 0 AND c.`trash` = 0 AND m.`trash` = 0 AND c.`mid` > 0 AND c.`mid` = m.`mid`";
-	$res = doSQL($sql);
-    if ($res['num']>0):
-        foreach ($res['set'] AS $rsk => $rsv):
-            $used[] = $rsv['mid'];
-            $usetype[] = 'global';
-        endforeach;
-    endif;
-    
-	$sql = "SELECT `mid` FROM `menu` WHERE (`imageon`='" . $file . "' OR `imageoff`='" . $file . "' OR `imageakt`='" . $file . "' OR `imageclick`='" . $file . "') AND `trash` = 0";
-	$res = doSQL($sql);
-    if ($res['num']>0):
-        foreach ($res['set'] AS $rsk => $rsv):
-            $used[] = $rsv['mid'];
-            $usetype[] = 'menu';
-        endforeach;
-    endif;
-    
-	// stylesheets pruefen
-	$sql = "SELECT `id` FROM `stylesheets` WHERE `stylesheet` LIKE '%" . $file . "%'";
-	$res = doSQL($sql);
-    if ($res['num']>0):
-        foreach ($res['set'] AS $rsk => $rsv):
-            $used[] = $rsv['id'];
-            $usetype[] = 'style';
-        endforeach;
-    endif;
+$_SESSION['wspvars']['addpagecss'] = array(
+    'jstree.css',
+    'sweetalert2.css',
+    'datatables/dataTables.bootstrap.min.css',
+    'datatables/jquery.dataTables.min.css',
+    'formstone/upload.css',
+    );
+$_SESSION['wspvars']['addpagejs'] = array(
+    'jstree.js',
+    'sweetalert2.js',
+    'jquery/jquery.dataTables.min.js',
+    'formstone/core.js',
+    'formstone/upload.js',
+    );
 
-    // affected contents prüfen
-    $moduleusage_sql = "SELECT `affectedcontent` FROM `modules` WHERE `affectedcontent` != '' && `affectedcontent` IS NOT NULL";
-    $moduleusage_res = doSQL($moduleusage_sql);
-    if ($moduleusage_res['num']>0) {
-        foreach ($moduleusage_res['set'] AS $murk => $murv) {
-            $grepdata = unserializeBroken($murv['affectedcontent']);
-            foreach ($grepdata AS $table => $fieldnames) {
-                $fileval_sql = array();
-                foreach ($fieldnames AS $fieldname) {
-                    $fileval_sql[] = " `".$fieldname."` LIKE '%".escapeSQL($file)."%' ";
-                }
-                $filemod_sql = "SELECT * FROM `".$table."` WHERE (".implode(" OR ", $fileval_sql).")";
-                $filemod_num = getNumSQL($filemod_sql);
-                if ($filemod_num>0) {
-                    $used[] = $table;
-                    $usetype[] = 'modules';
-                }
+$sitedata = getWSPProperties();
+$xtnsicons = array(
+    'txt' => 'fas fa-file-alt',
+    'pdf' => 'fas fa-file-pdf',
+    'doc' => 'fas fa-file-word',
+    'docx' => 'far fa-file-word',
+    'ppt' => 'fas fa-file-powerpoint',
+    'pptx' => 'far fa-file-powerpoint',
+    'xls' => 'fas fa-file-excel',
+    'xlsx' => 'far fa-file-excel',
+    'woff' => 'fa fa-fonticons',
+    'woff2' => 'fa fa-fonticons',
+    'eot' => 'fa fa-fonticons',
+    'ttf' => 'fa fa-fonticons',
+    'svg' => 'fas fa-file-code',
+    'json' => 'fas fa-file-alt',
+    'csv' => 'fas fa-file-csv',
+    'eps' => 'fas fa-file-pdf',
+    'ai' => 'fas fa-file-pdf',
+    'zip' => 'fas fa-file-archive',
+    'tgz' => 'fas fa-file-archive',
+    'rar' => 'fas fa-file-archive',
+    );
+
+// setting up basetarget, if defined for user
+if (isset($_SESSION['wspvars']['rights'][$mediafolder."folder"]) && trim($_SESSION['wspvars']['rights'][$mediafolder."folder"])!='' && strlen(trim($_SESSION['wspvars']['rights'][$mediafolder."folder"]))>3) {
+    $_SESSION['wspvars']['upload']['basetarget'] = cleanPath(trim("/".$_SESSION['wspvars']['rights'][$mediafolder."folder"]."/"));
+}
+
+// if basetarget doesn't exist
+if(!(is_dir(cleanPath(DOCUMENT_ROOT."/".$_SESSION['wspvars']['upload']['basetarget'])))) {
+    $return = createFolder($_SESSION['wspvars']['upload']['basetarget']);
+    if ($return===false) {
+        addWSPMsg('errormsg', returnIntLang('media could not create media base directory'));
+    }
+}
+
+if (isset($_POST['newfldr']) && trim($_POST['newfldr'])!='') {
+    $newfolder = urltext($_POST['newfldr']);
+    $fldr = cleanPath(base64_decode(trim($_REQUEST['fldr'])).DIRECTORY_SEPARATOR.$newfolder);
+    $return = createFolder($fldr);
+    if ($return) {
+        addWSPMsg('resultmsg', returnIntLang('media subfolder was created 1')." ".$fldr." ".returnIntLang('media subfolder was created 2'));
+        cleanupDirList($_SESSION['wspvars']['upload']['basetarget']);
+        $_REQUEST['fldr'] = base64_encode(cleanPath(DIRECTORY_SEPARATOR.$fldr.DIRECTORY_SEPARATOR));
+    }
+    else {
+        addWSPMsg('errormsg', returnIntLang('media subfolder could not be created 1')." ".$fldr." ".returnIntLang('media subfolder could not be created 2'));
+    }
+}
+
+if (isset($_POST['renamefldr']) && trim($_POST['renamefldr'])!='') {
+    $fldr = cleanPath(base64_decode(trim($_REQUEST['fldr'])));
+    $renamefldr = urltext($_POST['renamefldr']);
+    $renamefldrfrom = urltext($_POST['renamefldrfrom']);
+    $path = explode(DIRECTORY_SEPARATOR, $fldr);
+    foreach ($path AS $pk => $pv) {
+        if (trim($pv)==''): unset($path[$pk]); endif;
+    }
+    $path = array_values($path);
+    if ($path[(count($path)-1)]==$renamefldrfrom): $path[(count($path)-1)] = $renamefldr; endif;
+    $path = cleanPath(DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $path).DIRECTORY_SEPARATOR);
+    $return = renameFolder($fldr, $path, true);
+    if ($return) {
+        addWSPMsg('resultmsg', returnIntLang('media subfolder was renamed 1')." ".$path." ".returnIntLang('media subfolder was renamed 2'));
+        cleanupDirList($_SESSION['wspvars']['upload']['basetarget']);
+        $_REQUEST['fldr'] = base64_encode(cleanPath(DIRECTORY_SEPARATOR.$path.DIRECTORY_SEPARATOR));
+    }
+    else {
+        addWSPMsg('errormsg', returnIntLang('media subfolder could not be renamed 1')." ".$fldr." ".returnIntLang('media subfolder could not be renamed 2'));
+    }
+}
+
+if (isset($_POST['emptyfldr']) && trim($_POST['emptyfldr'])!='') {
+    $fldr = cleanPath(base64_decode(trim($_POST['emptyfldr'])));
+    $return = emptyFolder($fldr);
+    if ($return) {
+        addWSPMsg('resultmsg', returnIntLang('media subfolder was emptied 1')." <strong>".$fldr."</strong> ".returnIntLang('media subfolder was emptied 2'));
+        cleanupDirList($_SESSION['wspvars']['upload']['basetarget']);
+        $_REQUEST['fldr'] = trim($_POST['emptyfldr']);
+        $_POST['action'] = 'reloadlist';
+    }
+    else {
+        addWSPMsg('errormsg', returnIntLang('media subfolder could not be emptied 1')." <strong>".$fldr."</strong> ".returnIntLang('media subfolder could not be emptied 2'));
+        $_POST['action'] = 'reloadlist';
+    }
+}
+
+if (isset($_POST['deletefldr']) && trim($_POST['deletefldr'])!='') {
+    $fldr = cleanPath(base64_decode(trim($_POST['deletefldr'])));
+    $return = deleteFolder(cleanPath(base64_decode(trim($_POST['deletefldr']))), true);
+    if ($return) {
+        addWSPMsg('resultmsg', returnIntLang('media subfolder was deleted 1')." ".$fldr." ".returnIntLang('media subfolder was deleted 2'));
+        $path = explode(DIRECTORY_SEPARATOR, $fldr);
+        foreach ($path AS $pk => $pv) {
+            if (trim($pv)=='') { 
+                unset($path[$pk]); 
+            }
+        }
+        $path = array_values($path);
+        array_pop($path);
+        cleanupDirList($mediafolder);
+        $_REQUEST['fldr'] = base64_encode(cleanPath(DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $path).DIRECTORY_SEPARATOR));
+    }
+    else {
+        addWSPMsg('errormsg', returnIntLang('media subfolder could not be deleted 1')." ".$fldr." ".returnIntLang('media subfolder could not be deleted 2'));
+    }
+}
+
+if (isset($_POST['deletefiles']) && is_array($_POST['deletefiles']) && count($_POST['deletefiles'])>0) {
+    // remove file from filesystem
+    foreach ($_POST['deletefiles'] AS $df => $dv) {
+        $fdata = unserializeBroken(base64_decode($dv));
+        if (isset($fdata[1]) && trim($fdata[1])!='' && strpos(trim($fdata[1]), trim($_SESSION['wspvars']['activemedia'][$mediafolder]))===0) {
+            $res = deleteFile($fdata[1]);
+            if ($res) {
+                // remove information about file from database
+                doSQL("DELETE FROM `wspmedia` WHERE `filepath` = '".escapeSQL(trim($fdata[1]))."'");
             }
         }
     }
-    
-	if(is_array($used) && count($used)>0):
-		return true;
-	else:
-		return false;
-	endif;
-	}
-endif; // fileUsage
+    $_POST['action'] = 'reloadlist';
+}
 
-// check allowed dirs from user rights
-if (str_replace("media/".$mediafolder,"",$_SESSION['wspvars']['rights']['imagesfolder'])!=$_SESSION['wspvars']['rights']['imagesfolder']):
-	$allowedtopdir = str_replace("//","/",str_replace("//", "/", str_replace("media/".$mediafolder, "", $_SESSION['wspvars']['rights']['imagesfolder'])));
-else:
-	$allowedtopdir = "/";
-endif; 
-
-$path = checkParamVar('path', $allowedtopdir);
-if ($path == "/"):
-	$path = str_replace("//", "/", str_replace("//", "/", "/".$allowedtopdir));
-endif;
-
-if ($allowedtopdir!="" && $extern!=1) { if (str_replace($allowedtopdir, "", $path)==$path) { $path = str_replace("//", "/", str_replace("//", "/", "/".$allowedtopdir)); }} 
-
-// define folders, that should exist
-if (isset($requiredstructure) && is_array($requiredstructure)) {
-    // do ftp connect
-    $ftp = doFTP();
-    foreach ($requiredstructure AS $csk => $csv) {
-        if (!(is_dir(str_replace("//","/",str_replace("//","/",$_SERVER['DOCUMENT_ROOT']."/".$csv."/"))))) {
-			if ($ftp) {
-                ftp_mkdir($ftp, str_replace("//","/",$_SESSION['wspvars']['ftpbasedir'].$csv)); 
-            } else {
-				mkdir(str_replace("//","/",str_replace("//","/",$_SERVER['DOCUMENT_ROOT']."/".$csv."/")));
-			}
-        }
+if (isset($_REQUEST['fldr']) && trim($_REQUEST['fldr'])!='') {
+	$_SESSION['wspvars']['activemedia'][$mediafolder] = cleanPath(base64_decode(trim($_REQUEST['fldr'])));
+}
+else if (!(isset($_SESSION['wspvars']['activemedia'][$mediafolder]))) {
+	if (isset($_SESSION['wspvars']['rights'][$mediafolder."folder"]) && trim($_SESSION['wspvars']['rights'][$mediafolder."folder"])!='' && strlen(trim($_SESSION['wspvars']['rights'][$mediafolder."folder"]))>3) {
+        $_SESSION['wspvars']['activemedia'][$mediafolder] = cleanPath(trim($_SESSION['wspvars']['rights'][$mediafolder."folder"]));
     }
-    if ($ftp) { ftp_close($ftp); }
+    else {
+        $_SESSION['wspvars']['activemedia'][$mediafolder] = cleanPath('/media/'.$mediafolder.'/');
+    }
 }
 
-$fullmediastructure = array('/media/'.$mediafolder.'/' => array());
-$fullmediatmp = getDirList('/media/'.$mediafolder, 1);
-$fsizes = array('Byte', 'KB', 'MB', 'GB', 'TB');
-foreach ($fullmediatmp AS $fmkey => $fmvalue):
-	$fullmediastructure[trim($fmvalue."/")] = array();
-endforeach;
-unset ($fullmediatmp);
-
-if (isset($_REQUEST['op']) && $_REQUEST['op']=='readstructure'):
-	$lastcheck = time();
-	// resetting all folders	
-	$sql = "DELETE FROM `wspmedia` WHERE `mediatype` = '".escapeSQL($mediafolder)."' AND `filename` = ''";
-	$res = doSQL($sql);
-    foreach ($fullmediastructure AS $fmkey => $fmvalue):
-		$d = dir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey)));
-		// adding folders to db
-		$sql = "INSERT INTO `wspmedia` SET `mediatype` = '".escapeSQL($mediafolder)."', `mediafolder` = '".escapeSQL(trim($fmkey))."', `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$mediafolder."/","/",$fmkey)))))."', `filename` = '', `filetype` = '', `filekey` = '', `filedata` = '', `filesize` = 0, `filedate` = 0, `thumb` = 0, `preview` = 0, `original` = 0, `embed` = 0, `lastchange` = ".$lastcheck;
-		$res = doSQL($sql);
-		if (!$res['res']) { var_export($res); }
-		// adding files to db
-		while (false !== ($entry = $d->read())):
-			if ((substr($entry, 0, 1)!='.') && (is_file(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)))) && $entry!='index.php'):
-				$thisimgdata = @getimagesize(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)));
-				$thisfiledata = @stat(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)));
-				if (intval($thisfiledata[7]) > 0):
-
-					$size = (!empty($thisimgdata) && intval($thisimgdata[0])>0) ? (intval($thisimgdata[0]).' x '.intval($thisimgdata[1])) : '';
-					$mytype = substr($entry,strrpos($entry, ".")+1);
-					
-					$checkfthumb = str_replace("//", "/", str_replace("/media/".$mediafolder."/", "/media/".$mediafolder."/thumbs/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT'].$fmkey.'/'.$entry)));
-					if (@is_file(str_replace(".".$mytype, ".jpg", $checkfthumb))) {
-						$thumbnail = 1;
-					} else if (@is_file(str_replace(".".$mytype, ".jpeg", $checkfthumb))) {
-						$thumbnail = 4;
-					} else if (@is_file(str_replace(".".$mytype, ".png", $checkfthumb))) {
-						$thumbnail = 2;
-					} else if (@is_file(str_replace(".".$mytype, ".gif", $checkfthumb))) {
-						$thumbnail = 3;
-					} else {
-						$thumbnail = 0;
-					}
-					
-					$checkfpreview = str_replace("//", "/", str_replace("/media/".$mediafolder."/", "/media/".$mediafolder."/preview/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT'].$fmkey.'/'.$entry)));
-					if (@is_file(str_replace(".".$mytype, ".jpg", $checkfthumb))):
-						$preview = 1;
-					elseif (@is_file(str_replace(".".$mytype, ".jpeg", $checkfthumb))):
-						$preview = 4;
-					elseif (@is_file(str_replace(".".$mytype, ".png", $checkfthumb))):
-						$preview = 2;
-					elseif (@is_file(str_replace(".".$mytype, ".gif", $checkfthumb))):
-						$preview = 3;
-					else:
-						$preview = 0;
-					endif;
-					
-					$checkfthumb = str_replace("//", "/", str_replace("/media/".$mediafolder."/", "/media/".$mediafolder."/originals/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT'].$fmkey.'/'.$entry)));
-					if (@is_file(str_replace(".".$mytype, ".jpg", $checkfthumb))):
-						$original = 1;
-					elseif (@is_file(str_replace(".".$mytype, ".jpeg", $checkfthumb))):
-						$original = 4;
-					elseif (@is_file(str_replace(".".$mytype, ".png", $checkfthumb))):
-						$original = 2;
-					elseif (@is_file(str_replace(".".$mytype, ".gif", $checkfthumb))):
-						$original = 3;
-					else:
-						$original = 0;
-					endif;
-					
-					if (fileUsage($_SERVER['DOCUMENT_ROOT'].$fmkey, trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$mediafolder."/","/",$fmkey."/".$entry)))))):
-						$inuse = time();
-					else:
-						$inuse = 0;
-					endif;
-					
-					$filesize = (intval($thisfiledata[7])>0) ? intval($thisfiledata[7]) : 0;
-					$lastchange = (intval($thisfiledata[9])>0) ? intval($thisfiledata[9]) : 0;
-					
-					$filedata = array(
-						'size' => $size,
-						'filesize' => $filesize,
-						'lastchange' => $lastchange,
-						'md5key' => md5(str_replace("//", "/", trim($fmkey)."/".trim($entry)))
-					);
-					
-					$e_sql = "SELECT `lastchange` FROM `wspmedia` WHERE `filekey` = '".md5(str_replace("//", "/", trim($fmkey)."/".trim($entry)))."'";
-					$e_res = doSQL($e_sql);
-					if ($e_res['num']==0) {
-						$sql = "INSERT INTO `wspmedia` SET `mediatype` = '".escapeSQL($mediafolder)."', `mediafolder` = '".escapeSQL(trim($fmkey))."', `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$mediafolder."/","/",$fmkey)))))."', `filename` = '".escapeSQL(trim($entry))."', `filetype` = '".$mytype."', `filekey` = '".md5(str_replace("//", "/", trim($fmkey)."/".trim($entry)))."', `filedata` = '".escapeSQL(serialize($filedata))."', `filesize` = ".intval($filesize).", `filedate` = ".intval($lastchange).", `thumb` = ".intval($thumbnail).", `preview` = ".intval($preview).", `original` = ".intval($original).", `embed` = ".$inuse.", `lastchange` = ".intval($lastcheck);
-					} else {
-						$sql = "UPDATE `wspmedia` SET `filedata` = '".escapeSQL(serialize($filedata))."', `thumb` = ".intval($thumbnail).", `preview` = ".intval($preview).", `original` = ".intval($original).", `embed` = ".intval($inuse).", `lastchange` = ".intval($lastcheck)." WHERE `filekey` = '".md5(str_replace("//", "/", trim($fmkey)."/".trim($entry)))."'";						
-					}
-					$res = doSQL($sql);
-					if (!$res['res']) { var_export($res); }
-					// unsetting file facts
-					unset($size);
-					unset($filedata);
-					unset($thisimgdata);	
-					unset($thisfiledata);
-				endif;
-			endif;
-		endwhile;
-		$d->close();
-	endforeach;
-	// removing older entries
-	$sql = "DELETE FROM `wspmedia` WHERE `mediatype` = '".escapeSQL($mediafolder)."' AND `lastchange` < ".intval($lastcheck-10);
-	doSQL($sql);	
-endif;
-
-if ($extern==1):
-	include ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/headerempty.inc.php");
-else:
-	require ("./data/include/header.inc.php");
-	require ("./data/include/wspmenu.inc.php");
-endif;
-
-$basedisplay = trim(doResultSQL("SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'displaymedia'"));
-$basesort = trim(doResultSQL("SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'medialistsort'"));
-
-$prescale = str_replace(" ", "", trim(doResultSQL("SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'autoscalepreselect'")));
-if($prescale=="" || $prescale=="0"): $prescale = "1600x1200"; endif;
-$pdfscaleprev=""; if($pdfscaleprev=="" || $pdfscaleprev=="0"): $pdfscaleprev = trim(doResultSQL("SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'pdfscalepreview'")); endif;
-if($pdfscaleprev=="" || $pdfscaleprev=="0"): $pdfscaleprev = "400x300"; endif;
-$thumbsize = trim(doResultSQL("SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'thumbsize'"));
-if($thumbsize=="" || $thumbsize=="0"): $thumbsize = "200x200"; endif;
-
-$m_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".escapeSQL(trim($mediafolder))."' AND `filename` != ''";
-$m_res = doSQL($m_sql);
-
-$filecount = 0;
-foreach ($fullmediastructure AS $fk => $fv) {
-	$scandir = scandir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fk);
-	$si = 0;
-	foreach ($scandir AS $sv) {
-		if (!(is_dir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fk."/".$sv)) && !($sv=='index.php') && !(substr($sv,0,1)=='.')) {
-			$si++;
-		}
-	}
-	$filecount = $filecount + $si;
+// remove file with dirlist so it will be created while building treeview
+if (isset($_POST['action']) && trim($_POST['action'])=='reloadlist') {
+    cleanupDirList($mediafolder);
 }
-$sysinfo = "[SYS:".$filecount."#DB:".$m_res['num']."]";
-$sysequal = (intval($filecount)==$m_res['num']);
+
+// check if activemedia is in basetarget
+$cactivemedia = explode("/", $_SESSION['wspvars']['activemedia'][$mediafolder]);
+$cbasetarget = explode("/", $_SESSION['wspvars']['upload']['basetarget']);
+foreach ($cbasetarget AS $cbk => $cbv) { if (trim($cbv)!='' && $cbasetarget[$cbk]!=$cactivemedia[$cbk]) { $_SESSION['wspvars']['activemedia'][$mediafolder] = $_SESSION['wspvars']['upload']['basetarget']; }}
+// recheck all activemedia directories for clean directory path 
+foreach($_SESSION['wspvars']['activemedia'] AS $amk => $amv) {
+    $_SESSION['wspvars']['activemedia'][$amk] = cleanPath($amv);
+}
+// setup if user is in (his) root directory
+$rootdir = ($_SESSION['wspvars']['activemedia'][$mediafolder]==cleanPath('/'.$_SESSION['wspvars']['upload']['basetarget'].'/')?true:false);
+// setting up sorting
+if (isset($_REQUEST['srt']) && intval($_REQUEST['srt'])==1) {
+    $_SESSION['wspvars']['mediasort'][$mediafolder] = 'filesize';
+} else if (isset($_REQUEST['srt']) && intval($_REQUEST['srt'])==2) {
+    $_SESSION['wspvars']['mediasort'][$mediafolder] = 'filedate';
+} else if (!(isset($_SESSION['wspvars']['mediasort'][$mediafolder])) || (isset($_REQUEST['srt']) && intval($_REQUEST['srt'])==0)) {
+    $_SESSION['wspvars']['mediasort'][$mediafolder] = 'filename';
+}
+// setting up sort direction
+if (isset($_REQUEST['dir']) && intval($_REQUEST['dir'])==1) {
+    $_SESSION['wspvars']['mediasortorder'][$mediafolder] = 'DESC';
+} else if (!(isset($_SESSION['wspvars']['mediasortorder'][$mediafolder])) || (isset($_REQUEST['dir']) && intval($_REQUEST['dir'])==0)) {
+    $_SESSION['wspvars']['mediasortorder'][$mediafolder] = 'ASC';
+}
+// setting up display mode
+if (isset($_REQUEST['dpl']) && intval($_REQUEST['dpl'])==1) {
+    $_SESSION['wspvars']['displaymedia'] = 'tinybox';
+}
+else if (isset($_REQUEST['dpl']) && intval($_REQUEST['dpl'])==2) {
+    $_SESSION['wspvars']['displaymedia'] = 'list';
+}
+else if (isset($_REQUEST['dpl']) && intval($_REQUEST['dpl'])==0) {
+    $_SESSION['wspvars']['displaymedia'] = 'box';
+}
+// grep single folder name for displaying
+$fldrs = explode("/", $_SESSION['wspvars']['activemedia'][$mediafolder]);
+foreach ($fldrs AS $fk => $fv): if (trim($fv)!=''): $actfoldername = trim($fv); endif; endforeach;
+// create final filedir-path to read
+if(is_dir(cleanPath(DOCUMENT_ROOT."/".$_SESSION['wspvars']['activemedia'][$mediafolder]))) {
+    $filedir = cleanPath($_SESSION['wspvars']['activemedia'][$mediafolder]);
+    $filelist = scanfiles($filedir);
+}
+else {
+    
+    $filelist = array();
+    addWSPMsg('errormsg', returnIntLang('media requested folder wasnt found'));
+}
+
+require ("./data/include/header.inc.php");
+require ("./data/include/navbar.inc.php");
+require ("./data/include/sidebar.inc.php");
 
 ?>
-<div id="contentholder">
-	<pre id="debug" style="clear: both;"></pre>
-	<?php if ($extern!='1') echo "<fieldset class='text'><h1>".returnIntLang('media '.$mediafolder.' headline')."</h1></fieldset>\n"; ?>
-	<script src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/filemanagement/fileuploader.js" type="text/javascript"></script>
-	<script type="text/javascript">
-	<!--
-	
-	function delFile(fileFieldId) {
-		if(confirm('<?php echo returnIntLang('msgbox really delete file', false); ?>')) {
-			deleteFile(fileFieldId, document.getElementById('frommediafolder').value + document.getElementById('uploadpath').value, document.getElementById('fileimg' + fileFieldId).title);
-			}
-		}
-	
-	function createUploader(uid) {
-		var uploadtarget = document.getElementById('uploadtarget_' + uid).value;
-		var setautoscale = document.getElementById('autoscale').value;
-		var setthumbsize = document.getElementById('thumbsize').value;
-		var uploader = new qq.FileUploader({
-			element: document.getElementById('uploader_' + uid),
-			listElement: document.getElementById('uploaditems_' + uid),
-			// url of the server-side upload script, should be on the same domain
-			action: '/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/uploadmedia.php',
-			template: '<div class="qq-uploader">' + 
-				'<div class="qq-upload-drop-area"><span><?php echo returnIntLang('media upload drop files here', false); //' ?></span></div>' +
-				'<div class="qq-upload-button"><?php echo returnIntLang('media upload drop or select files here', false); //' ?></div>' +
-				'<ul class="qq-upload-list"></ul>' + 
-				'</div>',
-			fileTemplate: '<li>' +
-				'<div class="filegrabber"><?php echo returnIntLang("media uploader upload", false); ?></div>' +
-				'<div class="qq-upload-spinner"></div>' +
-				'<div class="qq-upload-file"></div>' +
-				'<div class="qq-upload-size"></div>' +
-				'<a class="qq-upload-cancel" href="#"><?php echo returnIntLang("media cancel upload", false); ?></a>' +
-				'</li>',        
-	        classes: {
-	            // used to get elements from templates
-	            button: 'qq-upload-button',
-	            drop: 'qq-upload-drop-area',
-	            dropActive: 'qq-upload-drop-area-active',
-	            list: 'qq-upload-list',
-	            file: 'qq-upload-file',
-	            spinner: 'qq-upload-spinner',
-	            size: 'qq-upload-size',
-	            cancel: 'qq-upload-cancel',
-	            // added to list item when upload completes
-	            // used in css to hide progress spinner
-	            success: 'qq-upload-success',
-	            fail: 'qq-upload-fail'
-	            },
-			// additional data to send, name-value pairs
-			params: {
-		    	prescale: setautoscale,
-		    	thumbsize: setthumbsize,
-		    	targetfolder: uploadtarget,
-		    	mediafolder: '<?php echo $mediafolder; ?>',
-		    	},
-			minSizeLimit: 0, // min size
-			debug: true
-           });
-       }
-	
-	function showUpload(fkid) {
-		if ($("#btn_upload_" + fkid).hasClass('orange')) {
-			$("li.upload.shown").removeClass('shown');
-			$(".uploadbutton").addClass('orange');
-			$("#upload_" + fkid).addClass('shown');
-			$("#btn_upload_" + fkid).toggleClass('orange', 1);
-			createUploader(fkid);
-			document.getElementById('activeupload').value = fkid;
-			}
-		else {
-			$("#upload_" + fkid).removeClass('shown');
-			$("#btn_upload_" + fkid).toggleClass('orange', 1);
-			document.getElementById('activeupload').value = fkid;
-			}
-		}
-	
-	function updateUpload(fkid) {
-		if (fkid!='') { createUploader(fkid); }
-		}
-	
-	function setDisplayList(displayValue) {
-		document.getElementById('displaylist_list').setAttribute('class', 'bubblemessage orange');
-		document.getElementById('displaylist_box').setAttribute('class', 'bubblemessage orange');
-		document.getElementById('displaylist_tinybox').setAttribute('class', 'bubblemessage orange');
-		document.getElementById('displaylist_' + displayValue).setAttribute('class', 'bubblemessage');
-		$('.' + document.getElementById('displaylist').value).removeClass(document.getElementById('displaylist').value).addClass(displayValue);
-		document.getElementById('displaylist').value = displayValue;
-		}
-		
-    function setSortList(sortValue) {
-        document.getElementById('sortlist_name').setAttribute('class', 'bubblemessage orange');
-        document.getElementById('sortlist_date').setAttribute('class', 'bubblemessage orange');
-        document.getElementById('sortlist_size').setAttribute('class', 'bubblemessage orange');
-        document.getElementById('sortlist_' + sortValue).setAttribute('class', 'bubblemessage');
-        document.getElementById('sortlist').value = sortValue;
-        setSearchList(document.getElementById('searchlist').value);
-        var openFolders = document.getElementById('activefolder').value;
-        if ($.trim(openFolders)!='') {
-            var Folders = openFolders.split(';');
-            for (f=0; f<Folders.length; f++) {
-                updateSortList(Folders[f]);
-            }
+<!-- MAIN -->
+<div class="main">
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="content-heading clearfix">
+            <div class="heading-left">
+                <h1 class="page-title"><?php echo returnIntLang('media '.$mediafolder.' headline'); ?></h1>
+                <p class="page-subtitle"><?php echo returnIntLang('media '.$mediafolder.' info'); ?></p>
+            </div>
+            <ul class="breadcrumb">
+                <li><i class="<?php echo $_SESSION['wspvars']['pagedesc'][0]; ?>"></i> <?php echo $_SESSION['wspvars']['pagedesc'][1]; ?></li>
+                <li><?php echo $_SESSION['wspvars']['pagedesc'][2]; ?></li>
+            </ul>
+        </div>
+        <div class="container-fluid">
+            <?php
+            
+//            echo "<pre>POST: ";
+//            var_export($_POST);
+//            echo "<hr />mediafolder: ";
+//            var_export($mediafolder);
+//            echo "<hr />isroot: ";
+//            var_export($rootdir);
+//            echo "<hr />activemedia ".$mediafolder.": ";
+//            var_export($_SESSION['wspvars']['activemedia'][$mediafolder]);
+//            echo "<hr />basetarget: ";
+//            var_export($_SESSION['wspvars']['upload']['basetarget']);
+//            echo "<hr/>";
+//            echo "</pre>";
+            
+            ?>
+            <?php showWSPMsg(1); ?>
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><?php echo returnIntLang('media str folder'); ?> &nbsp; <i class="fas fa-sync-alt" onclick="$('#reloadlist').submit();"></i></h3>
+                            <div class="right">
+                                <div class="dropdown">
+                                    <a href="#" class="toggle-dropdown" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-bars"></i> </a>
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <li><a id="btn-expand" onclick="$('#treeview').jstree('open_all');"><i class="fa fa-plus-square"></i><?php echo returnIntLang('structure expand structure', true); ?></a></li>
+                                        <li><a id="btn-collapse" onclick="$('#treeview').jstree('close_all');"><i class="fa fa-minus-square"></i><?php echo returnIntLang('structure collapse structure', true); ?></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <form id="reloadlist" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+                                <input type="hidden" name="fldr" value="<?php echo base64_encode($_SESSION['wspvars']['activemedia'][$mediafolder]); ?>" />
+                                <input type="hidden" name="action" value="reloadlist" />
+                            </form>
+                        </div>
+                        <div class="panel-body">
+                            <div id="treeview"></div>
+                        </div>
+                        <form name="showfiles_form" id="showfiles_form" method="post">
+                            <input type="hidden" name="fldr" id="showfiles_fldr" value="" />
+                        </form>
+                    </div>
+                    <?php 
+                    // showing up folder actions if folder exists
+                    if (is_dir(DOCUMENT_ROOT."/".$_SESSION['wspvars']['activemedia'][$mediafolder])) { ?>
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><?php echo returnIntLang('media str folder actions'); ?></h3>
+                        </div>
+                        <form name="changefolder_form" id="changefolder_form" method="post">
+                            <div class="panel-body">
+                                <input type="hidden" name="fldr" value="<?php echo base64_encode($_SESSION['wspvars']['activemedia'][$mediafolder]); ?>" class="form-control" />
+                                <p><?php echo returnIntLang('media create subfolder 1')." <strong>"; echo $_SESSION['wspvars']['activemedia'][$mediafolder]; echo "</strong> ".returnIntLang('media create subfolder 2'); ?></p>
+                                <div class="form-group">
+                                    <input type="text" name="newfldr" value="" class="form-control" />
+                                </div>
+                                <?php if ($rootdir===false && count(scandir(DOCUMENT_ROOT.$_SESSION['wspvars']['activemedia'][$mediafolder]))<=2): ?>
+                                <p><?php echo returnIntLang('media rename folder 1')." <strong>"; echo "”".$actfoldername."”"; echo "</strong> ".returnIntLang('media rename folder 2'); ?></p>
+                                <div class="form-group">
+                                    <input type="text" name="renamefldr" class="form-control" placeholder="<?php echo prepareTextField($actfoldername); ?>" />
+                                    <input type="hidden" name="renamefldrfrom" value="<?php echo prepareTextField($actfoldername); ?>" />
+                                </div>
+                                <?php endif; ?>
+                                <div class="btn-group">
+                                    <button class="btn btn-info"><?php echo returnIntLang('media folder doaction', false); ?></button>
+                                    <?php if (count(scanfiles($_SESSION['wspvars']['activemedia'][$mediafolder]))>0 || count(scandirs($_SESSION['wspvars']['activemedia'][$mediafolder]))>0): ?>
+                                        <input type="hidden" name="emptyfldr" id="emptyfldr_field" value="" />
+                                        <a id="emptyfldr" class="btn btn-danger"><?php echo returnIntLang('media empty folder', false); ?></a>
+                                        <script>
+
+                                            $('#emptyfldr').on('click', function(e) {
+                                                e.preventDefault();
+                                                swal(
+                                                {
+                                                    title: '<?php echo returnIntLang('media really empty all files in folder?', false); ?>',
+                                                    text: "<?php echo returnIntLang('media this action cannot be undone', false); ?>",
+                                                    type: 'warning',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#F9354C',
+                                                    cancelButtonColor: '#41B314',
+                                                    confirmButtonText: '<?php echo returnIntLang('str submit', false); ?>',
+                                                    cancelButtonText: '<?php echo returnIntLang('str cancel', false); ?>'
+                                                }).then(function()
+                                                {
+                                                    $('#emptyfldr_field').val('<?php echo base64_encode($_SESSION['wspvars']['activemedia'][$mediafolder]); ?>');
+                                                    $('#changefolder_form').submit();
+                                                }).catch(swal.noop);
+                                            });
+
+                                        </script>
+                                    <?php elseif ($rootdir===false): ?>
+                                        <input type="hidden" name="deletefldr" id="deletefldr_field" value="" />
+                                        <a id="deletefldr" value="<?php echo base64_encode($_SESSION['wspvars']['activemedia'][$mediafolder]); ?>" class="btn btn-danger"><?php echo returnIntLang('media delete folder', false); ?></a>
+                                        <script>
+
+                                            $('#deletefldr').on('click', function(e) {
+                                                e.preventDefault();
+                                                swal(
+                                                {
+                                                    title: '<?php echo returnIntLang('media really delete folder?', false); ?>',
+                                                    text: "<?php echo returnIntLang('media this action cannot be undone', false); ?>",
+                                                    type: 'warning',
+                                                    showCancelButton: true,
+                                                    confirmButtonColor: '#F9354C',
+                                                    cancelButtonColor: '#41B314',
+                                                    confirmButtonText: '<?php echo returnIntLang('str submit', false); ?>',
+                                                    cancelButtonText: '<?php echo returnIntLang('str cancel', false); ?>'
+                                                }).then(function()
+                                                {
+                                                    $('#deletefldr_field').val('<?php echo base64_encode($_SESSION['wspvars']['activemedia'][$mediafolder]); ?>');
+                                                    $('#changefolder_form').submit();
+                                                }).catch(swal.noop);
+                                            });
+
+                                        </script>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <?php } ?>
+                </div>
+                <div class="col-md-6 col-lg-8">
+                    <form action="#" method="POST">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><?php echo returnIntLang('media str files'); ?></h3>
+                            <div class="right">
+                                <div class="dropdown">
+                                    <a href="#" class="toggle-dropdown" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-bars"></i> </a>
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <li><a href='?srt=0'><i class="fa fa-font"></i><?php echo returnIntLang('media sort mediafiles by name'); ?> <?php if(isset($_SESSION['wspvars']['mediasort'][$mediafolder]) && trim($_SESSION['wspvars']['mediasort'][$mediafolder])=='filename'): echo "<i class='fa fa-check'></i>"; endif; ?></a></li>
+					                    <li><a href='?srt=1'><i class="fa fa-hdd-o"></i><?php echo returnIntLang('media sort mediafiles by filesize'); ?> <?php if(isset($_SESSION['wspvars']['mediasort'][$mediafolder]) && trim($_SESSION['wspvars']['mediasort'][$mediafolder])=='filesize'): echo "<i class='fa fa-check'></i>"; endif; ?></a></li>
+                                        <li><a href='?srt=2'><i class="fa fa-clock-o"></i><?php echo returnIntLang('media sort mediafiles by date'); ?> <?php if(isset($_SESSION['wspvars']['mediasort'][$mediafolder]) && trim($_SESSION['wspvars']['mediasort'][$mediafolder])=='filedate'): echo "<i class='fa fa-check'></i>"; endif; ?></a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="?dir=0"><i class="fa fa-sort-alpha-asc"></i><?php echo returnIntLang('media sort mediafiles asc', true); ?> <?php if(isset($_SESSION['wspvars']['mediasortorder'][$mediafolder]) && trim($_SESSION['wspvars']['mediasortorder'][$mediafolder])=='ASC'): echo "<i class='fa fa-check'></i>"; endif; ?></a></li>
+                                        <li><a href="?dir=1"><i class="fa fa-sort-alpha-desc"></i><?php echo returnIntLang('media sort mediafiles desc', true); ?> <?php if(isset($_SESSION['wspvars']['mediasortorder'][$mediafolder]) && trim($_SESSION['wspvars']['mediasortorder'][$mediafolder])=='DESC'): echo "<i class='fa fa-check'></i>"; endif; ?></a></li>
+                                        <li class="divider"></li>
+                                        <li><a href='?dpl=1'><i class="fa fa-th"></i><?php echo returnIntLang('media show mediafiles tinybox'); ?> <?php if(isset($_SESSION['wspvars']['displaymedia']) && trim($_SESSION['wspvars']['displaymedia'])=='tinybox'): echo "<i class='fa fa-check'></i>"; endif; ?></a></li>
+                                        <li><a href='?dpl=0'><i class="fa fa-th-large"></i><?php echo returnIntLang('media show mediafiles box'); ?> <?php if(isset($_SESSION['wspvars']['displaymedia']) && trim($_SESSION['wspvars']['displaymedia'])=='box'): echo "<i class='fa fa-check'></i>"; endif; ?></a></li>
+					                    <li><a href='?dpl=2'><i class="fa fa-th-list"></i><?php echo returnIntLang('media show mediafiles list'); ?> <?php if(isset($_SESSION['wspvars']['displaymedia']) && trim($_SESSION['wspvars']['displaymedia'])=='list'): echo "<i class='fa fa-check'></i>"; endif; ?></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-body upload">
+                            <div class="inlinemedia">
+                            <?php if (count($filelist)==0) { ?>
+                                <p><?php echo returnIntLang('media no files in folder'); ?></p>
+                            <?php } else if ($_SESSION['wspvars']['displaymedia']=='list') {
+                                
+                                // list
+                                
+                                ?>
+                                <form method="post" id="deletefiles">
+                                <table id="filelist-datatable" class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th><?php echo returnIntLang('str filename'); ?> <?php if(isset($_SESSION['wspvars']['mediasort'][$mediafolder]) && trim($_SESSION['wspvars']['mediasort'][$mediafolder])=='filename'): echo "<i class='fa fa-sort-alpha-".strtolower(trim($_SESSION['wspvars']['mediasortorder'][$mediafolder]))."'></i>"; endif; ?></th>
+                                            <th><?php echo returnIntLang('str filesize'); ?> <?php if(isset($_SESSION['wspvars']['mediasort'][$mediafolder]) && trim($_SESSION['wspvars']['mediasort'][$mediafolder])=='filesize'): echo "<i class='fa fa-sort-numeric-".strtolower(trim($_SESSION['wspvars']['mediasortorder'][$mediafolder]))."'></i>"; endif; ?></th>
+                                            <th><?php echo returnIntLang('str uploaddate'); ?> <?php if(isset($_SESSION['wspvars']['mediasort'][$mediafolder]) && trim($_SESSION['wspvars']['mediasort'][$mediafolder])=='filedate'): echo "<i class='fa fa-sort-numeric-".strtolower(trim($_SESSION['wspvars']['mediasortorder'][$mediafolder]))."'></i>"; endif; ?></th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+
+                                        $showlist = showMediaFiles($_SESSION['wspvars']['activemedia'][$mediafolder], $filelist, $_SESSION['wspvars']['mediasort'][$mediafolder], $_SESSION['wspvars']['mediasortorder'][$mediafolder]);
+                                        
+                                        foreach ($showlist AS $slk => $slv):
+                                            echo "<tr>";
+                                            echo "<td class='col-md-7'><span style='display: inline-block; max-width: 100%; word-break: break-word; overflow: hidden;'><a href='./mediadetails.php?fl=".$slv['filehash']."&ml=".base64_encode($mediafolder)."'>".(($slv['filedesc']!='')?"<em title='".$slv['filename']."'>".$slv['filedesc']."</em> [".$slv['filename']."]":$slv['filename'])."</span></td>";
+                                            echo "<td class='col-md-2'>";
+                                            echo showHumanSize($slv['filesize']);
+                                            if (is_array($slv['filedata'])): echo ' - '.implode("x", $slv['filedata']).'px'; endif;
+                                            echo "</td>";
+                                            echo "<td class='col-md-2'>".date(returnIntLang('format date time', false), $slv['filedate'])."</td>";
+                                            echo "<td class='col-md-1 text-right'>";
+
+                                            if (isset($slv['fileusage']) && $slv['fileusage']===true) {
+                                                echo " <i class='fa fa-check'></i>";
+                                            }
+                                            else {
+                                                // maybe later it should be possible to drag/drop files to another folder 
+                                                // echo " <i class='fa fa-arrows'></i>";
+                                                echo " <input type='checkbox' name='deletefiles[]' value='".$slv['filehash']."' />";
+                                            }
+                                            if (isset($slv['filepreview']) && $slv['filepreview']) {
+                                                echo " <i class='fa fa-file-image-o'></i>";
+                                            }
+                                            echo "</td>";
+                                            echo "</tr>";
+                                        endforeach;
+
+                                        ?>
+                                    </tbody>
+                                </table>
+                                </form>
+                            <?php } else { 
+                                
+                                // box / minibox
+                                
+                                $showlist = showMediaFiles($_SESSION['wspvars']['activemedia'][$mediafolder], $filelist, $_SESSION['wspvars']['mediasort'][$mediafolder], $_SESSION['wspvars']['mediasortorder'][$mediafolder]);
+                                
+                                echo "<div class='row file-box'>";
+                                foreach ($showlist AS $slk => $slv) {
+                                    echo "<div class='col-img-".(($_SESSION['wspvars']['displaymedia']=='box')?'box':'minibox')." col-md-".(($_SESSION['wspvars']['displaymedia']=='box')?'4':'3')." col-sm-".(($_SESSION['wspvars']['displaymedia']=='box')?'6':'4')."'>";
+                                        echo "<div class='panel' style='margin-bottom: 10px;'><div class='panel-body' style='padding: 10px;'>";
+                                            if (is_array($slv['filedata'])) {
+                                                // if filedata exists => it's an image
+                                                echo "<a href='./mediadetails.php?fl=".$slv['filehash']."&ml=".base64_encode($_SESSION['wspvars']['upload']['basetarget'])."'><div class='filepreview' style='background-image: url(".((isset($slv['filethmb']))?$slv['filethmb']:$slv['filepath']).");'></div></a>";
+                                            }
+                                            else {
+                                                echo "<a href='./mediadetails.php?fl=".$slv['filehash']."&ml=".base64_encode($_SESSION['wspvars']['upload']['basetarget'])."'><div class='filepreview file-preview ".$slv['filextns']."'><i class='".((array_key_exists($slv['filextns'], $xtnsicons))?$xtnsicons[$slv['filextns']]:'fas fa-file')."'></i></div></a>";
+                                            }
+                                            echo "<div class='filename' style='display: inline-block; width: 100%; word-break: break-word; overflow: hidden;'><a href='./mediadetails.php?fl=".$slv['filehash']."&ml=".base64_encode($mediafolder)."'>".$slv['filename']."</a></div>";
+                                            if (($_SESSION['wspvars']['displaymedia']=='box')) {
+                                                echo "<div class='filesize' style='display: inline-block; width: 100%; word-break: break-word; overflow: hidden;'>";
+                                                echo showHumanSize($slv['filesize']);
+                                                if (is_array($slv['filedata'])): echo '<br />'.implode("x", $slv['filedata']).'px'; endif;
+                                                echo "</div>";
+                                                echo "<div class='filedate' style='display: inline-block; width: 100%; word-break: break-word; overflow: hidden;'>".date(returnIntLang('format date time', false), $slv['filedate'])."</div>";
+                                            }
+                                            /*
+                                            echo "<div class='fileaction' style='display: inline-block; width: 100%; word-break: break-word; overflow: hidden;'>";
+                                            if (isset($slv['fileusage']) && $slv['fileusage']) {
+                                              echo " <i class='fa fa-check'></i>";
+                                            }
+                                            else {
+                                                echo " <i class='fa fa-trash'></i>";
+                                            }
+                                            if (isset($slv['filepreview']) && $slv['filepreview']) {
+                                                echo " <i class='fa fa-file-image-o'></i>";
+                                            }
+                                            echo "</div>";
+                                            */
+                                    
+                                            // remove file option
+                                            echo "<div class='file-remove'>";
+                                            if (!(isset($slv['fileusage'])) || $slv['fileusage']===false) {
+                                                echo " <input type='checkbox' name='deletefiles[]' value='".$slv['filehash']."' />";
+                                            } else {
+                                                echo "<i class='fa fa-check'></i>";
+                                            }
+                                            echo "</div>";
+                                        echo "</div></div>";
+                                    echo "</div>";
+                                }
+                                echo "</div>";
+                            } ?>
+                                <div class="filelists">
+                                    <ol class="filelist complete"></ol>
+                                    <ol class="filelist queue"></ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+ 
+    .fs-upload.fs-upload-dropping { outline: 3px dashed grey; }
+    .fs-upload.fs-upload-dropping .inlinemedia { opacity: 0.3; }
+    .fs-upload-input { border: 4px solid grey; }
+    .fs-upload-target { 
+        display: inline-block;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+        background-color: #5bc0de;
+        border-color: #4ebbdb;
+        border-width: 1px;
+        border-style: solid;
+        color: #fff;
+        padding: 6px 22px;
+        font-size: 14px;
+        font-weight: normal;
+        line-height: 1.42857143;
+        }
+    
+
+    .filelists {
+/*        margin: 20px 0; */
+        margin: 0px;
+    }
+
+    .filelists h5 {
+        margin: 10px 0 0;
+    }
+
+    .filelists .cancel_all {
+        color: red;
+        cursor: pointer;
+        clear: both;
+        font-size: 10px;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .filelist {
+        margin: 0;
+        padding: 10px 0;
+    }
+    
+    .filelist li {
+        background: #fff;
+        border-bottom: 1px solid #ECEFF1;
+        font-size: 14px;
+        list-style: none;
+        padding: 5px;
+        position: relative;
+    }
+    
+    .filelist li:before {
+        display: none !important;
+    }
+    
+    .filelist li .bar {
+        background: #eceff1;
+        content: '';
+        height: 100%;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 0;
+        z-index: 0;
+        -webkit-transition: width 0.1s linear;
+        transition: width 0.1s linear;
+    }
+
+    .filelist li .content {
+        display: block;
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
+    }
+
+    .filelist li .file {
+        color: #455A64;
+        float: left;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 50%;
+        white-space: nowrap;
+    }
+
+    .filelist li .progress {
+        color: #B0BEC5;
+        display: block;
+        float: right;
+        font-size: 10px;
+        text-transform: uppercase;
+    }
+
+    .filelist li .cancel {
+        color: red;
+        cursor: pointer;
+        display: block;
+        float: right;
+        font-size: 10px;
+        margin: 0 0 0 10px;
+        text-transform: uppercase;
+    }
+
+    .filelist li.error .file {
+        color: red;
+    }
+
+    .filelist li.error .progress {
+        color: red;
+    }
+
+    .filelist li.error .cancel {
+        display: none;
+    }
+
+    .filelist.complete li {
+        background: #dff0d8;
+    }
+    
+</style>
+<script>
+    
+    function onCancel(e) {
+        console.log("Cancel");
+        var index = $(this).parents("li").data("index");
+        $(this).parents("form").find(".upload").upload("abort", parseInt(index, 10));
+    }
+
+    function onCancelAll(e) {
+        console.log("Cancel All");
+        $(this).parents("form").find(".upload").upload("abort");
+    }
+    
+    function onBeforeSend(formData, file) {
+        console.log("Before Send");
+        formData.append("fldr", "<?php echo base64_encode($_SESSION['wspvars']['activemedia'][$mediafolder]); ?>");
+        // return (file.name.indexOf(".jpg") < -1) ? false : formData; // cancel all jpgs
+        return formData;
+    }
+
+    function onQueued(e, files) {
+        console.log("Queued");
+        var html = '';
+        for (var i = 0; i < files.length; i++) {
+            html += '<li data-index="' + files[i].index + '"><span class="content"><span class="file">' + files[i].name + '</span><span class="cancel">Cancel</span><span class="progress">Queued</span></span><span class="bar"></span></li>';
+        }
+        $(this).parents("form").find(".filelist.queue").append(html);
+    }
+
+    function onStart(e, files) {
+        $(this).parents("form").find(".filelist").css('margin','10px 0px');
+        $(this).parents("form").find(".filelist.queue").show().find("li").find(".progress").text("Waiting");
+    }
+
+    function onComplete(e) {
+        // All done!
+        // alert("<?php echo returnIntLang('media upload queue done', false); ?>");
+    }
+
+    function onFileStart(e, file) {
+        console.log("File Start");
+        $(this).parents("form").find(".filelist.queue")
+            .find("li[data-index=" + file.index + "]")
+            .find(".progress").text("0%");
+    }
+
+    function onFileProgress(e, file, percent) {
+        console.log("File Progress");
+        var $file = $(this).parents("form").find(".filelist.queue").find("li[data-index=" + file.index + "]");
+        
+        $file.find(".progress").text(percent + "%")
+        $file.find(".bar").css("width", percent + "%");
+    }
+
+    function onFileComplete(e, file, response) {
+        console.log("File Complete");
+        if (response.trim() === "" || response.toLowerCase().indexOf("error") > -1) {
+            $(this).parents("form").find(".filelist.queue")
+                .find("li[data-index=" + file.index + "]").addClass("error")
+                .find(".progress").text(response.trim());
+        } else {
+            var $target = $(this).parents("form").find(".filelist.queue").find("li[data-index=" + file.index + "]");
+            $target.find(".file").text(file.name);
+            $target.find(".progress").remove();
+            $target.find(".cancel").remove();
+            $target.appendTo($(this).parents("form").find(".filelist.complete"));
         }
     }
-	
-    function updateSortList(fkid) {
-        var displaylist = document.getElementById('displaylist').value;
-        var sortlist = document.getElementById('sortlist').value;
-        $.post("xajax/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
-            .done (function(data) {
-            $('#files_' + fkid).html(data);
-        });
-    }
-	
-	function setSearchList(searchValue) {
-		if ($.trim(searchValue).length>2) {
-			var displaylist = document.getElementById('displaylist').value;
-			var sortlist = document.getElementById('sortlist').value;
-			$.post("xajax/ajax.returnmediasearch.php", { 'search': $.trim(searchValue), 'display': displaylist, 'sort': sortlist})
-				.done (function(data) {
-					$('#filesearch').css('display', 'block');
-					$('#filesearch').html(data);
-					})
-			}
-		else {
-			$('#filesearch').css('display', 'none');
-			}
-		}
-	
-	function showDetails(fileID) {
-		document.getElementById('detailfilename').value = fileID;
-		document.getElementById('viewfile').submit();
-		}
-	
-	function setFileDesc(fileFieldId) {
-		document.getElementById('savefiledesc').value = $('#'+fileFieldId+'_descname').text();
-		document.getElementById(fileFieldId+'_descname').innerHTML = '<input type="text" name="newfiledesc" id="'+fileFieldId+'_newfiledesc" value="'+ $('#'+fileFieldId+'_descname').text()+'" onBlur="setNewFileDesc(\''+fileFieldId+'\');" />';
-		document.getElementById(fileFieldId+'_newfiledesc').focus();
-		}
-	
-	function setNewFileDesc(fileFieldId) {
-		var newdesc = document.getElementById(fileFieldId+'_newfiledesc').value;
-		var olddesc = document.getElementById('savefiledesc').value;
-		if ($.trim(fileFieldId)!="") {
-			$.post("xajax/ajax.setnewfiledesc.php", { 'fileid': $.trim(fileFieldId), 'newdesc': newdesc, 'olddesc': olddesc})
-				.done (function(data) {
-					$('#'+fileFieldId+'_descname').html(data);
-					})
-			}
-		else {
-			$('#'+fileFieldId+'_descname').html(olddesc);
-			}
-		}
-	
-	function changeFileName(fileFieldId, fieldType) {
-		document.getElementById('changefile').style.display = 'block';
-		document.getElementById('fieldset_options').style.display = 'none';
-		document.getElementById('newfilename').value = document.getElementById('fileimg' + fileFieldId).value.substr(0,(document.getElementById('fileimg' + fileFieldId).value.length)-(fieldType.length + 1));
-		document.getElementById('showrenamefile').innerHTML = document.getElementById('fileimg' + fileFieldId).value;
-		document.getElementById('showrenamefileend').innerHTML = '.' + fieldType;
-		document.getElementById('changerenfilepath').value=document.getElementById('frommediafolder').value + document.getElementById('uploadpath').value;
-		document.getElementById('changeoldfilename').value=document.getElementById('fileimg' + fileFieldId).value;
-		document.getElementById('fileid').value=fileFieldId;
-		}
-	
-	function setNewFileName(fileFieldId) {
-		saveNewFileName(document.getElementById('newfilename').value, fileFieldId, document.getElementById('frommediafolder').value + document.getElementById('uploadpath').value, document.getElementById('fileimg' + fileFieldId).title);
-	}
 
-	function delItemNode(fileLiId) {
-		var n=document.getElementById(fileLiId).parentNode;
-		for(k=0;k<n.childNodes.length;k++) {
-			if(n.childNodes[k].id == fileLiId) {
-				n.removeChild(n.childNodes[k]);
-			}
-		}
-		document.getElementById('rebuildpath').value = document.getElementById('uploadpath').value;
-		document.getElementById('rebuild').submit();
-	}
-	
-    function optionDeleteDir(fkid) {
-        $.post("xajax/ajax.returnmediafilelist.php", { 'fkid': fkid, 'stat': 'countdelete'}).done (function(data) {
-            if (parseInt(data)==0 && fkid!=0) {
-                $('#btn_del_' + fkid).show();
-            }
-        });
+    function onFileError(e, file, error) {
+        console.log("File Error");
+        $(this).parents("form").find(".filelist.queue")
+            .find("li[data-index=" + file.index + "]").addClass("error")
+            .find(".progress").text("Error: " + error);
+    }
+    
+    function onChunkStart(e, file) {
+        console.log("Chunk Start");
+    }
+    
+    function onChunkProgress(e, file, percent) {
+        console.log("Chunk Progress");
+    }
+    
+    function onChunkComplete(e, file, response) {
+        console.log("Chunk Complete");
+    }
+
+    function onChunkError(e, file, error) {
+        console.log("Chunk Error");
     }
         
-	function showFiles(fkid) {
-		var displaylist = document.getElementById('displaylist').value;
-		var sortlist = document.getElementById('sortlist').value;
-		if ($('#btn_open_' + fkid).hasClass('orange')) {
-			$.post("xajax/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
-				.done (function(data) {
-					$('#files_' + fkid).html(data);
-					$('#btn_open_' + fkid).removeClass('orange');
-					$('#files_' + fkid).show('blind', 400);
-					});
-			updateOpenClose(fkid, 'add');
-			}
-		else {
-			$('#files_' + fkid).hide('blind', 400);
-			$('#btn_open_' + fkid).addClass('orange');
-			$('#files_' + fkid).html('');
-			updateOpenClose(fkid, 'del');
-			}
-		}
-	
-	function updateOpenClose(fkid, fkaction) {
-		var openFolders = document.getElementById('activefolder').value;
-		if ($.trim(openFolders)!='') {
-			if (fkaction=='add') {
-				document.getElementById('activefolder').value = openFolders + ';' + $.trim(fkid);
-				}
-			else if (fkaction=='del') {
-				var Folders = openFolders.split(';');
-				var oFolder = new Array();
-				for (f=0; f<Folders.length; f++) {
-					if (Folders[f]!=fkid) {
-						oFolder.push(Folders[f]);
-						}
-					}
-				if (oFolder.length>0) {
-					document.getElementById('activefolder').value = oFolder.join(';');
-					}
-				else {
-					document.getElementById('activefolder').value = '';
-					}
-				}
-			}
-		else if (fkaction=='add') {
-			document.getElementById('activefolder').value = $.trim(fkid);
-			}
-		}
-	
-	function showCreateDir(fkid) {
-		if ($("#btn_createdir_" + fkid).hasClass('orange')) {
-			$("li.createdir.shown").removeClass('shown');
-			$(".createdirbutton").addClass('orange');
-			$("#createsubdir_" + fkid).show('blind', 400);
-			$("#createsubdir_" + fkid).toggleClass('shown', 1);
-			$("#btn_createdir_" + fkid).toggleClass('orange', 1);
-			}
-		else {
-			$("#createsubdir_" + fkid).hide('blind', 400);
-			$("#createsubdir_" + fkid).toggleClass('shown', 1);
-			$("#btn_createdir_" + fkid).toggleClass('orange', 1);
-			}		
-		}
-		
-	function createNewDir(fkid) {
-		var subdirto = document.getElementById('subdirname_'+ fkid).value;
-		var newdirname = document.getElementById('newdirname_'+ fkid).value;
-		if ($.trim(subdirto)!="" && $.trim(newdirname)!="") {
-			$.post("xajax/ajax.createnewdir.php", { 'subdirto': subdirto, 'newdirname': newdirname, 'mediatype': '<?php echo $mediafolder; ?>'})
-				.done(function(data) {
-					if(data==true || data=='1') {
-						document.location.reload();
-						}
-					else {
-						console.info(data);
-						alert('media error creating dir');
-						}
-					})
-			}
-		}
+    function showFiles(folderHash){
+        $('#showfiles_fldr').val(folderHash);
+        $('#showfiles_form').submit();
+    }  
 
-	function confirmDeleteDir(fkid) {
-		if ($.trim(fkid)!="") {
-			$.post("xajax/ajax.deletedir.php", { 'dirid': $.trim(fkid) } )
-				.done (function(data) {
-					var returnData = JSON.parse(data);
-					if(returnData['success']) {
-						$('#files_'+returnData.id).hide();
-						$('#folder_'+returnData.id).fadeOut(500, function() {
-							$('#folder_'+returnData.id).remove();
-							$('#uploadholder_'+returnData.id).remove();
-							$('#uploaditems_'+returnData.id).remove();
-							$('#createsubdir_'+returnData.id).remove();
-							$('#files_'+returnData.id).remove();
-							});
-						}
-					else {
-						alert (returnData['msg']);
-						}
-					});
-			}
-		}
-
-	function confirmDeleteFile(fileFieldId) {
-		if (fileFieldId!="") {
-			$.post("xajax/ajax.deletefile.php", { 'fileid': fileFieldId } )
-				.done (function(data) {
-					var returnData = JSON.parse(data);
-					if(returnData['success']) {
-						$('#'+returnData['removedfile']).hide('puff');
-					} else {
-						alert(returnData['msg']);
-						}
-					});
-			}
-		}
-		
-    // -->
-	</script>
-	<fieldset>
-		<legend><?php echo returnIntLang('media search legend', true); ?></legend>
-		<ul style="float: right; list-style-type: none;" id="displaylist_display">
-			<li style="float: left;"><?php echo returnIntLang('media displaylist display', false); ?>&nbsp;</li>
-			<li style="float: left;"><span class="bubblemessageholder"><span class="bubblemessage <?php if($basedisplay!='list') echo "orange"; ?>" id="displaylist_list" onclick="setDisplayList('list');" style="cursor: pointer;"><?php echo returnIntLang('bubble list', false); ?></span></span>&nbsp;</li>
-			<li style="float: left; display: none;"><span class="bubblemessageholder"><span class="bubblemessage <?php if($basedisplay!='box') echo "orange"; ?>" id="displaylist_box" onclick="setDisplayList('box');" style="cursor: pointer;"><?php echo returnIntLang('bubble box', false); ?></span></span>&nbsp;</li>
-			<li style="float: left;"><span class="bubblemessageholder"><span class="bubblemessage <?php if($basedisplay!='tinybox') echo "orange"; ?>" id="displaylist_tinybox" onclick="setDisplayList('tinybox');" style="cursor: pointer;"><?php echo returnIntLang('bubble tinybox', false); ?></span></span>&nbsp;</li>
-		</ul>
-		<ul style="float: right; list-style-type: none;" id="displaylist_sort">
-			<li style="float: left;"><?php echo returnIntLang('media displaylist sort', false); ?>&nbsp;</li>
-			<li style="float: left;"><span class="bubblemessageholder"><span class="bubblemessage <?php if($basesort!='name') echo "orange"; ?>" id="sortlist_name" onclick="setSortList('name');" style="cursor: pointer;"><?php echo returnIntLang('bubble name', false); ?></span></span>&nbsp;</li>
-			<li style="float: left;"><span class="bubblemessageholder"><span class="bubblemessage <?php if($basesort!='date') echo "orange"; ?>" id="sortlist_date" onclick="setSortList('date');" style="cursor: pointer;"><?php echo returnIntLang('bubble date', false); ?></span></span>&nbsp;</li>
-			<li style="float: left;"><span class="bubblemessageholder"><span class="bubblemessage <?php if($basesort!='size') echo "orange"; ?>" id="sortlist_size" onclick="setSortList('size');" style="cursor: pointer;"><?php echo returnIntLang('bubble size', false); ?></span></span>&nbsp;</li>
-		</ul>
-		<ul style="list-style-type: none;">
-			<li><input id="searchlist" value="" style="width: 50%;" onchange="setSearchList(this.value);" onblur="setSearchList(this.value);"></li>
-		</ul>
-		<input type="hidden" id="countlist" value="10000" />
-		<input type="hidden" id="displaylist" value="<?php echo $basedisplay; ?>" />
-		<input type="hidden" id="sortlist" value="<?php echo $basesort; ?>" />
-		<input type="hidden" id="activefolder" value="" />
-		<input type="hidden" id="activeupload" value="" />
-		<input type="hidden" id="keypress" value="" />
-		<input type="hidden" id="activelist" value="/media/<?php echo $mediafolder; ?>/" />
-	</fieldset>
-	<?php 
+</script>
+<script>
     
-    $autoscale = false;
-    $thumbsize = false;
+    $(function() {
     
-    if(array_key_exists('wspvars', $_SESSION) && array_key_exists('upload', $_SESSION['wspvars']) && ((array_key_exists('scale', $_SESSION['wspvars']['upload']) && $_SESSION['wspvars']['upload']['scale']) || (array_key_exists('thumbs', $_SESSION['wspvars']['upload']) && $_SESSION['wspvars']['upload']['thumbs']) || (array_key_exists('preview', $_SESSION['wspvars']['upload']) && $_SESSION['wspvars']['upload']['preview']))): ?>
-		<fieldset id="uploadprefs">
-			<legend><?php echo returnIntLang('media uploadprefs', true); ?></legend>
-			<table class="tablelist">
-				<tr>
-					<?php 
-                    
-                    if(array_key_exists('wspvars', $_SESSION) && array_key_exists('upload', $_SESSION['wspvars']) && ((array_key_exists('scale', $_SESSION['wspvars']['upload']) && $_SESSION['wspvars']['upload']['scale']))): ?>
-					<td class="tablecell two"><?php echo returnIntLang('media autoscale', true); ?></td>
-					<td class="tablecell two"><input id="autoscale" name="autoscale" onchange="updateUpload(document.getElementById('activeupload').value);" value="<?php echo $prescale; ?>" style="width: 10em;" /> PX x PX</td>
-					<?php 
-                    
-                    $autoscale = true;
-                    endif; ?>
-                    
-					<?php if(array_key_exists('wspvars', $_SESSION) && array_key_exists('upload', $_SESSION['wspvars']) && ((array_key_exists('preview', $_SESSION['wspvars']['upload']) && $_SESSION['wspvars']['upload']['preview']))): ?>
-					<td class="tablecell two"><?php echo returnIntLang('media preview size', true); ?></td>
-					<td class="tablecell two"><input  id="autoscale" name="autoscale" onchange="updateUpload(document.getElementById('activeupload').value);" value="<?php echo $prescale; ?>" style="width: 10em;" /> PX x PX</td>
-					<?php 
-                    
-                    $autoscale = true;
-                    endif; ?>
-                    
-					<?php if(array_key_exists('wspvars', $_SESSION) && array_key_exists('upload', $_SESSION['wspvars']) && ((array_key_exists('thumbs', $_SESSION['wspvars']['upload']) && $_SESSION['wspvars']['upload']['thumbs']))): ?>
-					<td class="tablecell two"><?php echo returnIntLang('media thumbnail size', true); ?></td>
-					<td class="tablecell two">max. <input  id="thumbsize" name="thumbsize" onchange="updateUpload(document.getElementById('activeupload').value);" value="<?php echo $thumbsize; ?>" style="width: 10em;" /> PX</td>
-					<?php 
-                    
-                    $thumbsize = true;
-                    endif; ?>
-				</tr>
-			</table>
-		</fieldset>
-    <?php endif; flush(); flush(); ?>
-	<?php if($autoscale===false) { echo "<input type='hidden' id='autoscale' name='autoscale' value='5000x5000' />"; } ?>
-    <?php if($thumbsize===false) { echo "<input type='hidden' id='thumbsize' name='thumbsize' value='500x500' />"; } ?>
-	<fieldset id="filesearch" style="display: none;"></fieldset>
-	<fieldset id="filesystem">
-		<legend><?php echo returnIntLang('media filestructure', true); ?></legend>
-		<?php
-		// init full structure array
-		$fullstructure = array();
-		// get hidemedia option
-		$hide_sql = "SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'hiddenmedia'";
-		$hide_res = doResultSQL($hide_sql);
-		// define hidemedia sql statement
-		$hidemedia = "";
-		if ($hide_res && trim($hide_res!='')): 
-			$hiddenmedia = explode(",", trim($hide_res));
-			$hideoption = array(" `filefolder` NOT LIKE '/thumbs/%' ");
-			foreach ($hiddenmedia AS $k => $v):
-				$hideoption[] = " `filefolder` NOT LIKE '/".$v."/%' ";
-			endforeach;
-			$hidemedia = " AND (".implode(" AND ", $hideoption).") ";	
-		endif;
-		// read structure from db
-		$s_sql = "SELECT DISTINCT `filefolder` FROM `wspmedia` WHERE `mediatype` = '".$mediafolder."' ".$hidemedia." ORDER BY `filefolder`";
-		$s_res = doSQL($s_sql);
-		if ($s_res['num']>0):
-			foreach ($s_res['set'] AS $sresk => $sresv):
-				$m_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".$mediafolder."' AND `filefolder` = '".trim($sresv['filefolder'])."' AND `filename` != '' ORDER BY `filename` ";
-				$m_res = doSQL($m_sql);		
-				$fullstructure[] = array('folder' => str_replace("//", "/", "/media/".$mediafolder."/".trim($sresv['filefolder'])), 'trimfolder' => trim($sresv['filefolder']), 'count' => $m_res['num'] );
-			endforeach;
-			$_SESSION['fullstructure'] = $fullstructure;
-		endif;
-		
-		if (count($fullstructure)>0):
-			foreach ($fullstructure AS $fk => $fv):
-				// if restrictions exist
-				if (isset($_SESSION['wspvars']['rights'][$mediafolder.'folder']) && (strstr(trim($fv['folder']), $_SESSION['wspvars']['rights'][$mediafolder.'folder']) || intval($_SESSION['wspvars']['rights'][$mediafolder.'folder'])==1) || intval($_SESSION['wspvars']['usertype'])==1):
-					// has subdirectories ???
-					$errortype = ''; if (str_replace("_", "-", str_replace("/", "-", strtolower($fv['trimfolder'])))!=urltext(str_replace("_", "-", str_replace("/", "-", strtolower($fv['trimfolder']))))): $errortype = 'false'; endif;
-					$subdir = false; if ($fk>0 && $fk<(count($fullstructure)-1) && strstr($fullstructure[($fk+1)]['trimfolder'], $fv['trimfolder'])): $subdir = true; endif;
-					echo "<ul id=\"folder_".$fk."\" class=\"folder ".$basedisplay." ".$errortype." \">";
-					echo "<li class='folder ".$basedisplay;
-					if ($fv['count']==0): echo " empty"; endif;
-					if ($fv['count']>0): echo " closed"; endif; // add options for returning visitors or reloading page to display open folder
-					echo "'><ul class='folderdata ".$basedisplay."'>";
-					echo "<li class='foldergrabber ".$basedisplay."'>&nbsp;</li>";
-					echo "<li class='foldericon ".$basedisplay."'>&nbsp;</li>";
-					echo "<li class='foldername ".$basedisplay."'>".trim($fv['trimfolder'])."</li>";
-					echo "<li class='foldersize ".$basedisplay."'>";
-					echo "</li>";
-					echo "<li class='folderaction ".$basedisplay."'>";
-					 // allow to delete folder if no content is used
-					if (!($subdir)) {
-                        echo "<span id='btn_del_".$fk."' ";
-                        if ($fk==0 || $fv['count']>0) {
-                            echo " style='display: none;' ";
-                        }
-                        echo " class='bubblemessage red' onclick='if(confirm(\"". returnIntLang('confirm delete directory', false) ."\")) {confirmDeleteDir(".$fk.");};'>".returnIntLang('bubble delete', false)."</span> ";
-                    }
-					 // open folder
-					echo "<span id='btn_open_".$fk."' class='bubblemessage ";
-					echo "orange' onclick='showFiles(".$fk.");'>".$fv['count']." ".returnIntLang('bubble files', false)."</span> ";
-					// upload to folder
-					echo "<span id='btn_upload_".$fk."' class='uploadbutton bubblemessage orange' onclick='showUpload(".$fk.");'>".returnIntLang('bubble upload', false)."</span> ";
-					// create subfolder
-					echo "<span id='btn_createdir_".$fk."' class='bubblemessage orange' onclick='showCreateDir(".$fk.");'>".returnIntLang('bubble adddir', false)."</span> ";
-					echo "</li>";
-					echo "<li class='closefolder ".$basedisplay."'>&nbsp;</li>";
-					echo "</ul></li>";
-					echo "</ul>";				
-					// upload area ..
-					echo "<ul id='uploadholder_".$fk."' class='upload ".$basedisplay."' folder='".trim($fv['folder'])."'>";
-					echo "<li class='upload ".$basedisplay."' id=\"upload_".$fk."\"><ul class='uploaddata'>";
-					echo "<li>";
-					?>
-					<div id="uploader_<?php echo $fk; ?>"></div>
-					<?php
-					echo "</li>";
-					echo "</ul><input type='hidden' id='uploadtarget_".$fk."' value='".$fv['folder']."' /></li>";
-					echo "</ul>";
-					// upload area
-					echo "<ul id=\"uploaditems_".$fk."\" class=\"uploaditems ".$basedisplay."\" folder=\"".$fv['folder']."\"></ul>";
-					// directory ara
-					echo "<ul id=\"createsubdir_".$fk."\" class=\"createsubdir ".$basedisplay."\" style=\"display: none;\" ><li><input type=\"text\" name=\"newdirname\" id=\"newdirname_".$fk."\"><input type=\"hidden\" name=\"subdirname\" id=\"subdirname_".$fk."\" value='".$fv['folder']."'> ";
-					echo "<span id='btn_makedir_".$fk."' class='bubblemessage green' onclick='createNewDir(".$fk.");'>".returnIntLang('bubble save', false)."</span> ";
-					echo "<span id='btn_canceldir_".$fk."' class='bubblemessage red' onclick='showCreateDir(".$fk.");'>".returnIntLang('bubble cancel', false)."</span> ";
-					echo "</li></ul>";
-					// file area
-					echo "<ul id=\"files_".$fk."\" class=\"dropable\" folder=\"".$fv['folder']."\" style=\"display: none;\"></ul>";
-                    echo "<script type='text/javascript'>\n";
-                    echo "optionDeleteDir(".$fk.");\n\n";
-                    echo "</script>";
-					if (isset($_SESSION['wspvars']['openmediafolder']) && $_SESSION['wspvars']['openmediafolder']==$fv['folder']): $openmediaid = $fk; $_SESSION['wspvars']['openmediafolder'] = ''; endif;
-					flush();flush();flush();
-				endif;
-			endforeach;
-		else:
-			echo "<p>".returnIntLang('media filestructure missing')."</p>";
-		endif;
-		?>
-	</fieldset>
-	
-	<?php if ($extern!='1' && !$sysequal) { ?>
-		<form id="readstructure"><input type="hidden" name="op" value='readstructure'><input type="hidden" name="folder" value="<?php echo $mediafolder; ?>" /></form>
-		<fieldset class="options innerfieldset"><p><a onclick="document.getElementById('readstructure').submit();" class="greenfield" title="<?php echo $sysinfo; ?>"><?php echo returnIntLang('filesystem reroll1'); ?> (<?php echo $filecount." ".returnIntLang('str files'); ?>) <?php echo returnIntLang('filesystem reroll2'); ?></a></p></fieldset>
-	<?php } ?>
+        $(".upload").upload({
+            action: "./xajax/ajax.mediaupload.php",
+            beforeSend: onBeforeSend,
+            label: '<?php echo returnIntLang('media btn drop files on area or click here to select', false); ?>',
+        })
+            .on("start.upload", onStart)
+            .on("complete.upload", onComplete)
+            .on("filestart.upload", onFileStart)
+            .on("fileprogress.upload", onFileProgress)
+            .on("filecomplete.upload", onFileComplete)
+            .on("fileerror.upload", onFileError)
+            .on("chunkstart.upload", onChunkStart)
+            .on("chunkprogress.upload", onChunkProgress)
+            .on("chunkcomplete.upload", onChunkComplete)
+            .on("chunkerror.upload", onChunkError)
+            .on("queued.upload", onQueued);
+    
+        $(".filelist.queue").on("click", ".cancel", onCancel);
+        $(".cancel_all").on("click", onCancelAll);
+        
+        <?php 
+        
+        // show delete-files-button if some files exist
+        if (isset($showlist) && count($showlist)>0) { ?>
+        $(".upload").append(' &nbsp; <input type="submit" style="margin-top: -3px;" class="btn btn-danger" value="<?php echo returnIntLang('media btn remove selected files', false); ?>" />');
+        <?php } ?>
+    });
 
-	<input type="hidden" name="savefiledesc" id="savefiledesc" value="" />
-	<form name="viewfile" id="viewfile" action="<?php echo "/".$_SESSION['wspvars']['wspbasedir']."/mediadetails.php"; ?>" method="post" enctype="multipart/form-data">
-		<input type="hidden" name="showfile" id="detailfilename" value="" />
-		<input type="hidden" name="medialoc" id="detailmedialoc" value="<?php echo $_SERVER['PHP_SELF']; ?>" />
-		<input type="hidden" name="media_folder" id="media_folder" value="<?php echo "/media/" . $mediafolder ?>" />
-	</form>
-	
-	<?php if ($extern!=1): ?>
-	<script type="text/javascript" language="javascript" charset="utf-8">
-	
-	$(document).ready(function(){
-		$( ".dropable" ).sortable({placeholder: "ui-state-highlight", connectWith: ".dropable", handle: '.movehandle', receive: function (event, ui) { 
-		$.post("xajax/ajax.dragdropmediafile.php", {'base': '<?php echo "/media/".$mediafolder."/"; ?>', 'fkey': ui.item.attr('id'), 'target': $(this).attr('folder'), 'copykey': document.getElementById('keypress').value})
-			.done (function(data) {
-				if ($.trim(data)!='') { alert(data); }
-				var openFolders = document.getElementById('activefolder').value;
-				if ($.trim(openFolders)!='') {
-					var Folders = openFolders.split(';');
-					for (f=0; f<Folders.length; f++) {
-						updateSortList(Folders[f]);
-						}
-					}
-				});
-     		}}); $( ".movehandle" ).disableSelection();
-	
-		$(document).bind('keydown', function(e) {
-			if(e.keyCode==16){
-				// Ctrl pressed... do anything here...
-				document.getElementById('keypress').value = 'copy';
-				}
-			});	
-		$(document).bind('keyup', function(e) {
-			if(e.keyCode==16){
-				// Ctrl release… do anything here...
-				document.getElementById('keypress').value = '';
-				}
-			});	
-		
-		<?php if (isset($openmediaid) && $openmediaid!=''): echo "showFiles(".$openmediaid.")"; endif; ?>
-		
-		});
-	
-	</script>
-	<?php endif; ?>
-</div>
-<?php
+</script>
+<script>
 
-if ($extern==1):
-	include ("data/include/footerempty.inc.php");
-else:
-	include ("data/include/footer.inc.php");
-endif;
+    $(document).ready(function(){
+        
+        showDTpaging = <?php echo ((isset($showlist) && count($showlist)>10)?'true':'false'); ?>;
+        
+        // datatable with paging options and live search
+        $('#filelist-datatable').dataTable({
+            ordering:  false,
+            sDom: "<'row'<'col-sm-6'l><'col-sm-6'f>r>t<'row'<'col-sm-6'i><'col-sm-6'p>>",
+            language: {
+                "decimal":        "<?php echo returnIntLang('datatable decimal', false); ?>",
+                "emptyTable":     "<?php echo returnIntLang('datatable emptyTable', false); ?>",
+                "info":           "<?php echo returnIntLang('datatable info', false); ?>",
+                "infoEmpty":      "<?php echo returnIntLang('datatable infoEmpty', false); ?>",
+                "infoFiltered":   "<?php echo returnIntLang('datatable infoFiltered', false); ?>",
+                "infoPostFix":    "<?php echo returnIntLang('datatable infoPostFix', false); ?>",
+                "thousands":      "<?php echo returnIntLang('datatable thousands', false); ?>",
+                "lengthMenu":     "<?php echo returnIntLang('datatable lengthMenu', false); ?>",
+                "loadingRecords": "<?php echo returnIntLang('datatable loadingRecords', false); ?>",
+                "processing":     "<?php echo returnIntLang('datatable processing', false); ?>",
+                "search":         "<?php echo returnIntLang('datatable search', false); ?>",
+                "zeroRecords":    "<?php echo returnIntLang('datatable zeroRecords', false); ?>",
+                "paginate": {
+                    "first":      "<?php echo returnIntLang('datatable paginate first', false); ?>",
+                    "last":       "<?php echo returnIntLang('datatable paginate last', false); ?>",
+                    "next":       "<?php echo returnIntLang('datatable paginate next', false); ?>",
+                    "previous":   "<?php echo returnIntLang('datatable paginate previous', false); ?>"
+                },
+                "aria": {
+                    "sortAscending":  "<?php echo returnIntLang('datatable aria sortAscending', false); ?>",
+                    "sortDescending": "<?php echo returnIntLang('datatable aria sortAscending', false); ?>"
+                }
+            },
+            "paging": showDTpaging,
+            "searching": false
+        });
+        
+        $('#treeview').jstree({
+            'core': {
+                "themes" : { "stripes" : true },
+                'data': { 
+                    'url': './xajax/ajax.returndirlist.php?path=<?php echo $_SESSION['wspvars']['upload']['basetarget']; ?>',
+//                    'data' : function (node) {
+//                        return { 'id' : node.id };
+//                    }
+                },
+                'check_callback': true,
+            },
+            'plugins': ['types', 'wholerow'],
+            'types': {
+                'root': { 'icon': 'fa fa-desktop text-primary' },
+                'default': { 'icon': 'fa fa-folder' }
+            }
+        }).on('loaded.jstree', function (e, data) {
+            <?php 
 
-// EOF ?>
+            if (isset($_POST['fldr'])) {
+                if ($rootdir) {
+                    echo "var fldr = 'root'; // post\n";
+                } else {
+                    echo "var fldr = '".substr(urltext(cleanPath(base64_decode($_POST['fldr']))),1,-1)."';\n";
+                }
+            } elseif (isset($_SESSION['wspvars']['activemedia'][($mediafolder)])) {
+                if ($rootdir) {
+                    echo "var fldr = 'root'; // session\n";
+                } else {
+                    echo "var fldr = '".substr(urltext(cleanPath($_SESSION['wspvars']['activemedia'][$mediafolder])),1,-1)."';\n";
+                }
+            } else {
+                echo "var fldr = 'root';\n // base";
+            }
+
+            ?>
+            $('#treeview').jstree('select_node', fldr);
+        });
+        
+    });
+    
+    
+</script>        
+<?php include ("./data/include/footer.inc.php"); ?>

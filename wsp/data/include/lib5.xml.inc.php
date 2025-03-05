@@ -4,8 +4,8 @@
  * @author stefan@covi.de
  * @copyright (c) 2019, webtweakers.com. All rights reserved.
  * @since 3.2
- * @version 6.9
- * @lastchange 2021-09-20
+ * @version 7.0
+ * @lastchange 2019-01-25
  */
 
 	/***************************************************************************
@@ -118,7 +118,7 @@
 		/**
 		 * XML_Node class constructor
 		 */
-		function __construct() {
+		function XML_Node() {
 			$this->_id = rand();
 		}
 
@@ -301,8 +301,8 @@
 	class XML_Element extends XML_Node {
 
 		// Constructor
-		function __construct($tagName) {
-			parent::__construct();
+		function XML_Element($tagName) {
+			$this->XML_Node();
 			$this->nodeName = $tagName;
 			$this->nodeType = XML_ELEMENT_NODE;
 		}
@@ -410,8 +410,8 @@
 		var $length;
 
 		// XML_CharacterData Constructor
-		function __construct($data) {
-			parent::__construct();
+		function XML_CharacterData($data) {
+			$this->XML_Node();
 			$this->data = $data;
 			$this->length = strlen($data);
 		}
@@ -481,7 +481,7 @@
 	class XML_Comment extends XML_CharacterData {
 
 		// Constructor
-		function __construct($comment) {
+		function XML_Comment($comment) {
 
 			// call parent's constructor
 			parent::XML_CharacterData($comment);
@@ -515,10 +515,10 @@
 	class XML_Text extends XML_CharacterData {
 
 		// Constructor
-		function __construct($text) {
+		function XML_Text($text) {
 
 			// call parent's constructor
-			parent::__construct($text);
+			parent::XML_CharacterData($text);
 
 			$this->nodeName = '#text';
 			$this->nodeValue = $text;
@@ -554,7 +554,7 @@
 	class XML_CDATASection extends XML_Text {
 
 		// Constructor
-		function __construct($data) {
+		function XML_CDATASection($data) {
 			$this->nodeName = '#cdata-section';
 			$this->nodeValue = $data;
 			$this->nodeType = XML_CDATA_SECTION_NODE;
@@ -584,8 +584,8 @@
 	 */
 	class XML_Document extends XML_Node {
 
-		function __construct() {
-			parent::__construct();
+		function XML_Document() {
+			$this->XML_Node();
 			$this->nodeName = '#document';
 			$this->nodeType = XML_DOCUMENT_NODE;
 		}
@@ -670,10 +670,10 @@
 	class XML extends XML_Document {
 
 		// Constructor
-		function __construct($url = '') {
+		function XML($url = '') {
 
 			// call parent's constructor
-			parent::__construct();
+			$this->XML_Document();
 
 			// Load the referenced XML document
 			if (!empty($url)) $this->load($url);
@@ -836,7 +836,7 @@
 		var $docTypeDecl = '';
 
 		// Constructor
-		function __construct(&$dom) {
+		function XML_Parser(&$dom) {
 			$this->dom =& $dom;
 			$this->lastChild =& $this->dom;
 		}

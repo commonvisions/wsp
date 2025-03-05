@@ -3,7 +3,7 @@
  * rss parser-functions
  * @author stefan@covi.de
  * @since 6.0
- * @version 6.8
+ * @version 7.0
  * @lastchange 2019-01-25
  */
 

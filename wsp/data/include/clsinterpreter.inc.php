@@ -3,8 +3,8 @@
  * basic interpreter class
  * @author stefan@covi.de
  * @since 3.1
- * @version 6.9
- * @lastchange 2020-05-07
+ * @version 7.0
+ * @lastchange 2019-11-05
  */
 
 if (!class_exists("clsInterpreter")):
@@ -16,29 +16,26 @@ if (!class_exists("clsInterpreter")):
 		var $maxfields = 1;
 		var $version = "";
 		var $guid = "";
-		var $phpvars = false;
-		var $bodyfunc = false;
-		var $metascript = false;
 		var $multilang = false;
 		var $flexible = false;
+        var $multifields = false;
         var $dbopen = false;
+		// array();
 		var $xajax = false;
+		// true || false
 	
 		// get content title for preview
 		function getView($value, $mid, $cid) {
-			return NULL;
+            
+            if (!(is_array($value))) { $value = unserializeBroken(trim($value)); }
+            $mid = (isset($mid))?intval($mid):0; $cid = (isset($cid))?intval($cid):0;
+            
+			return false;
 			} // getView()
-	   
-        // holds session-based variables through all contents on page
-        function getPage($value, $mid) {
-            if (!(isset($_SESSION['getpage']))) { $_SESSION['getpage'] = array(); }
-            if (!(isset($_SESSION['getpage'][$this->guid]))) { $_SESSION['getpage'][$this->guid] = array(); }
-            if (!(isset($_SESSION['getpage'][$this->guid][intval($mid)]))) { $_SESSION['getpage'][$this->guid][intval($mid)] = array(); }
-            $_SESSION['getpage'][$this->guid][intval($mid)][] = unserializeBroken($value);
-        }
-        
+	
+        // dynamic values
         function getDynamicValues() {
-            echo "<em>This Interpreter doesn't support dynamic values.</em>";
+            return "<em>This Interpreter doesn't support dynamic values.</em>";
             // should return an array with all field names as normaly written in following syntax
             // name="field[fieldname]" for all form elements
             // so a return for input with name field[description] must be 
@@ -51,15 +48,16 @@ if (!class_exists("clsInterpreter")):
             if (isset($_SESSION['wspvars']['db'])) {
                 if (mysqli_ping($_SESSION['wspvars']['db'])) {
                     // close existing db-connection
-                    mysqli_close($_SESSION['wspvars']['db']);
+                    $mysqli = mysqli_init();
+                    // suppression of error is required to prevent from warning output
+                    if (@(!$mysqli->real_connect($interpreterHost, $interpreterUser, $interpreterPass, $interpreterDB))) {
+                        $this->dbopen = false;
+                    } else {
+                        mysqli_close($_SESSION['wspvars']['db']);
+                        $this->dbopen = true;
+                        $_SESSION['wspvars']['db'] = $mysqli->real_connect($interpreterHost, $interpreterUser, $interpreterPass, $interpreterDB);
+                    }
                 }
-                // create a new connection to given param
-                $_SESSION['wspvars']['db'] = new mysqli($interpreterHost, $interpreterUser, $interpreterPass, $interpreterDB);
-                if (mysqli_ping($_SESSION['wspvars']['db'])!==true) {
-                    addWSPMsg('errormsg', "Interpreter \"".$this->title."\" could not connect to it's desired database. The Interpreter file may not work properly.");
-                } else {
-					$this->dbopen = true;
-				}
             }
         }
         
@@ -71,36 +69,36 @@ if (!class_exists("clsInterpreter")):
                 $this->dbopen = false;
             }
         }
+
+        function getMultiHeader($value, $mid = 0, $cid = 0, $area = 0) {
+            return false;
+            // returns array with title and option to show opener/closer
+            //
+            // $header = array(
+            //    array('Darstellungsoptionen', false),
+            //    array('Dateiliste', false)
+            // )
+            // return $header[$area];
+        }
         
-		//
-		// edit contents
-		//
+        function getMultiEdit($value, $mid, $cid, $area) {
+            return "<em>This Interpreter doesn't support multiple edit fields.</em>";
+        }
+
+		// edit (single) contents
 		function getEdit($value, $mid, $cid) {
 			
+            if (!(is_array($value))) { $value = unserializeBroken(trim($value)); }
+            $mid = (isset($mid))?intval($mid):0;
+            $cid = (isset($cid))?intval($cid):0;
+            
 			ob_start();
 	
 			?>
-			<script type="text/javascript" language="javascript">
-			<!--
-				function submitForm() {
-				}	// submitForm()
-			//-->
-			</script>
-			<fieldset>
-				<legend>Inhalte</legend>
-				<span id="fieldset_content">
-					<table class="tablelist">
-						<tr>
-							<td class="tablecell two">Beschreibung</td>
-							<td class="tablecell six"><input name="field['desc']" id="field_desc" value="<?php echo prepareTextField($value['content']); ?>" /></td>
-						</tr>
-						<tr>
-							<td class="tablecell two">Inhalt</td>
-							<td class="tablecell six"><textarea name="field['content']" id="field_content"><?php echo $value['content']; ?></textarea></td>
-						</tr>
-					</table>
-				</span>
-			</fieldset>
+			<div class="row">
+                <div class="col-md-3"><p><?php echo returnIntLang('str content', false); ?></p></div>
+                <div class="col-md-9"><textarea name="field['content']" id="field_content"><?php echo $value['content']; ?></textarea></div>
+            </div>
 			<?php
 			
 			$edit = ob_get_contents();
@@ -113,22 +111,33 @@ if (!class_exists("clsInterpreter")):
 		function getSave() { return serialize($_POST['field']); }
 		
 		// returns an array with all predefined xajax functions used from this interpreter
-		function getXAJAXfuncs() {
-			// deprecated since 6.3
+		// deprecated since WSP 7.0
+        // will be removed in future versions
+        function getXAJAXfuncs() {
 			return false;
 			} // getXAJAXfuncs()
 		
-        // optional functions referred in fileparser but not notwendig
-        // function getHeader($value, $mid, $cid, $publishlang) { return false; }
-        // function getBodyFunction($value, $mid, $cid, $publishlang) { return false; }
-        // function getMetaScript($value, $mid, $cid, $publishlang) { return false; }
+        // return some header information
+        // returns data that will be placed in PHP-Section on top of published file
+        function getHeader($value, $mid, $cid, $publishlang) {
+            
+            if (!(is_array($value))) { $value = unserializeBroken(trim($value)); }
+            $mid = (isset($mid))?intval($mid):0; $cid = (isset($cid))?intval($cid):0;
+            $publishlang = (isset($publishlang) && trim($publishlang)!='')?trim($publishlang):(defined('WSP_LANG')?WSP_LANG:'de');
+            
+            return false;
+        }
         
 		// parse contents
 		function getContent($value, $mid, $cid, $publishlang) {
 			
+            if (!(is_array($value))) { $value = unserializeBroken(trim($value)); }
+            $mid = (isset($mid))?intval($mid):0; $cid = (isset($cid))?intval($cid):0;
+            $publishlang = (isset($publishlang) && trim($publishlang)!='')?trim($publishlang):(defined('WSP_LANG')?WSP_LANG:'de');
+            
 			$value = unserializeBroken($value);
 
-			$parser = "<!-- getContent() to CID ".$cid." in MID ".$mid." for lang ".$publishlang." is no set -->";
+            $parser = "<!-- getContent() to CID ".$cid." in MID ".$mid." for lang ".$publishlang." is no set -->";
 			$parser.= $value['content'];
 						
 			return $parser;
@@ -138,4 +147,4 @@ if (!class_exists("clsInterpreter")):
 	}	// class clsInterpreter
 endif;
 
-// EOF ?>
+?>

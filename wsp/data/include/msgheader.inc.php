@@ -3,8 +3,8 @@
  * msgheader
  * @author stefan@covi.de
  * @since 6.0
- * @version 6.8
- * @lastchange 2018-09-18
+ * @version 7.0
+ * @lastchange 2019-03-08
  */
 ?>
 <script type="text/javascript">

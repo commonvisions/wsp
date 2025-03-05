@@ -1,162 +1,62 @@
 <?php
 /**
+ *
  * @author stefan@covi.de
  * @since 3.1.2
- * @version GIT
+ * @version 7.0
+ * @lastchange 2021-09-15
 */
 
 ksort($_SESSION);
 
-if (!(isset($_POST['previewid']))):
-	
-	$errormsgarray = array();
-	
-	?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
-	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-	<html lang="de">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-		<meta name="author" content="http://www.covi.de">
-		<meta name="copyright" content="http://www.covi.de">
-		<meta name="publisher" content="http://www.covi.de">
-		<meta name="robots" content="nofollow">
-		<title><?php echo (isset($_SESSION['wspvars']['sitetitle'])?$_SESSION['wspvars']['sitetitle']:'WSP Admin Panel'); ?></title>
-		<!-- viewport definitions especially for mobile devices -->
-		<meta name="viewport" content="width=device-width, user-scalable=no">
-		<!-- base desktop stylesheet -->
-		<link rel="stylesheet" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/layout/flexible.css.php" media="screen" type="text/css">
-		<!-- print_screen extensions -->
-		<link rel="stylesheet" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/layout/print.css.php" media="print" type="text/css">
-		<!-- self colorize extensions -->
-		<?php if (array_key_exists('wspstyle', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['wspstyle'])!=""): echo "<link rel=\"stylesheet\" href=\"/".$_SESSION['wspvars']['wspbasedir']."/media/layout/".trim($_SESSION['wspvars']['wspstyle']).".css.php\" media=\"screen\" type=\"text/css\">\n"; else: echo "<link rel=\"stylesheet\" href=\"/".$_SESSION['wspvars']['wspbasedir']."/media/layout/wsp.css.php\" media=\"screen\" type=\"text/css\">\n"; endif; ?>
-		<link rel="shortcut icon" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/screen/favicon.ico">
-		<link rel="apple-touch-icon" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/screen/iphone_favicon.png" />
-		<!-- get jquery -->
-		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/jquery/jquery-3.7.1.min.js"></script>
-		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/jquery/jquery-migrate-1.4.1.min.js"></script>
-		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/jquery-ui/jquery-ui.min.js"></script>
-		<!-- get WSP supported and/or required base scripts -->
-		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/basescript.js.php"></script>
-		<!-- fancyBox -->
-		<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/jquery.fancybox.css?v=2.1.5" type="text/css" media="screen" />
-		<script type="text/javascript" src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/jquery.fancybox.pack.js?v=2.1.5"></script>
-		<!-- fancybox helpers -->
-		<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-buttons.css?v=1.0.5" type="text/css" media="screen" />
-		<script type="text/javascript" src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-buttons.js?v=1.0.5"></script>
-		<script type="text/javascript" src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-media.js?v=1.0.6"></script>
-		<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-thumbs.css?v=1.0.7" type="text/css" media="screen" />
-		<script type="text/javascript" src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-thumbs.js?v=1.0.7"></script>
-		<?php
+?><!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <meta name="author" content="https://www.covi.de" />
+    <meta name="robots" content="nofollow" />
+    <title>WSP 7.0</title>
+    <!-- get bootstrap -->
+    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/bootstrap.css" />
+    <!-- get fonts -->
+    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/fontface.css" />
+    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/font-awesome-5-7-2.css" />
+    <!-- extended desktop stylesheets -->
+    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/bootstrap-tour.min.css" />
+    <!-- get page based stylesheets -->
+<?php if(isset($_SESSION['wspvars']['addpagecss']) && is_array($_SESSION['wspvars']['addpagecss']) && count($_SESSION['wspvars']['addpagecss'])>0): foreach($_SESSION['wspvars']['addpagecss'] AS $addk => $addv): ?>
+    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/<?php echo trim($addv); ?>" />
+<?php endforeach; endif; ?>
+    <!-- base desktop stylesheet -->
+    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/wsp7.css" media="screen" type="text/css" />
+    <?php if ((isset($_SESSION['wspvars']['nightmode']) && intval($_SESSION['wspvars']['nightmode'])==1) && (date('H')>=intval($_SESSION['wspvars']['startnight']) || date('H')<=intval($_SESSION['wspvars']['endnight']))) { ?>
+    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/wsp7-nightly.css" media="screen" type="text/css" />
+    <?php } ?>
+    <!-- self colorize extensions -->
+    <?php if (isset($_SESSION['wspvars']['wspstyle']) && trim($_SESSION['wspvars']['wspstyle'])!="" && is_file(DOCUMENT_ROOT."/".WSP_DIR."/media/layout/".trim($_SESSION['wspvars']['wspstyle']).".css")): echo "<link rel='stylesheet' href='/".WSP_DIR."/media/layout/".trim($_SESSION['wspvars']['wspstyle']).".css' media='screen' type='text/css'>\n"; endif; ?>
+    <!-- base klorofill stylesheet -->
+    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/klorofil.css" />
+    <!-- load icons -->
+    <link rel="shortcut icon" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/screen/favicon.ico">
+    <link rel="apple-touch-icon" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/screen/iphone_favicon.png" />
+    <!-- load generic javascript -->
+    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/jquery/js/jquery-3.3.1.js"></script>
+    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/jquery/js/jquery-ui.min.js"></script>
+    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/wspbase.min.js"></script>
+    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/bootstrap/bootstrap.min.js"></script>
+    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/bootstrap/bootstrap-tour.min.js"></script>
+    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/jquery/jquery.slimscroll.min.js"></script>
+    <!-- load page based javascript -->
+<?php if(isset($_SESSION['wspvars']['addpagejs']) && is_array($_SESSION['wspvars']['addpagejs']) && count($_SESSION['wspvars']['addpagejs'])>0): foreach($_SESSION['wspvars']['addpagejs'] AS $addk => $addv): ?>
+    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/<?php echo trim($addv); ?>"></script>
+<?php endforeach; endif; ?>
+    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/klorofilpro.min.js"></script>
+</head>
+<body id="wspbody" <?php if (isset($_SESSION['wspvars']['lockscreen']) && $_SESSION['wspvars']['lockscreen']===true): echo ' class="lockscreen" '; elseif (isset($preview) && $preview===true): echo ' class="layout-fullwidth" '; endif; ?>>
+    <?php if(!(isset($preview)) || (isset($preview) && !($preview))) { ?><div id="lockscreen" <?php echo (isset($_SESSION['wspvars']['lockscreen']) && $_SESSION['wspvars']['lockscreen']===true) ? '' : 'style="display: none;"'; ?>></div>
+    <?php } ?>
+    <div id="wrapper" <?php echo (isset($_SESSION['wspvars']['lockscreen']) && $_SESSION['wspvars']['lockscreen']===true) ? 'class="lockscreen"' : ''; ?>>
+        <!-- WRAPPER -->
 		
-		if(array_key_exists('wspvars', $_SESSION) && key_exists('userid', $_SESSION['wspvars']) && $_SESSION['wspvars']['userid']>0):
-			?>
-			<script type="text/javascript">
-			
-			$(window).load(function(){
-				$(".opencloseButton" ).click(function() {
-					var options = {};
-					
-					$('#' + $(this).attr("rel")).toggle('blind', options, 300, returnSetOpenTab($(this).attr("rel")));
-					
-					passLiTable('ul.tablelist', 'li.tablecell', 8, new Array('one','two','three','four','five','six','seven','eight'), 'tblc');
-					return false;
-					});
-				});
-			
-			function returnSetOpenTab(tabname) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.setopentab.php", { 'tabname': tabname, 'tabstatus': $('#' + tabname).css('display')});
-				}
-				
-			function updateMsg(uid) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.updatemsg.php", { 'uid': uid })
-					.done (function(data) {
-						$('#msgbar').html(data);
-						})
-				}
-			
-			function updateMsgClose(msgid) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.updatemsgclose.php", { 'msgid': msgid });
-				}
-			
-			function backgroundPublish(msgid) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.backgroundpublish.php").done (function(data) {
-					if (data!='') {
-						callBackgroundPublish();
-						console.log(data.log);
-						};
-					});
-				}
-
-			function showInnerMsg(msgtype) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.showinnermsg.php", { 'msgtype': msgtype })
-					.done (function(data) {
-						if (data) {
-							$('#'+msgtype).html(data);
-							$('#'+msgtype).toggle('blind');
-							$(window).scrollTop(0);
-							}
-						})
-				}
-			
-			</script>
-		<?php if(intval($_SESSION['wspvars']['menustyle'])==1 && intval($_SESSION['wspvars']['userid'])>0): ?>
-			<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/media/layout/vertical.css.php" media="screen" type="text/css">
-			<link rel="stylesheet" type="text/css" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/ddmenu/css/ddsmoothmenu-v.css" />
-			<script type="text/javascript">
-			
-			$(window).load(function(){
-				$("#topholderback" ).attr('class', 'vertical');
-				$("#topholder" ).attr('class', 'vertical');
-				$('#menuholder ul li').each(function(index) {
-					if (<?php if(key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin'])!=''): ?>$(this).hasClass('<?php echo $_SESSION['wspvars']['plugin']; ?>') || <?php else: ?>$(this).hasClass('basic') || <?php endif; ?>$(this).hasClass('select') || $(this).hasClass('cntdwn')) {
-						$(this).fadeIn(300);
-						}
-					});
-				$('#menuholder ul li').hover(function() {
-					$(this).children('ul.level1').toggle('slide', 200);
-					});
-				});
-			
-			</script>
-		<?php else: ?>
-			<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/media/layout/horizontal.css.php" media="screen" type="text/css">
-			<script type="text/javascript">
-			
-			$(window).load(function(){
-				$('#menuholder ul li').each(function(index) {
-					if (<?php if(key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin'])!=''): ?>$(this).hasClass('<?php echo $_SESSION['wspvars']['plugin']; ?>') || <?php else: ?>$(this).hasClass('basic') || <?php endif; ?>$(this).hasClass('select') || $(this).hasClass('cntdwn')) {
-						$(this).fadeIn(300);
-						}
-					});
-				
-				$('#menuholder ul li.level0').hover(function() {
-					$(this).toggleClass('activeover');
-					$('#menuholder ul li.level0').each(function(){
-						$(this).removeClass('activeover');
-						$(this).children('ul.level1').hide('blind', 100);
-						});
-					$(this).find('ul.level1').stop(true, true).toggle('blind', 100);
-					});
-					
-				$('#menuholder ul.level1 li').hover(function() {
-					$(this).find('ul.level2').stop(true, true).toggle('slide', 100);
-					});
-					
-				});
-			
-			</script>
-		<?php endif; ?>
-		<?php endif; ?>
-	</head>
-	<body id="wspbody">
-	<?php 
-	if (key_exists('wsperror', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['wsperror'])!=""):
-		echo "<p style=\"color: #CC0000;\">".$_SESSION['wspvars']['wsperror']."</p>";
-	endif;
-endif;
-
-if (key_exists('userid', $_SESSION['wspvars']) && intval($_SESSION['wspvars']['userid'])>0): ?>
-<div id="topholderback"></div>
-<div id="topholder"></div>
-<?php endif; ?>
-<?php // EOF ?>

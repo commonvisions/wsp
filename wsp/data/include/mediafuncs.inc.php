@@ -1,10 +1,10 @@
 <?php
 /**
  * functions, managing media folders
- * @author cms@covi.de
-  * @since 3.1
- * @version 6.11
- * @lastchange 2022-10-25
+ * @author stefan@covi.de
+ * @since 3.1
+ * @version 7.0
+ * @lastchange 2019-01-25
  */
 
 if((isset($_GET['func']) && $_GET['func']=="") && (isset($_POST['func']) && $_POST['func']!="")):
@@ -110,13 +110,8 @@ if (isset($opm) && $opm=='changedir'):
 		ftp_close($ftpnewd);
 
 		//menu
-		$sqlmenu = doSQL("SELECT `mid`, `header_img`, `imageon`, `imageoff` FROM `menu`");
+		$sqlmenu = doSQL("SELECT `mid`, `imageon`, `imageoff` FROM `menu`");
 		foreach ($sqlmenu['set'] AS $smk => $smv) {
-			if (strstr(trim($smv["header_img"]),$_POST['renpath'])) {
-				$string = str_replace(basename($_POST['renpath']),removeSpecialChar($_POST['newdirname']),trim($smv["header_img"]));
-				doSQL("UPDATE `menu` SET `header_img` = '".escapeSQL($string)."', `contentchanged` = 1 WHERE `mid` = ".intval($smv["mid"]));
-                doSQL("UPDATE `end_menu` SET `header_img` = '".escapeSQL($string)."', `contentchanged` = 1 WHERE `mid` = ".intval($smv["mid"]));
-			}
 			if (strstr(trim($smv["imageon"]),$_POST['renpath'])) {
 				$string = str_replace(basename($_POST['renpath']),removeSpecialChar($_POST['newdirname']),trim($smv["imageon"]));
 				doSQL("UPDATE `menu` SET `imageon` = '".escapeSQL($string)."', `contentchanged` = 1 WHERE `mid` = ".intval($smv["mid"]));
@@ -175,11 +170,11 @@ if (isset($opm) && $opm=='changedir'):
 		}
 		
 		//golbalcontent
-		$sqlglobalcontent = doSQL("SELECT `id`, `valuefield` FROM `globalcontent`");
+		$sqlglobalcontent = doSQL("SELECT `id`, `valuefields` FROM `content_global`");
 		foreach ($sqlglobalcontent['set'] AS $smk => $smv) {
-			if (strstr(trim($smv["valuefield"]),$_POST['renpath'])) {
-				$string = str_replace(basename($_POST['renpath']), removeSpecialChar($_POST['newdirname']), trim($smv["valuefield"]));
-				doSQL("UPDATE `globalcontent` SET `valuefield` = '".escapeSQL($string)."' WHERE `id` = ".intval($smv["id"]));
+			if (strstr(trim($smv['valuefields']),$_POST['renpath'])) {
+				$string = str_replace(basename($_POST['renpath']), removeSpecialChar($_POST['newdirname']), trim($smv['valuefields']));
+				doSQL("UPDATE `content_global` SET `valuefields` = '".escapeSQL($string)."' WHERE `id` = ".intval($smv["id"]));
 			}
 		}
 		
@@ -194,7 +189,7 @@ endif;
 // $filelist => 0 = fieldset | 2 = dropdown | 1 = hidden
 
 if (!(function_exists("listDir"))):
-function listDir($path = '', $mediafolder = '', $extern = 0, $style = 0, $forbidden = array('thumbs')) {
+function listDir($path = '', $mediafolder, $extern = 0, $style = 0, $forbidden = array('thumbs')) {
 	if ($mediafolder==""):
 		$showdir = @dir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/media/".$path)));
 	else:
@@ -581,7 +576,7 @@ function listFiles($path = '', $extern = 0) {
 							$num = mysql_num_rows($res);
 							if ($num == 0):
 								// check usage in globalcontent
-								$sql = "SELECT `id` FROM `globalcontent` WHERE `valuefield` LIKE '%" . $image . "%' LIMIT 1";
+								$sql = "SELECT `id` FROM `content_global` WHERE `valuefields` LIKE '%" . $image . "%' LIMIT 1";
 								$res = mysql_query($sql);
 								$num+= mysql_num_rows($res);
 								if ($num == 0):
@@ -762,7 +757,7 @@ function listFiles($path = '', $extern = 0) {
 							$res = mysql_query($sql);
 							$num = mysql_num_rows($res);
 							if ($num == 0):
-								$sql = "SELECT `id` FROM `globalcontent` WHERE `valuefield` LIKE '%".$path."/".$files[$f]."%' LIMIT 1";
+								$sql = "SELECT `id` FROM `content_global` WHERE `valuefields` LIKE '%".$path."/".$files[$f]."%' LIMIT 1";
 								$res = mysql_query($sql);
 								$num+= mysql_num_rows($res);
 							endif;
@@ -1037,7 +1032,7 @@ function fileinuse($path, $file) {
 		$content[$data[0]][] = $data[1];
 	endwhile;
 
-	$sql = "SELECT c.`mid`, g.`id` FROM `globalcontent` AS g, `content` AS c WHERE g.`id` = c.`globalcontent_id` AND (g.`valuefield` LIKE '%" . $file . "%')";
+	$sql = "SELECT c.`mid`, g.`id` FROM `content_global` AS g, `content` AS c WHERE g.`id` = c.`globalcontent_id` AND (g.`valuefields` LIKE '%" . $file . "%')";
 	$res = mysql_query($sql);
 	$cnum+= mysql_num_rows($res);
 	while ($data = mysql_fetch_row($res)):
@@ -1093,7 +1088,7 @@ function fileUsage($path, $file) {
             endforeach;
         endif;
 
-        $sql = "SELECT c.`mid` FROM `globalcontent` AS g, `content` AS c, `menu` AS m WHERE g.`id` = c.`globalcontent_id` AND (g.`valuefield` LIKE '%" .mysql_real_escape_string(trim($file)). "%') AND g.`trash` = 0 AND c.`trash` = 0 AND m.`trash` = 0 AND c.`mid` > 0 AND c.`mid` = m.`mid`";
+        $sql = "SELECT c.`mid` FROM `content_global` AS g, `content` AS c, `menu` AS m WHERE g.`id` = c.`globalcontent_id` AND (g.`valuefields` LIKE '%" .mysql_real_escape_string(trim($file)). "%') AND g.`trash` = 0 AND c.`trash` = 0 AND m.`trash` = 0 AND c.`mid` > 0 AND c.`mid` = m.`mid`";
         $res = doSQL($sql);
         if ($res['num']>0):
             foreach ($res['set'] AS $rsk => $data):
@@ -1152,7 +1147,7 @@ endif; // fileUsage
 
 // 2016-03-30
 if (!(function_exists("returnJScreateUploader"))):
-function returnJScreateUploader($uploaderid = '', $mediafolder = 'images', $targetfolder = '', $autoscale = 0, $thumbsize = 300) {
+function returnJScreateUploader($uploaderid, $mediafolder = 'images', $targetfolder, $autoscale, $thumbsize) {
 	// create upload area div	
 	echo "<div id='".$uploaderid."'></div>";
 	// load system fileupload script

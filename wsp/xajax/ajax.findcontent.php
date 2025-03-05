@@ -2,22 +2,22 @@
 /**
  * content finden
  * @author stefan@covi.de
+ * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
  * @since 6.0
- * @version 6.8
+ * @version 7.0
  * @lastchange 2019-01-18
  */
 
-if (!empty($_SERVER['HTTP_REFERER'] ?? null)) {
-	session_start();
-	$wspdir = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".($_SESSION['wspvars']['wspbasediradd'] ?? "")."/".($_SESSION['wspvars']['wspbasedir'] ?? "")));
-
-    require $wspdir.'/data/include/globalvars.inc.php';
-    require $wspdir.'/data/include/wsplang.inc.php';
-    require $wspdir."/data/include/dbaccess.inc.php";
-    require $wspdir."/data/include/funcs.inc.php";
-    require $wspdir."/data/include/filesystemfuncs.inc.php";
-    require $wspdir."/data/include/errorhandler.inc.php";
-    require $wspdir."/data/include/siteinfo.inc.php";
+session_start();
+if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
+    include $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/globalvars.inc.php';
+    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/wsplang.inc.php';
+    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/dbaccess.inc.php";
+    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/ftpaccess.inc.php";
+    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/funcs.inc.php";
+    require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/filesystemfuncs.inc.php";
+    include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php";
+    include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php";
 
     if (isset($_REQUEST['searchval']) && trim($_REQUEST['searchval'])!='') {
 
@@ -58,7 +58,7 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)) {
         }
         // search by CONTENT in globalcontents
         if (intval($_REQUEST['searchval'])==0) {
-            $gc_sql = "SELECT id FROM `globalcontent` WHERE ((`valuefield` LIKE '%".escapeSQL(strtolower(trim($_REQUEST['searchval'])))."%') ";
+            $gc_sql = "SELECT id FROM `content_global` WHERE ((`valuefields` LIKE '%".escapeSQL(strtolower(trim($_REQUEST['searchval'])))."%') ";
             $gc_sql.= " AND `trash` = 0 AND (`content_lang` = '".trim($_REQUEST['searchlang'])."' OR c.`content_lang` = ''))";
             $gc_res = doSQL($gc_sql);
             if ($gc_res['num']>0):
@@ -189,3 +189,5 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)) {
         $_SESSION['wspvars']['searchcontent'] = trim($_REQUEST['searchval']);
     }
 }
+
+// EOF ?>

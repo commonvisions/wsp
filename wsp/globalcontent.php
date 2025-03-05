@@ -1,8 +1,10 @@
 <?php
 /**
+ * Verwaltung von Globalen Inhalten
  * @author stefan@covi.de
  * @since 3.1
- * @version GIT
+ * @version 7.0
+ * @lastchange 2019-11-11
  */
 
 /* start session ----------------------------- */
@@ -11,10 +13,10 @@ session_start();
 require ("data/include/usestat.inc.php");
 require ("data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
-require ("./data/include/wsplang.inc.php");
-require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
-require ("./data/include/funcs.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/wsplang.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/dbaccess.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/ftpaccess.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/funcs.inc.php");
 /* checkParamVar ----------------------------- */
 
 /* define actual system position ------------- */
@@ -24,18 +26,18 @@ $_SESSION['wspvars']['fpos'] = $_SERVER['PHP_SELF'];
 $_SESSION['wspvars']['fposcheck'] = true;
 $_SESSION['wspvars']['preventleave'] = true;
 /* second includes --------------------------- */
-require ("./data/include/checkuser.inc.php");
-require ("./data/include/errorhandler.inc.php");
-require ("./data/include/siteinfo.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/checkuser.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php");
 /* page specific includes */
-require ("./data/include/clsinterpreter.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/clsinterpreter.inc.php");
 /* define page specific vars ----------------- */
 $worklang = unserialize($_SESSION['wspvars']['sitelanguages']);
 /* define page specific functions ------------ */
 
 if (isset($_POST['op']) && $_POST['op']=='save'):
 	// insert new global content
-	$sql = "INSERT INTO `globalcontent` SET `interpreter_guid` = '".escapeSQL($_POST['sid'])."', `content_lang` = '".$_SESSION['wspvars']['workspacelang']."'";
+	$sql = "INSERT INTO `content_global` SET `interpreter_guid` = '".escapeSQL($_POST['sid'])."', `content_lang` = '".$_SESSION['wspvars']['workspacelang']."'";
 	$ins = doSQL($sql);
 	$_SESSION['wspvars']['editglobalcontentid'] = intval($ins['inf']);
 	header('location: globalcontentedit.php');
@@ -60,7 +62,7 @@ if (isset($_POST['op']) && $_POST['op']=='delete' && isset($_POST['gcid']) && in
 			addWSPMsg('errormsg', '<p>'.returnIntLang('globalcontent not deleted from contents', true).'</p>');
 		endif;
 		// delete global contents from global content table by given id
-		$trash_sql = "UPDATE `globalcontent` SET `trash` = 1 WHERE `id` = ".intval($_POST['gcid']);
+		$trash_sql = "UPDATE `content_global` SET `trash` = 1 WHERE `id` = ".intval($_POST['gcid']);
         $trash_res = doSQL($trash_sql);
 		if ($trash_res['aff']):
 			addWSPMsg('resultmsg', '<p>'.returnIntLang('globalcontent deleted from globalcontents', true).'</p>');
@@ -113,7 +115,7 @@ include ("data/include/wspmenu.inc.php");
 	</fieldset>
 	<?php
 	
-	$globalcontents_sql = "SELECT * FROM `globalcontent` WHERE `trash` = 0 AND (`content_lang` = '".$_SESSION['wspvars']['workspacelang']."' || `content_lang` = '') ORDER BY `interpreter_guid`";
+	$globalcontents_sql = "SELECT * FROM `content_global` WHERE `trash` = 0 AND (`content_lang` = '".$_SESSION['wspvars']['workspacelang']."' || `content_lang` = '') ORDER BY `interpreter_guid`";
 	$globalcontents_res = doSQL($globalcontents_sql);
 
     if ($globalcontents_res['num']>0):
@@ -162,15 +164,15 @@ include ("data/include/wspmenu.inc.php");
 						$name = returnIntLang('hint generic wysiwyg', false);
 					}
 					$guid = trim($gcresv['interpreter_guid']);
-					$fieldvalue = unserializeBroken($gcresv['valuefield']);
+					$fieldvalue = unserializeBroken($gcresv['valuefields']);
                     $interpreterdesc = returnIntLang('globalcontent interpreter desc not found');
 					// Interpreter einlesen
-					if (is_file("./data/interpreter/".$file)) {
-						require "./data/interpreter/".$file;
+					if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/interpreter/".$file)) {
+						require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/interpreter/".$file;
 						$clsInterpreter = new $interpreterClass;
 						$clsInterpreter->dbCon = $_SESSION['wspvars']['dbcon'];
-						if (isset($clsinterpreter) && method_exists($clsinterpreter, 'getView')) {
-                            $interpreterdesc = $name." » ".$clsInterpreter->getView($fieldvalue, null, null);
+						if (method_exists($clsinterpreter, 'getView')) {
+                            $interpreterdesc = $name." » ".$clsInterpreter->getView($fieldvalue, 0, 0);
                         } else {
                             if (trim($fieldvalue['desc'])!='') {
                                 $interpreterdesc = $name." » ".$fieldvalue['desc'];
@@ -179,7 +181,7 @@ include ("data/include/wspmenu.inc.php");
                                 $interpreterdesc = $name;
                             }
                         }
-                        if (isset($clsinterpreter) && method_exists($clsinterpreter, 'closeInterpreterDB')) {
+                        if (method_exists($clsinterpreter, 'closeInterpreterDB')) {
                             $clsInterpreter->closeInterpreterDB();
                         }
                     }

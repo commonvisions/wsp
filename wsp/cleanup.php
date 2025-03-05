@@ -6,31 +6,133 @@
  * @version GIT
  */
 
-/* start session ----------------------------- */
+// start session -----------------------------
 session_start();
-/* base includes ----------------------------- */
+// base includes -----------------------------
 require ("./data/include/usestat.inc.php");
 require ("./data/include/globalvars.inc.php");
-require ("./data/include/wsplang.inc.php");
-require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
-require ("./data/include/funcs.inc.php");
-require ("./data/include/filesystemfuncs.inc.php");
-// checkParamVar -----------------------------
-
 // define actual system position -------------
 $_SESSION['wspvars']['lockstat'] = '';
 $_SESSION['wspvars']['mgroup'] = 10;
 $_SESSION['wspvars']['fpos'] = $_SERVER['PHP_SELF'];
 $_SESSION['wspvars']['fposcheck'] = false;
 $_SESSION['wspvars']['preventleave'] = false;
+$_SESSION['wspvars']['pagedesc'] = array('fa fa-gears',returnIntLang('menu manage'),returnIntLang('menu manage cleanup'));
 // second includes ---------------------------
 require ("./data/include/checkuser.inc.php");
 require ("./data/include/errorhandler.inc.php");
 require ("./data/include/siteinfo.inc.php");
 // define page specific vars -----------------
+$filesizes = array('Byte','KB','MB','GB');
 
 // define page specific funcs ----------------
+if (isset($_REQUEST['cfd']) && trim($_REQUEST['cfd'])!=''): 
+    // define jumper to scroll down in footer.inc
+    $_SESSION['document_jumper'] = '#filesystem-jumper';
+endif;
+
+// do ftp connect to establish ONE ftp-connection
+$cFTP = $tFTP = 3;
+$ftp = false;
+$ftpcon = false;
+while (!$ftp && ($tFTP > 0)):
+    if ($cFTP != $tFTP):
+        $cFTP = $tFTP;
+        sleep(1);
+    endif;
+    $ftp = ftp_connect(FTP_HOST, FTP_PORT);
+    $tFTP--;
+endwhile;
+if ($ftp===false):
+    addWSPMsg('errormsg', returnIntLang('cleanup cant connect to ftp'));
+else:
+    $ftplogin = @ftp_login($ftp, FTP_USER, FTP_PASS);
+    if (!($ftplogin)):
+        addWSPMsg('errormsg', returnIntLang('cleanup cant login to ftp'));
+    else:
+        // basedir to read from
+        $fsc['ftpbase'] = cleanPath("/".FTP_BASE."/");
+        $fsc['ftpdir'] = cleanPath("/".FTP_BASE."/");
+        // if isset request to change directory, use it
+        if (isset($_REQUEST['cfd']) && trim($_REQUEST['cfd'])!=''): 
+            $fsc['ftpdir'] = cleanPath($fsc['ftpdir']."/".str_replace(".", "", base64_decode(trim($_REQUEST['cfd'])))."/"); 
+        endif;
+        // error and attack management
+
+        /// known directory names of some systems that should not be accessible by "normal" users and will not be shown
+        $fsc['sysdirs'] = array(cleanPath("/".FTP_BASE."/media/"),cleanPath("/".FTP_BASE."/data/"),cleanPath("/".FTP_BASE."/".WSP_DIR."/"),cleanPath("/".FTP_BASE."/plesk-stat/"),cleanPath("/".FTP_BASE."/cgi_bin/"),cleanPath("/".FTP_BASE."/cgi/"),cleanPath("/".FTP_BASE."/wspmod/"));
+
+        $fsc['data'] = array();
+        // setup emtpy files-array
+        $fsc['files'] = array();
+        // setup emtpy directory array
+        $fsc['dirs'] = array();
+        // read list of folder and files from given directory list
+        $cd = ''; $structure = explode("/", $fsc['ftpdir']);
+        foreach ($structure AS $sk => $sv):
+            if ($sv!=''):
+                $cd = cleanPath("/".$cd."/".$sv."/");
+                $fsc['data'][urltext($sv)] = ftp_nlist($ftp, $cd);
+                if (is_array($fsc['data'][urltext($sv)]) && count($fsc['data'][urltext($sv)])>0):
+                    // run array to differate between files and folders (for view)
+                    $fsc['files'][urltext($sv)] = array();
+                    $fsc['dirs'][urltext($sv)] = array();
+                    foreach ($fsc['data'][urltext($sv)] AS $fk => $fv):
+                        $checkftpname = cleanPath("/".$fv);
+                        $checksysname = cleanPath(DOCUMENT_ROOT."/".substr($fv, strlen(cleanPath("/".$fsc['ftpbase']."/"))));
+                        if (is_file($checksysname)):
+                            $filename = substr($checkftpname, strlen($cd));
+                            if ($filename=='index.php' && $fsc['ftpbase']==$fsc['ftpdir']):
+                                // base directory index file
+                                $fusql = "SELECT * FROM `menu` WHERE `isindex` = 1 AND `trash` = 0 AND `connected` = 0";
+                            elseif ($filename=='index.php' && count($structure)>1):
+                                // check for upper directory as filename
+                                $fusql = "SELECT * FROM `menu` WHERE `filename` LIKE '".escapeSQL(urltext($sv))."' AND `trash` = 0";
+                            else:
+                                // check for file as filename
+                                $fusql = "SELECT * FROM `menu` WHERE `filename` LIKE '".escapeSQL(str_replace("/", "", str_replace(".php", "", $filename)))."' AND `trash` = 0";
+                            endif;
+                            $fileusage = (getNumSQL($fusql)>0)?true:false;
+                            $filesize = filesize($checksysname);
+                            if ($filesize==0): $fileusage = false; endif;
+                            $fi = 0; while ($filesize>1014):
+                                $filesize = ceil($filesize/1024);
+                                $fi++;
+                            endwhile;
+                            $filemtime = filemtime($checksysname);
+                            $fsc['files'][urltext($sv)][cleanPath("/".substr((FTP_BASE."/".$checkftpname), strlen(cleanPath("/".FTP_BASE."/"))))] = array(
+                                'name' => $filename,
+                                'action' => base64_encode(cleanPath("/".substr((FTP_BASE."/".$checkftpname), strlen(cleanPath("/".FTP_BASE."/"))))),
+                                'link' => cleanPath("/".substr(cleanPath("/".substr((FTP_BASE."/".$checkftpname), strlen(cleanPath("/".FTP_BASE."/")))), strlen(cleanPath("/".FTP_BASE."/")))),
+                                'usage' => $fileusage,
+                                'size' => $filesize,
+                                'weight' => $filesizes[$fi],
+                                'time' => $filemtime,
+                                );
+                        elseif (is_dir(cleanPath($checksysname."/"))):
+                            if (!(in_array($checkftpname."/", $fsc['sysdirs']))):
+                                $subdata = count(ftp_nlist($ftp, cleanPath("/".$checkftpname."/")));
+                                $fsc['dirs'][urltext($sv)][cleanPath("/".$checkftpname."/")] = array(
+                                    'name' => cleanPath(substr(cleanPath("/".$checkftpname), strlen(cleanPath("/".$cd."/")))),
+                                    'action' => base64_encode(cleanPath(substr(cleanPath("/".$checkftpname), strlen(cleanPath("/".FTP_BASE."/"))))),
+                                    'sub' => intval($subdata),
+                                    );
+                            endif;
+                        endif;
+                    endforeach;
+                    // sorting directory- and files-array
+                    ksort($fsc['dirs'][urltext($sv)]);
+                    ksort($fsc['files'][urltext($sv)]);
+                endif;
+                unset($fsc['data'][urltext($sv)]);
+            endif;
+        endforeach;
+        
+        $ftpcon = true;
+        ftp_close($ftp);
+    endif;
+endif;
+
 // cleanup tmp directory
 if (isset($_POST['action']) && $_POST['action']=='cleanuptmp'):
 	if (is_array($_POST['tmp'])):
@@ -40,15 +142,11 @@ if (isset($_POST['action']) && $_POST['action']=='cleanuptmp'):
 	endif;
 endif;
 
-// head der datei
-include ("./data/include/header.inc.php");
-include ("./data/include/wspmenu.inc.php");
-
 function showDirs($sDir = '', $bRecursive = true) {
 	$subdirs = array();
-	$d = dir($_SERVER['DOCUMENT_ROOT'].$sDir);
+	$d = dir(DOCUMENT_ROOT.$sDir);
 	while (false !== ($entry = $d->read())):
-		if ((substr($entry, 0, 1)!='.') && (is_dir($_SERVER['DOCUMENT_ROOT'].$sDir.'/'.$entry))):
+		if ((substr($entry, 0, 1)!='.') && (is_dir(DOCUMENT_ROOT.$sDir.'/'.$entry))):
 			$subdirs[] = $sDir.'/'.$entry;
 			if ($bRecursive):
 				$subdirs = array_merge($subdirs, showDirs($sDir.'/'.$entry, true));
@@ -58,172 +156,194 @@ function showDirs($sDir = '', $bRecursive = true) {
 	$d->close();
 	return $subdirs;
 	}	// showDirs()
-			
+
+// head of file
+include ("./data/include/header.inc.php");
+include ("./data/include/navbar.inc.php");
+require ("./data/include/sidebar.inc.php");
 ?>
-<div id="contentholder">
-	<fieldset class="text"><h1><?php echo returnIntLang('cleanup headline'); ?></h1></fieldset>
-	<fieldset class="text">
-		<legend><?php echo returnIntLang('str legend', true); ?> <?php echo legendOpenerCloser('wsplegend'); ?></legend>
-		<div id="wsplegend">
-			<p><?php echo returnIntLang('cleanup info'); ?></p>
-		</div>
-	</fieldset>
-	<?php
-	
-	$tempdirs = showDirs("/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp", false);
-	
-	if (count($tempdirs)>1):
-		foreach ($tempdirs AS $key => $value):
-			$stat = stat($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$value);
-			$tempdirs[$key] = str_replace("//", "/", str_replace("//", "/", $value));
-			if (intval($stat[9])>=intval(time()-1209600)):
-				$tempdirs[$key] = "";
-				unset($tempdirs[$key]);
-			elseif (strchr($value, 'previewtmp')):
-				unset($tempdirs[$key]);
-			endif;
-		endforeach;
-	endif;
+<div class="main">
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="content-heading clearfix">
+            <div class="heading-left">
+                <h1 class="page-title"><?php echo returnIntLang('cleanup headline'); ?></h1>
+                <p class="page-subtitle"><?php echo returnIntLang('cleanup info'); ?></p>
+            </div>
+            <ul class="breadcrumb">
+                <li><i class="<?php echo $_SESSION['wspvars']['pagedesc'][0]; ?>"></i> <?php echo $_SESSION['wspvars']['pagedesc'][1]; ?></li>
+                <li><?php echo $_SESSION['wspvars']['pagedesc'][2]; ?></li>
+            </ul>
+        </div>
+        <div class="container-fluid">
+            <?php showWSPMsg(1); ?>
+            <?php
+	       
+            $tempdirs = showDirs("/".WSP_DIR."/tmp", false);
+            if (count($tempdirs)>1):
+                foreach ($tempdirs AS $key => $value):
+                    $stat = stat(DOCUMENT_ROOT."/".$value);
+                    $tempdirs[$key] = str_replace("//", "/", str_replace("//", "/", $value));
+                    if (intval($stat[9])>=intval(time()-1209600)):
+                        $tempdirs[$key] = "";
+                        unset($tempdirs[$key]);
+                    elseif (strchr($value, 'previewtmp')):
+                        unset($tempdirs[$key]);
+                    endif;
+                endforeach;
+            endif;
+            
+            if (count($tempdirs)>1):
+                ?>
+                <div class="row">
+                    <div class="col-lg-6">    
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><?php echo returnIntLang('cleanup tempdirs'); ?></h3>
+                            </div>
+                            <div class="panel-body" id="cleanup_tmp_panel">
+                                <p><?php echo returnIntLang('cleanup temp directories found1'); ?> <?php echo count($tempdirs); ?> <?php echo returnIntLang('cleanup temp directories found2'); ?></p>
+                                <p><a onClick="cleanup_tmp()" class="btn btn-danger"><?php echo returnIntLang('cleanup tmp submit', false); ?></a></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">    
+                        <div class="panel">
+                            <div class="panel-heading">
+                                <h3 class="panel-title"><?php echo returnIntLang('cleanup sysbackup'); ?></h3>
+                            </div>
+                            <div class="panel-body">
+                                <p><?php echo returnIntLang('cleanup sysbackup description'); ?></p>
+                                <form name="cleanup_sys" id="cleanup_sys" method="post">
+                                <input type="hidden" name="action" value="cleanupsys" />
+                                <p><a onClick="cleanup_sys()" class="btn btn-danger"><?php echo returnIntLang('cleanup sys submit', false); ?></a></p>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+            
+            <div class="row">
+                <div class="col-lg-6">    
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><?php echo returnIntLang('refresh mediadb'); ?></h3>
+                        </div>
+                        <div class="panel-body" id="refresh_media_panel">
+                            <p><?php echo returnIntLang('refresh mediadb description'); ?></p>
+                            <p><a onClick="refresh_media()" class="btn btn-danger"><?php echo returnIntLang('refresh mediadb submit', false); ?></a></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">    
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><?php echo returnIntLang('cleanup database'); ?></h3>
+                        </div>
+                        <div class="panel-body">
+                            <p><?php echo returnIntLang('cleanup database description'); ?></p>
+                            <p><a onClick="cleanup_db()" class="btn btn-danger"><?php echo returnIntLang('cleanup database submit', false); ?></a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row" id="filesystem-jumper">
+                <div class="col-lg-9">    
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><?php echo returnIntLang('cleanup filesystem'); ?> <em>beta</em></h3>
+                            <p class="panel-subtitle"><?php echo returnIntLang('cleanup filesystem description'); ?></p>
+                        </div>
+                        <div class="panel-body">
+                            <?php if ($ftpcon): ?>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="panel panel-tab">
+                                        <div class="panel-heading">
+                                            <ul class="nav nav-tabs pull-left">
+                                                <?php
+                                                
+                                                $f = 0; foreach ($fsc['dirs'] AS $sk => $sv):
+                                                    $f++;
+                                                    if ($f==1):
+                                                        echo "<li ".(($f==count($fsc['dirs']))?' class="active" ':'')."><a href='#".$sk."' data-toggle='tab'><i class='fa fa-globe'></i> ".returnIntLang('str homedir')." (".$sk.")</a></li>";
+                                                    else:
+                                                        echo "<li ".(($f==count($fsc['dirs']))?' class="active" ':'')."><a href='#".$sk."' data-toggle='tab'><i class='fa fa-folder'></i> ".$sk."</a></li>";
+                                                    endif;
+                                                endforeach;
+                                                
+                                                ?>
+                                            </ul>
+                                            <h3 class="panel-title">&nbsp;</h3>
+                                        </div>
+                                        <div class="panel-body" >
+                                            <div class="tab-content no-padding">
+                                                <?php $f = 0; foreach ($fsc['dirs'] AS $sk => $sv): $f++; ?>
+                                                    <div class="tab-pane fade in <?php if ($f==count($fsc['dirs'])): echo ' active '; endif; ?>" id="<?php echo $sk; ?>">
+                                                        <?php if (count($fsc['dirs'][$sk])>0): ?>
+                                                        <div class="row">
+                                                            <?php
 
-	if (count($tempdirs)>1):
-		?>
-		<fieldset>
-			<legend><?php echo returnIntLang('cleanup tempdirs'); ?> <em>beta</em> <?php echo legendOpenerCloser('tempdirs'); ?></legend>
-			<div id="tempdirs">
-				<form name="cleanup_tmp" id="cleanup_tmp" method="post">
-				<p><?php echo returnIntLang('cleanup temp directories found1'); ?> <?php echo count($tempdirs); ?> <?php echo returnIntLang('cleanup temp directories found2'); ?></p>
-				<fieldset class="options">
-					<p><a href="#" onClick="document.getElementById('cleanup_tmp').submit();" class="redfield"><?php echo returnIntLang('cleanup tmp submit', false); ?></a></p>
-				</fieldset>
-				<input type="hidden" name="action" value="cleanuptmp" />
-				<?php
-				
-				foreach ($tempdirs AS $key => $value):
-					if (!(strchr($value, $_SESSION['wspvars']['usevar'])) && !(strchr($value, 'previewtmp'))):
-						echo "<input name=\"tmp[".$key."]\" value=\"".$value."\" type=\"hidden\" />";
-					endif;
-				endforeach;
+                                                            foreach ($sv AS $dk => $dv):
+                                                                
+                                                                if ($dv['sub']==0):
+                                                                    echo "<div class='col-md-4 col-sm-6 col-xs-6'><a onclick=\"alert('".$dv['action']."');\" style='margin-bottom: 3px;' class='btn btn-xs btn-danger'>".$dv['name']."</a></div>";
+                                                                else:
+                                                                    echo "<div class='col-md-4 col-sm-6 col-xs-6'><a href='?cfd=".$dv['action']."' style='margin-bottom: 3px;' class='btn btn-xs btn-primary'>".$dv['name']." (".$dv['sub'].")</a></div>";
+                                                                endif;
+                                                            endforeach;
 
-				
-				?>
-				</form>
-			</div>
-		</fieldset>
-	<?php endif; ?>
-	<!-- <fieldset>
-		<legend><?php echo returnIntLang('cleanup sysbackup'); ?> <?php echo legendOpenerCloser('sysbackup'); ?></legend>
-		<div id="sysbackup">
-			<form name="cleanup_sysbackup" id="cleanup_sysbackup">
-			<p><?php echo returnIntLang('cleanup sysbackup description'); ?></p>
-			<p><?php echo returnIntLang('cleanup sysbackup files'); ?></p>
-			<fieldset class="options">
-				<p><a href="#" onClick="document.getElementById('cleanup_sysbackup').submit();" class="redfield"><?php echo returnIntLang('cleanup sysbackup submit', false); ?></a></p>
-			</fieldset>
-			<input type="hidden" name="action" value="cleanup_sysbackup" />
-			</form>
-		</div>
-	</fieldset> -->
-	<fieldset>
-		<legend><?php echo returnIntLang('cleanup filesystem'); ?> <em>beta</em> <?php echo legendOpenerCloser('filesystem'); ?></legend>
-		<div id="filesystem">
-			<p><?php echo returnIntLang('cleanup filesystem description'); ?></p>
-			<?php
-			
-			$filesizes = array('Byte','KB','MB','GB');
-			
-			// do ftp connect to establish ONE ftp-connection
-			$tFTP = 3;
-			$cFTP = $tFTP;
-			$ftp = false;
-			while (!$ftp && ($tFTP > 0)):
-				if ($cFTP != $tFTP):
-					$cFTP = $tFTP;
-					sleep(1);
-				endif;
-				$ftp = doFTP();
-				$tFTP--;
-			endwhile;
-			if (!$ftp) {
-				addWSPMsg('errormsg', returnIntLang('cleanup cant connect to ftp'));
-			}
+                                                            ?>
+                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if (count($fsc['dirs'][$sk])>0 && count($fsc['files'][$sk])>0): echo "<hr />"; endif; ?>
+                                                        <?php if (count($fsc['files'][$sk])>0): ?>
+                                                        <?php
+
+                                                        foreach ($fsc['files'][$sk] AS $dk => $dv):
+                                                            echo "<div class='row";
+                                                            if ($dv['usage']): echo " btn-success "; endif;
+                                                            echo "' >";
+                                                            echo "<div class='col-md-3'>".$dv['name']." ";
+                                                            if ($dv['usage']): echo "<i class='fa fa-check'></i>"; endif;
+                                                            echo "</div>";
+                                                            echo "<div class='col-md-3'>".$dv['size']." ".$dv['weight']."</div>";
+                                                            echo "<div class='col-md-3'>".date(returnIntLang('format date time', false), $dv['time'])."</div>";
+                                                            if ($dv['usage']):
+                                                                echo "<div class='col-md-3'> <a href='".$dv['link']."' target='_blank' style='color: white;'><i class='fa fa-eye'></i></a> </div>";
+                                                            else:  
+                                                                echo "<div class='col-md-3'>";
+                                                        
+                                                                echo " <a onclick=\"alert('crf: ".$dv['action']."')\" target='_blank'><i class='fa fa-trash'></i></a> ";
+                                                                echo " <a onclick=\"alert('cif: ".$dv['action']."')\" target='_blank'><i class='fa fa-arrow-circle-o-up'></i></a> ";
+                                                                echo " <a onclick=\"alert('cff: ".$dv['action']."')\" target='_blank'><i class='fa fa-arrow-circle-o-right'></i></a> ";
+
+                                                                echo " <a href='".$dv['link']."' target='_blank'><i class='fa fa-eye'></i></a> ";
+                                                                echo "</div>";
+                                                            endif;
+                                                            echo "</div>";
+                                                        endforeach;
+                                                    endif;
+
+                                                    ?>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php else: ?>
+                            <em>no data</em>
+                            <?php endif; ?>
+                            
+                            <?php
 			
 			// if ftp-connect exists
-			if ($ftp):
-				// setup some vars
-				// basedir to read from
-				$fsc['ftpbase'] = str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/"));
-				$fsc['ftpdir'] = str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/"));
-				// wsp-dir to disable from view
-				$fsc['wspbasedir'] = str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['wspbasedir']."/"));
-				// media-dir to disable from view
-				$fsc['mediadir'] = "/media/";
-				// data-dir to disable from view
-				$fsc['datadir'] = "/data/";
-				// document path to check for file or directory function
-				$fsc['docdir'] = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/"));
-				// if isset request to change directory, use it
-				if (isset($_REQUEST['cfd']) && trim($_REQUEST['cfd'])!=''): $fsc['ftpdir'] = str_replace("//", "/", str_replace("//", "/", $fsc['ftpdir']."/".str_replace(".", "", trim($_REQUEST['cfd']))."/")); endif;
-			
-                if (isset($_POST['rdv']) && trim($_POST['rdv'])!='') {
-                    if ($_SERVER['HTTP_REFERER']==$_SERVER['SCRIPT_URI']) {
-                        $rdv = str_replace("//", "/", str_replace("//", "/", $fsc['ftpdir']."/".str_replace(".", "", trim($_REQUEST['rdv']))."/")); 
-                        ftp_rmdir($ftp, $rdv);
-                    }
-                }
-            
-                // error and attack management
+			if ($ftpcon):
 				
-				// read list of folder and files from given directory
-				$fsc['data'] = ftp_nlist($ftp, $fsc['ftpdir']);
-				// setup emtpy files-array
-				$fsc['files'] = array();
-				// setup empty fileaction-array
-				$fsc['fileaction'] = array();
-				// setup directory array
-				$fsc['dirs'] = array();
-				$fsc['dirlink'] = array();
-				
-				/// known directory names of some systems that should not be accessible by "normal" users
-				$fsc['sysdirs'] = array('img','plesk-stat','picture_library','cgi_bin','pma','piwik','cgi-bin');
-				
-                echo "<ul class='tablelist'>";
-				$path = explode("/", substr($fsc['ftpdir'], strlen(str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/")))));
-				$uplink = array();
-				$linkpath = array();
-				while (count($path)>0):
-					$link = "/".implode("/",$path)."/";
-					$key = array_pop($path);
-					$uplink[] = array("key" => $key, "link" => $link);
-				endwhile;
-				foreach($uplink AS $uk => $uv):
-					$linkpath[] = "<a onclick=\"document.getElementById('configcfd').value='".trim($uv['link'])."'; document.getElementById('switchcfd').submit();\" style=\"cursor: pointer; color: #fff;\">".$uv['key']."</a>";
-				endforeach;
-				$linkpath = array_reverse($linkpath);
-				echo "<li class='tablecell eight head'>".str_replace("//", "/", str_replace("//", "/", "/".implode("/",$linkpath)))."</li>";
-				echo "</ul>";
-				
-				// if files or folders in nlist-feedback
-				if (is_array($fsc['data']) && count($fsc['data'])>0):
-					// run array to differate between files and folders (for view)
-					foreach ($fsc['data'] AS $fk => $fv):
-						$checkftpname = str_replace("//", "/", str_replace("//", "/", substr($fv, strlen(str_replace("//", "/", str_replace("//", "/", "/".$fsc['ftpdir']."/"))))));
-						$checksysname = str_replace("//", "/", str_replace("//", "/", $fsc['docdir']."/".substr($fv, strlen(str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/"))))));
-						if (is_file($checksysname)):
-							$fsc['files'][str_replace("//", "/", str_replace("//", "/", "/".substr(($fsc['ftpdir']."/".$checkftpname), strlen(str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/"))))))] = $checkftpname;
-							$fsc['fileaction'][str_replace("//", "/", str_replace("//", "/", "/".substr(($fsc['ftpdir']."/".$checkftpname), strlen(str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/"))))))] = md5(str_replace("//", "/", str_replace("//", "/", "/".substr(($fsc['ftpdir']."/".$checkftpname), strlen(str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/")))))));
-						else:
-							if (!(in_array($checkftpname, $fsc['sysdirs']))):
-								$subdata = count(ftp_nlist($ftp, $fsc['ftpdir']."/".$checkftpname));
-								$fsc['dirs'][str_replace("//", "/", str_replace("//", "/", "/".substr(($fsc['ftpdir']."/".$checkftpname."/"), strlen(str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/"))))))] = $checkftpname;
-								$fsc['diraction'][str_replace("//", "/", str_replace("//", "/", "/".substr(($fsc['ftpdir']."/".$checkftpname."/"), strlen(str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/"))))))] = intval($subdata);
-							endif;
-						endif;
-					endforeach;
-					// sorting directory- and files-array
-					ksort($fsc['dirs']);
-					ksort($fsc['files']);
-				endif;
-
 				if (isset($_POST['crf']) && trim($_POST['crf'])!=''): 
 					$filekey = array_keys($fsc['fileaction'], trim($_POST['crf']));
 					$filekey = $filekey[0];
@@ -262,10 +382,10 @@ header("location: /");
 					endif;
 				endif;
 				
-				if (isset($_POST['cff']) && trim($_POST['cff'])!='') { 
+				if (isset($_POST['cff']) && trim($_POST['cff'])!=''): 
 					$filekey = array_keys($fsc['fileaction'], trim($_POST['cff']));
 					$filekey = $filekey[0];
-					if (array_key_exists($filekey, $fsc['files'])) {
+					if (array_key_exists($filekey, $fsc['files'])):
 						$target = returnInterpreterPath(intval($_POST['cffid']));
 						// set file content
 						$tmpbuf = '<'.'?'.'php header("HTTP/1.1 301 Moved Permanently"); 
@@ -286,207 +406,94 @@ header("location: '.$target.'");
 							addWSPMsg('errormsg', "<p>Die Datei \"".$ftppath."\" konnte nicht hochgeladen werden.</p>");
 						endif;
 						unlink($tmpfile);
-                    }
-                }
-				
-				// create upwards-link only, if not on homedir
-				if ($fsc['ftpdir']!=str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/"))) {
-					$fsc['dirlink'][] = "<a onclick=\"document.getElementById('configcfd').value=''; document.getElementById('switchcfd').submit();\" style='cursor: pointer;'><span class='bubblemessage green'>⇖</span> TOP</a>";
-                }
-                
-                // get level
-                $tmplvl = 1;
-                if (isset($_POST['cfd']) && trim($_POST['cfd'])!='') {
-                    $tmpdir = explode("/", $_POST['cfd']);
-                    foreach ($tmpdir AS $tdk => $tdv) {
-                        if (trim($tdv)!='') {
-                            $tmplvl++;
-                        }
-                    }
-                }
-            
-                // run directories
-				foreach ($fsc['dirs'] AS $fk => $fv) {
-					if (trim($fk)!=$fsc['mediadir'] && trim($fk)!=$fsc['datadir'] && trim($fk)!=$fsc['wspbasedir']) {
-						
-                        $du_sql = "SELECT * FROM `menu` WHERE `filename` LIKE '%".str_replace("/", "", str_replace(".php", "", $fv))."%'";
-						$du_res = doSQL($du_sql);
-            
-                        if (intval($fsc['diraction'][$fk])>0) {
-							// not found in database
-                            if ($du_res['num']==0) {
-                                $createlink = "<a onclick=\"document.getElementById('configcfd').value='".trim($fk)."'; document.getElementById('switchcfd').submit();\" style='cursor: pointer;'><span class='bubblemessage red'>☰</span> ".$fv."</a>";
-                            }
-                            // multiple entries found in database
-                            else if ($du_res['num']>1) {
-                                $mplvl = array(); 
-                                $tmptrash = 0;
-                                foreach ($du_res['set'] AS $drk => $drv) {
-                                    if ($drv['trash']==0) {
-                                        $mplvl[] = $drv['level'];
-                                    }
-                                }
-                                if (!(in_array($tmplvl, $mplvl))) {
-                                    // dieser eintrag existiert auf DIESER ebene nicht
-                                    $createlink = "<a onclick=\"document.getElementById('configcfd').value='".trim($fk)."'; document.getElementById('switchcfd').submit();\" style='cursor: pointer;'><span class='bubblemessage red'>↘</span> ".$fv."</a>";
-                                } 
-                                else {
-                                    $createlink = "<a onclick=\"document.getElementById('configcfd').value='".trim($fk)."'; document.getElementById('switchcfd').submit();\" style='cursor: pointer;'><span class='bubblemessage green'>↘</span> ".$fv."</a>";
-                                    $createlink.= " <span class='bubblemessage'>".intval($fsc['diraction'][$fk])."</span>";
-                                }
-                            } else {
-                                // ONE entry found in database
-                                if ($du_res['set'][0]['trash']!=1) {
-                                    $createlink = "<a onclick=\"document.getElementById('configcfd').value='".trim($fk)."'; document.getElementById('switchcfd').submit();\" style='cursor: pointer;'><span class='bubblemessage green'>↘</span> ".$fv."</a>";
-                                    $createlink.= " <span class='bubblemessage'>".intval($fsc['diraction'][$fk])."</span>";
-                                }
-                                // show directories, that should not exist
-                                else {
-                                    $createlink = "<a onclick=\"document.getElementById('configcfd').value='".trim($fk)."'; document.getElementById('switchcfd').submit();\" style='cursor: pointer;'><span class='bubblemessage red'>↘</span> ".$fv."</a>";
-                                }
-                            }
-						}
-                        else {
-							$createlink = "<a onclick=\"document.getElementById('removecfd').value='".trim($fk)."'; document.getElementById('removedir').submit();\" style='cursor: pointer;'><span class='bubblemessage red'>✕</span> ".$fv."</a>";
-						}
-                        $fsc['dirlink'][] = $createlink;
-					}
-				}
-				// creating displaying table
-				echo "<table class='tablelist'>";
-				// display directories in 4x2-format
-				for ($dl=0; $dl<ceil(count($fsc['dirlink'])/4); $dl++) {
-					echo "<tr>";
-					for ($dlr=0; $dlr<4; $dlr++):
-						if (array_key_exists((($dl*4)+$dlr), $fsc['dirlink'])):
-							echo "<td class='tablecell two publishrequired'>".$fsc['dirlink'][(($dl*4)+$dlr)]."</td>";
-						else:
-							echo "<td class='tablecell two publishrequired'>&nbsp;</td>";
-						endif;
-					endfor;
-					echo "</tr>";
-                }
-				// display files with actions
-				if (count($fsc['files'])>0) {
-					foreach ($fsc['files'] AS $fk => $fv) {
-						// check db for file usage
-						$fu_sql = "SELECT * FROM `menu` WHERE `filename` LIKE '%".str_replace("/", "", str_replace(".php", "", $fv))."%'";
-						$fu_res = doSQL($fu_sql);
-						
-                        echo "<tr>";
-						echo "<td class='tablecell two'>".$fv."</td>";
-						
-						$filesize = filesize($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fk);
-						$fi = 0;
-						while ($filesize>1014):
-							$filesize = ceil($filesize/1024);
-							$fi++;
-						endwhile;
-						$filemtime = filemtime($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fk);
-						
-						echo "<td class='tablecell one'>".$filesize." ".$filesizes[$fi]."</td>";
-						echo "<td class='tablecell one'>".date("Y-m-d", $filemtime)."</td>";
-						
-						if ($fu_res['num']==0 && ($filemtime<(time()-(86400*14)))):
-							// if no usage
-							// REMOVE file without any other action
-							echo "<td class='tablecell one'>";
-							echo "<a onclick=\"document.getElementById('configremovefile').value='".$fsc['fileaction'][$fk]."';document.getElementById('removefile').submit();\"><span class='bubblemessage red'>".returnIntLang('bubble cleanup 404 remove', false)."</span></a>";
-							echo "</td>";
-						else:
-							echo "<td class='tablecell one'></td>";
-						endif;
-						
-						// if PHP-file REPLACE file with 301-header and forwarding to first level root
-						if (!(strtolower($fv)=='index.php' && ($fsc['ftpbase']==$fsc['ftpdir'])) && substr($fk,-4)=='.php'):
-							echo "<td class='tablecell one'>";
-							echo "<a onclick=\"document.getElementById('configindexfile').value='".$fsc['fileaction'][$fk]."';document.getElementById('indexfile').submit();\"><span class='bubblemessage orange'>".returnIntLang('bubble cleanup 301 index', false)."</span></a>";
-							echo "</td>";
-						else:
-							echo "<td class='tablecell one'></td>";
-						endif;
-						// if PHP-file REPLACE file with 301-header and forwarding to any other file that will be defined in the lightbox-overlay
-						if (!(strtolower($fv)=='index.php' && ($fsc['ftpbase']==$fsc['ftpdir'])) && substr($fk,-4)=='.php'):
-							echo "<td class='tablecell one'>";
-							echo "<a onclick=\"document.getElementById('configfilefile').value='".$fsc['fileaction'][$fk]."';\" class='fancyhelper' href='#fileforwarding'><span class='bubblemessage orange'>".returnIntLang('bubble cleanup 301 file', false)."</span></a>";
-							echo "</td>";
-						else:
-							echo "<td class='tablecell one'></td>";
-						endif;
-						// in any case
-						echo "<td class='tablecell one'>";
-						echo "<a href='".$fk."' target='_blank'><span class='bubblemessage green'>".returnIntLang('bubble cleanup open', false)."</span></a>";
-						echo "</td>";
-						echo "</tr>";
-                    }
-                }
-                else {
-					echo "<tr>";
-					echo "<td class='tablecell eight'>";
-					echo returnIntLang('cleanup no files in folder');
-					echo "</td>";
-					echo "</tr>";
-                }
-				echo "</table>";
-				// close existing ftp-connection
-				ftp_close($ftp);
+					
+					endif;
+				endif;
 			endif;
 			
 			?>
 			<form id='switchcfd' name='switchcfd' method='post'><input type="hidden" id='configcfd' name='cfd' value='' /></form>
-            <form id='removedir' name='removedir' method='post'><input type="hidden" id='removecfd' name='rdv' value='' /></form>
 			<form id='removefile' name='removefile' method='post'><input type="hidden" name='cfd' value='<?php echo str_replace("//", "/", str_replace("//", "/", "/".substr($fsc['ftpdir'], strlen(str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/")))))))); ?>' /><input type="hidden" id='configremovefile' name='crf' value='' /></form>
 			<form id='indexfile' name='indexfile' method='post'><input type="hidden" name='cfd' value='<?php echo str_replace("//", "/", str_replace("//", "/", "/".substr($fsc['ftpdir'], strlen(str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/")))))))); ?>' /><input type="hidden" id='configindexfile' name='cif' value='' /></form>
-		</div>
-	</fieldset>
-	<fieldset>
-		<ul class="icondesc">
-            <li class="icondescitem"><span class="bubblemessage green">↘</span> Verzeichnis ist aktiv » in Verzeichnis wechseln</li>
-            <li class="icondescitem"><span class="bubblemessage red">↘</span> Verzeichnis ist als gelöscht markiert » in Verzeichnis wechseln</li>
-            <li class="icondescitem"><span class="bubblemessage red">✕</span> Verzeichnis ist leer » Verzeichnis löschen</li>
-            <li class="icondescitem"><span class="bubblemessage red">☰</span> Verzeichnis ist nicht in der Datenbank  » in Verzeichnis wechseln</li>
-			<li class="icondescitem"><span class="bubblemessage red "><?php echo returnIntLang('bubble cleanup 404 remove', false); ?></span> <?php echo returnIntLang('bubble cleanup 404 remove icondesc'); ?></li>
-			<li class="icondescitem"><span class="bubblemessage orange"><?php echo returnIntLang('bubble cleanup 301 index', false); ?></span> <?php echo returnIntLang('bubble cleanup 301 index icondesc'); ?></li>
-			<li class="icondescitem"><span class="bubblemessage orange"><?php echo returnIntLang('bubble cleanup 301 file', false); ?></span> <?php echo returnIntLang('bubble cleanup 301 file icondesc'); ?></li>
-			<li class="icondescitem"><span class="bubblemessage green"><?php echo returnIntLang('bubble cleanup open', false); ?></span> <?php echo returnIntLang('bubble cleanup open icondesc'); ?></li>
-		</ul>
-	</fieldset>
-	<div id="fileforwarding" style="display: none;">
-		<form id='filefile' name='filefile' method='post'><input type="hidden" name='cfd' value='<?php echo str_replace("//", "/", str_replace("//", "/", "/".substr($fsc['ftpdir'], strlen(str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/")))))))); ?>' /><input type="hidden" id='configfilefile' name='cff' value='' />
-		<table class="tablelist">
-			<tr>
-				<td class="tablecell eight">&nbsp;<?php echo returnIntLang('inline forwarding targetpage'); ?></td>
-			</tr>
-			<tr>
-				<td class="tablecell eight"><select name="cffid" class="one full">
-					<?php getMenuLevel(0, 0, 1); ?>
-				</select></td>
-			</tr>
-			<tr>
-				<td class="tablecell eight">&nbsp;<a onclick="document.getElementById('filefile').submit();"><?php echo returnIntLang('inline set targetpage'); ?></a></td>
-			</tr>
-		</table>
-		</form>
-	</div>
-	<script language="JavaScript" type="text/javascript">
-	<!--
+                            
+                            
+                            
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3">    
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title"><?php echo returnIntLang('cleanup icondesc'); ?></h3>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="icondesc">
+                                <li class="icondescitem"><i class='fa fa-trash'></i> <?php echo returnIntLang('bubble cleanup 404 remove icondesc'); ?></li>
+                                <li class="icondescitem"><i class='fa fa-arrow-circle-o-up'></i> <?php echo returnIntLang('bubble cleanup 301 index icondesc'); ?></li>
+                                <li class="icondescitem"><i class='fa fa-arrow-circle-o-right'></i> <?php echo returnIntLang('bubble cleanup 301 file icondesc'); ?></li>
+                                <li class="icondescitem"><i class='fa fa-eye'></i> <?php echo returnIntLang('bubble cleanup open icondesc'); ?></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <hr />
+        
+        <form id='filefile' name='filefile' method='post'><input type="hidden" name='cfd' value='<?php echo str_replace("//", "/", str_replace("//", "/", "/".substr($fsc['ftpdir'], strlen(str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/")))))))); ?>' /><input type="hidden" id='configfilefile' name='cff' value='' />
+        <table class="tablelist">
+            <tr>
+                <td class="tablecell eight">&nbsp;<?php echo returnIntLang('inline forwarding targetpage'); ?></td>
+            </tr>
+            <tr>
+                <td class="tablecell eight"><select name="cffid" class="one full">
+                    <?php // getMenuLevel(0, 0, 1); ?>
+                </select></td>
+            </tr>
+            <tr>
+                <td class="tablecell eight">&nbsp;<a onclick="document.getElementById('filefile').submit();"><?php echo returnIntLang('inline set targetpage'); ?></a></td>
+            </tr>
+        </table>
+        </form>
 	
-	$(document).ready(function() {
-		$(".fancyhelper").fancybox({
-			maxWidth	: 800,
-			maxHeight	: 600,
-			fitToView	: false,
-			minWidth	: '20%',
-			autoSize	: true,
-			closeClick	: false,
-			openEffect	: 'none',
-			closeEffect	: 'none'
-		});
-	});
-	//-->
-	</script>
+        <script language="JavaScript" type="text/javascript">
+        <!--
+        
+        function panel_height(panelname) {
+            var panelheight = parseInt($('#' + panelname ).outerHeight());
+            var paneltopp = parseInt($('#' + panelname).css('padding-top'));
+            var panelbottomp = parseInt($('#' + panelname).css('padding-bottom'));
+            return (panelheight-paneltopp-panelbottomp-4);
+        }
+        
+        function cleanup_tmp() {
+            $('#cleanup_tmp_panel').html('<iframe src="./xajax/iframe.cleanuptmppanel.php" style="border: none; width: 100%; background: red; height: ' + panel_height('cleanup_tmp_panel') + 'px;"></iframe>');
+        }
+        
+        function refresh_media() {
+            $('#refresh_media_panel').html('<iframe src="./xajax/iframe.refreshmediapanel.php" style="border: none; width: 100%; background: red; height: ' + panel_height('refresh_media_panel') + 'px;"></iframe>');
+        }
+         
+        /*
+        $(document).ready(function() {
+            $(".fancyhelper").fancybox({
+                maxWidth	: 800,
+                maxHeight	: 600,
+                fitToView	: false,
+                minWidth	: '20%',
+                autoSize	: true,
+                closeClick	: false,
+                openEffect	: 'none',
+                closeEffect	: 'none'
+            });
+        });
+        */
+        
+        //-->
+        </script>
+    </div>
 </div>
 <?php
-@ include ("./data/include/footer.inc.php");
-?>
-<!-- EOF -->
+include ("./data/include/footer.inc.php");
+// EOF?>

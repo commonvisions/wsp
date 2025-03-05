@@ -3,14 +3,8 @@
  * edit menupoints details
  * @author stefan@covi.de
  * @since 3.1
- * @version GIT
- * 
- * 2023-01-08
- * - fixed "Passing null to parameter #1 ($string) of type string is deprecated"
- * 2025-01-08
- * - fixed problem with external db access
- * - fixed wrong editable param on menupoints with revieved dynamic contents
- * 
+ * @version 7.0
+ * @lastchange 2021-03-03
  */
 
 /* start session ----------------------------- */
@@ -21,7 +15,7 @@ require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ("./data/include/wsplang.inc.php");
 require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
+require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 require ("./data/include/filesystemfuncs.inc.php");
 /* checkParamVar ----------------------------- */
@@ -115,6 +109,7 @@ if ($op=='save'):
 		$description = "not set";
 	endif;
 	$menuupdate_sql.= ", `description` = '".escapeSQL(trim($description))."'";
+	// $menuupdate_sql.= ", `filename` = '".escapeSQL(trim($_POST['filename']))."'"; unset($_POST['filename']);
 	$menuupdate_sql.= ", `offlink` = '".escapeSQL(trim($_POST['offlink']))."'"; unset($_POST['offlink']);
 	$menuupdate_sql.= ", `imageon` = '".escapeSQL(trim($_POST['imageon']))."'"; unset($_POST['imageon']);
 	$menuupdate_sql.= ", `imageoff` = '".escapeSQL(trim($_POST['imageoff']))."'"; unset($_POST['imageoff']);
@@ -219,14 +214,14 @@ if ($op=='save'):
                 $_SESSION['wspvars']['db'] = new mysqli(trim($_POST['pluginconfig']['dbhost']), trim($_POST['pluginconfig']['dbuser']), trim($_POST['pluginconfig']['dbpass']), trim($_POST['pluginconfig']['dbname']));
                 $tmpdb = true;
             }
-            $plugincontent_sql = "SELECT `".trim($_POST['pluginconfig']['identifier'])."`, `".trim($_POST['pluginconfig']['filename'])."` AS filename, `".trim($_POST['pluginconfig']['description'])."` AS description FROM `" . escapeSQL($_POST['pluginconfig']['dbname'] ?? DB_NAME) . "`.`" . escapeSQL($_POST['pluginconfig']['fromtable']) . "`";
+            $plugincontent_sql = "SELECT `".trim($_POST['pluginconfig']['filename'])."` AS filename, `".trim($_POST['pluginconfig']['description'])."` AS description FROM `".trim($_POST['pluginconfig']['fromtable'])."`";
             if (trim($_POST['pluginconfig']['where'])!='') {
                 $plugincontent_sql.= str_replace(" ORDER BY ", "", " WHERE ".trim($_POST['pluginconfig']['where']));
             }
             if (trim($_POST['pluginconfig']['order'])!='') {
                 $plugincontent_sql.= str_replace(" WHERE ", "", " ORDER BY `".trim($_POST['pluginconfig']['order']))."`";
             }
-            $plugincontent_res = doSQL(escapeSQL($plugincontent_sql));            
+            $plugincontent_res = doSQL(escapeSQL($plugincontent_sql));
             if (isset($tmpdb) && $tmpdb===true) {
                 mysqli_close($_SESSION['wspvars']['db']);
                 $_SESSION['wspvars']['db'] = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
@@ -249,14 +244,12 @@ if ($op=='save'):
                         $updatemid[] = intval(doResultSQL($conmid_sql));
                         $updatecontent[] = array(
                             'mid' => intval(doResultSQL($conmid_sql)),
-                            'identifier' => $_POST['pluginconfig']['idname'],
-                            'idvalue' => $pcrv[$_POST['pluginconfig']['identifier']],
+                            'filename' => urlText(trim($pcrv['filename'])),
+                            'description' => setUTF8(trim($pcrv['description'])),
                         );
                         // remove key-value-pair from $plugincontent_res['set'] to prevent new INSERT
                         // BUT update the entry later with new param
-                        if (isset($_POST['pluginconfig']['forcereload']) && intval($_POST['pluginconfig']['forcereload'])==0) {
-                            unset($plugincontent_res['set'][$pcrk]);
-                        }
+                        unset($plugincontent_res['set'][$pcrk]);
                         // everything what stays in $plugincontent_res['set'] is NEW content
                     }
                 }
@@ -264,9 +257,6 @@ if ($op=='save'):
                 if (is_array($existmid)) {
                     // and put all not updateable menupoints to deletion queue 
                     $deletemid = array_diff($existmid, $updatemid);
-                }
-                if (isset($_POST['pluginconfig']['forcereload']) && intval($_POST['pluginconfig']['forcereload'])==1) {
-                    $deletemid = $updatemid;
                 }
                 // remove all unrelated menupoints
                 foreach ($deletemid AS $dmk => $dmv) {
@@ -283,13 +273,14 @@ if ($op=='save'):
                 // insert dynamic menupoints to menu
                 foreach ($plugincontent_res['set'] AS $pcrk => $pcrv) {
                     // insert dynamic menupoints to menu
-                    $dynamicinsert_sql = "INSERT INTO `menu` SET `editable` = 7, `position` = ".intval($pcrk).", `visibility` = ".(isset($_POST['pluginconfig']['visibility'])?intval($_POST['pluginconfig']['visibility']):'').", `description` = '".escapeSQL(setUTF8(trim($pcrv['description'])))."', `templates_id` = 0, `level` = ".(intval($level)+1).", `connected` = ".intval($_POST['mid']).", `filename` = '".escapeSQL(urlText(trim($pcrv['filename'])))."', `contentchanged` = 1, `changetime` = ".time().", `addscript` = '".$tmpaddscript."', `addcss` = '".$tmpaddcss."', `addclass` = '".$tmpuseclass."', `isindex` = 0, `trash` = 0, `mobileexclude` = ".(isset($_POST['pluginconfig']['mobileexclude'])?intval($_POST['pluginconfig']['mobileexclude']):'').", `weekday` = ".$tmpweekday.", `showtime` = '".$tmpshowtime."', `login` = ".$tmplogin.", `logincontrol` = '".$tmplogincontrol."', `lockpage` = ".(isset($_POST['pluginconfig']['lockpage'])?intval($_POST['pluginconfig']['lockpage']):'').", `structurechanged` = ".time().", `menuchangetime` = ".time().", `lastchange` = ".time();
+                    $dynamicinsert_sql = "INSERT INTO `menu` SET `editable` = 7, `position` = ".intval($pcrk).", `visibility` = ".(isset($_POST['pluginconfig']['visibility'])?intval($_POST['pluginconfig']['visibility']):'').", `description` = '".escapeSQL(setUTF8(trim($pcrv['description'])))."', `templates_id` = 0, `level` = ".(intval($level)+1).", `connected` = ".intval($_POST['mid']).", `filename` = '".escapeSQL(urlText(trim($pcrv['filename'])))."', `contentchanged` = 1, `changetime` = ".time().", `addscript` = '".$tmpaddscript."', `addcss` = '".$tmpaddcss."', `addclass` = '".$tmpuseclass."', `isindex` = 0, `trash` = 0, `mobileexclude` = ".(isset($_POST['pluginconfig']['mobileexclude'])?intval($_POST['pluginconfig']['mobileexclude']):'').", `weekday` = ".$tmpweekday.", `showtime` = '".$tmpshowtime."', `login` = ".$tmplogin.", `logincontrol` = '".$tmplogincontrol."', 
+                    `lockpage` = ".(isset($_POST['pluginconfig']['lockpage'])?intval($_POST['pluginconfig']['lockpage']):'').", `structurechanged` = ".time().", `menuchangetime` = ".time().", `lastchange` = ".time();
                     $dynamicinsert_res = doSQL($dynamicinsert_sql);
                     if ($dynamicinsert_res['inf']>0) {
                         $updatecontent[] = array(
                             'mid' => intval($dynamicinsert_res['inf']),
-                            'identifier' => $_POST['pluginconfig']['idname'],
-                            'idvalue' => $pcrv[$_POST['pluginconfig']['identifier']]
+                            'filename' => urlText(trim($pcrv['filename'])),
+                            'description' => setUTF8(trim($pcrv['description'])),
                         );
                     }
                 }
@@ -305,12 +296,19 @@ if ($op=='save'):
                             $dcrv['mid'] = $ucv['inf'];
                             // get dynamic valuefields and fill it with contents
                             $dyncontent = unserializeBroken($dcrv['valuefields']);
+                            $valuefields = array();
                             if (is_array($dyncontent) && array_key_exists('isdynamic', $dyncontent)) {
                                 foreach ($dyncontent AS $dck => $dcv) {
-                                    $dyncontent[$ucv['identifier']] = $ucv['idvalue'];
+                                    if ($dck!='isdynamic') {
+                                        $valuefields_sql = "SELECT `".str_replace("`", "", $dcv['selectfield'])."` AS value FROM `".str_replace("`", "", $dcv['selecttable'])."` WHERE `".trim($_POST['pluginconfig']['filename'])."` = '".trim($ucv['filename'])."' AND `".trim($_POST['pluginconfig']['description'])."` = '".trim($ucv['description'])."'";
+                                        if (trim(str_replace("`", "", $dcv['where']))!='') {
+                                            $valuefields_sql.= " AND (".trim($dcv['where']).")";
+                                        }
+                                        $valuefields[$dck] = doResultSQL($valuefields_sql);
+                                    }
                                 }
                             }
-                            $dcrv['valuefields'] = serialize($dyncontent);
+                            $dcrv['valuefields'] = serialize($valuefields);
                             $insertdata_sql = "INSERT INTO `content` SET `mid` = ".intval($ucv['mid']).", `globalcontent_id` = ".intval($dcrv['globalcontent_id']).", `connected` = 0, `position` = ".intval($dcrv['position']).", `visibility` = ".intval($dcrv['visibility']).", `sid` = ".intval($dcrv['sid']).", `valuefields` = '".escapeSQL($dcrv['valuefields'])."', `lastchange` = ".time().", `interpreter_guid` = '".escapeSQL($dcrv['interpreter_guid'])."', `content_area` = ".intval($dcrv['content_area']).", `content_lang` = '".escapeSQL($dcrv['content_lang'])."', `showday` = ".intval($dcrv['showday']).", `showtime` = '".escapeSQL($dcrv['showtime'])."', `container` = ".intval($dcrv['container']).", `containerclass` = '".escapeSQL($dcrv['containerclass'])."', `trash` = 0, `containeranchor` = '".escapeSQL($dcrv['containeranchor'])."', `displayclass` = ".intval($dcrv['displayclass']).", `login` = ".intval($dcrv['login']).", `logincontrol` = '".escapeSQL($dcrv['logincontrol'])."', `uid` = ".intval(intval($_SESSION['wspvars']['userid'])).", `description` = 'dynamiccontent'";
                             $insertdata_res = doSQL($insertdata_sql);
                         }
@@ -371,6 +369,10 @@ $menudetails_res = doSQL($menudetails_sql);
 require ("./data/include/header.inc.php");
 require ("./data/include/wspmenu.inc.php");
 
+//    echo "<pre>";
+//    var_export($_SESSION);
+//    echo "</pre>";
+
 if ($menudetails_res['num']==0): ?>
     <div id="contentholder">	
         <fieldset><h1><?php echo returnIntLang('structure edit headline', true); ?></h1></fieldset>
@@ -399,10 +401,10 @@ if ($menudetails_res['num']==0): ?>
 	
 	$menueditdata = $menudetails_res['set'][0];
 	$langdescription = unserializeBroken($menueditdata['langdescription']);
-	if (!empty($menueditdata['offlink'])) {
+	if (trim($menueditdata['offlink'])!=''):
 		$menueditdata['offlinkdata'] = explode('<#>', trim($menueditdata['offlink']));
 		$menueditdata['offlink'] = trim($menueditdata['offlinkdata'][0]);
-	}
+	endif;
     $pluginconfig = unserializeBroken($menueditdata['pluginconfig']);
 	
 	$forward_sql = "SELECT `mid`, `description` FROM `menu` WHERE trash != 1 AND `connected` = ".intval($mid)." ORDER BY `position`"; //'
@@ -574,7 +576,6 @@ if ($menudetails_res['num']==0): ?>
                         <td class="tablecell two"><select id="editable" name="editable" size="1" class="" onchange="document.getElementById('cfc').value = 1;" >
                             <option value="0"><?php echo returnIntLang('structure edit generell block not editable', true); ?></option>
                             <option value="1" <?php if (intval($menueditdata['editable'])==1) echo " selected='selected' " ; ?>><?php echo returnIntLang('structure edit generell block editable', true); ?></option>
-                            <option value="7" <?php if (intval($menueditdata['editable'])==7) echo " selected='selected' " ; ?>><?php echo returnIntLang('structure edit generell recieved dynamic content', true); ?></option>
                             <option value="9" <?php if (intval($menueditdata['editable'])==9) echo " selected='selected' " ; ?>><?php echo returnIntLang('structure edit generell block dynamic content', true); ?></option>
                         </select></td>
                     </tr>
@@ -618,7 +619,7 @@ if ($menudetails_res['num']==0): ?>
                             ?>
                         </select></td>
                     </tr>
-                    <?php if ($forward_res['num']>0): ?>
+                    <?php if ($$forward_res['num']>0): ?>
                         <tr>
                             <td class="tablecell two"><?php echo returnIntLang('structure edit generell forwarding', true); ?> <?php helpText(returnIntLang('structure forwarder help', false)); ?></td>
                             <td class="tablecell six"><select name="forwarding_id" id="forwarding_id" style="width: 99%;">
@@ -673,33 +674,27 @@ if ($menudetails_res['num']==0): ?>
                     <table class="tablelist">
                         <tr>
                             <td class="tablecell two"><?php echo returnIntLang('structure plugin content use database host', true); ?></td>
-                            <td class="tablecell two"><input name="pluginconfig[dbhost]" type="text" value="<?php echo prepareTextField($pluginconfig['dbhost']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" placeholder="<?php echo $_SESSION['wspvars']['dbcon']['host']; ?>" /></td>
+                            <td class="tablecell two"><input name="pluginconfig[dbhost]" type="text" value="<?php echo prepareTextField($pluginconfig['dbhost']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
                             <td class="tablecell two"><?php echo returnIntLang('structure plugin content use database name', true); ?></td>
-                            <td class="tablecell two"><input name="pluginconfig[dbname]" type="text" value="<?php echo prepareTextField($pluginconfig['dbname']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" placeholder="<?php echo $_SESSION['wspvars']['dbcon']['name']; ?>" /></td>
+                            <td class="tablecell two"><input name="pluginconfig[dbname]" type="text" value="<?php echo prepareTextField($pluginconfig['dbname']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
                         </tr>
                         <tr>
                             <td class="tablecell two"><?php echo returnIntLang('structure plugin content use database user', true); ?></td>
-                            <td class="tablecell two"><input name="pluginconfig[dbuser]" type="text" value="<?php echo prepareTextField($pluginconfig['dbuser']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" placeholder="<?php echo $_SESSION['wspvars']['dbcon']['user']; ?>"  /></td>
+                            <td class="tablecell two"><input name="pluginconfig[dbuser]" type="text" value="<?php echo prepareTextField($pluginconfig['dbuser']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
                             <td class="tablecell two"><?php echo returnIntLang('structure plugin content use database pass', true); ?></td>
                             <td class="tablecell two"><input name="pluginconfig[dbpass]" type="text" value="<?php echo prepareTextField($pluginconfig['dbpass']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
-                        </tr>
-                        <tr>
-                            <td class="tablecell two"><?php echo returnIntLang('structure plugin content select from TABLE', true); ?></td>
-                            <td class="tablecell two"><input name="pluginconfig[fromtable]" type="text" value="<?php echo prepareTextField($pluginconfig['fromtable']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
-                            <td class="tablecell two"><?php echo returnIntLang('structure plugin content WHERE condition', true); ?></td>
-                            <td class="tablecell two"><input name="pluginconfig[where]" type="text" value="<?php echo prepareTextField($pluginconfig['where']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
-                        </tr>
-                        <tr>
-                            <td class="tablecell two"><?php echo returnIntLang('structure plugin content identifier name', true); ?></td>
-                            <td class="tablecell two"><input name="pluginconfig[idname]" type="text" value="<?php echo prepareTextField($pluginconfig['idname']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
-                            <td class="tablecell two"><?php echo returnIntLang('structure plugin content identifier select from FIELD', true); ?></td>
-                            <td class="tablecell two"><input name="pluginconfig[identifier]" type="text" value="<?php echo prepareTextField($pluginconfig['identifier']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
                         </tr>
                         <tr>
                             <td class="tablecell two"><?php echo returnIntLang('structure plugin content filename select from FIELD', true); ?></td>
                             <td class="tablecell two"><input name="pluginconfig[filename]" type="text" value="<?php echo prepareTextField($pluginconfig['filename']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
                             <td class="tablecell two"><?php echo returnIntLang('structure plugin content description select from FIELD', true); ?></td>
                             <td class="tablecell two"><input name="pluginconfig[description]" type="text" value="<?php echo prepareTextField($pluginconfig['description']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
+                        </tr>
+                        <tr>
+                            <td class="tablecell two"><?php echo returnIntLang('structure plugin content select from TABLE', true); ?></td>
+                            <td class="tablecell two"><input name="pluginconfig[fromtable]" type="text" value="<?php echo prepareTextField($pluginconfig['fromtable']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
+                            <td class="tablecell two"><?php echo returnIntLang('structure plugin content WHERE condition', true); ?></td>
+                            <td class="tablecell two"><input name="pluginconfig[where]" type="text" value="<?php echo prepareTextField($pluginconfig['where']); ?>" class="full" onchange="document.getElementById('cfc').value = 1;" /></td>
                         </tr>
                         <tr>
                             <td class="tablecell two"><?php echo returnIntLang('structure plugin content ORDER BY condition', true); ?></td>
@@ -714,7 +709,6 @@ if ($menudetails_res['num']==0): ?>
                             <td class="tablecell six"><input type="hidden" name="pluginconfig[lockpage]" value="0" /><input name="pluginconfig[lockpage]" type="checkbox" value="1" <?php if (intval($pluginconfig['lockpage'])==1) echo "checked"; ?> onchange="document.getElementById('cfc').value = 1;" /></td>
                         </tr>
                     </table>
-                    <p><br /><input type="hidden" name="pluginconfig[forcereload]" value="0" /><input name="pluginconfig[forcereload]" type="checkbox" value="1" onchange="document.getElementById('cfc').value = 1;" /> <?php echo returnIntLang('structure plugin content menu force reload', true); ?></p>
                 </div>
             </fieldset>
             <?php
@@ -750,13 +744,14 @@ if ($menudetails_res['num']==0): ?>
                     </tr>
                     <?php
 
-                    $time = [];
-                    if (!empty($menueditdata['showtime'])) {
-                        $giventimes = unserializeBroken($menueditdata['showtime']);
-                        foreach ($giventimes AS $gkey => $gvalue) {
+                    $alltimes = trim($menueditdata['showtime']);
+                    $time = array();
+                    if ($alltimes!=""):
+                        $giventimes = unserializeBroken($alltimes);
+                        foreach ($giventimes AS $gkey => $gvalue):
                             $time[$gvalue[0]] = $gvalue[1];
-                        }
-                    }
+                        endforeach;
+                    endif;
                     ksort($time);
 
                     foreach ($time AS $key => $value):
@@ -967,7 +962,7 @@ if ($menudetails_res['num']==0): ?>
                     </tr>
                     <tr>
                         <td class="tablecell two"><?php echo returnIntLang('structure edit linkextern', true); ?> <?php helpText(returnIntLang('structure edit linkextern help', false)); ?></td>
-                        <td class="tablecell six"><input name="offlink" type="text" value="<?php echo (!empty($menueditdata['offlink']) ? trim($menueditdata['offlink']) : ''); ?>" class="full" /></td>
+                        <td class="tablecell six"><input name="offlink" type="text" value="<?php echo trim($menueditdata['offlink']); ?>" class="full" /></td>
                     </tr>
                     <tr>
                         <td class="tablecell two"><?php echo returnIntLang('structure edit linkextern target', true); ?> <?php helpText(returnIntLang('structure edit linkextern target help', false)); ?></td>
@@ -1055,7 +1050,7 @@ if ($menudetails_res['num']==0): ?>
                             <option value=""></option>
                             <?php  echo imageSelect('/screen/', '', false, $menueditdata['imageoff'], 150, true); ?>
                         </select> <!-- choose from multiselect imageoff --></td>
-                        <td class="tablecell two"><?php if(!empty($menueditdata['imageoff'])): echo "<img src='".$menueditdata['imageoff']."' border='0' id='menuimg_imageoff_preview' class='autocombo-previewimg' />"; else: echo "<img src='/".$_SESSION['wspvars']['wspbasedir']."/media/screen/no.gif' border='0' id='menuimg_imageoff_preview' class='autocombo-previewimg' />"; endif; ?></td>
+                        <td class="tablecell two"><?php if(trim($menueditdata['imageoff'])!=""): echo "<img src='".$menueditdata['imageoff']."' border='0' id='menuimg_imageoff_preview' class='autocombo-previewimg' />"; else: echo "<img src='/".$_SESSION['wspvars']['wspbasedir']."/media/screen/no.gif' border='0' id='menuimg_imageoff_preview' class='autocombo-previewimg' />"; endif; ?></td>
                     </tr>
                     <tr>
                         <td class="tablecell two"><?php echo returnIntLang('structure edit image active', true); ?></td>
@@ -1063,7 +1058,7 @@ if ($menudetails_res['num']==0): ?>
                             <option value=""></option>
                             <?php  echo imageSelect('/screen/', '', false, array($menueditdata['imageakt']), 150, true); ?>
                         </select> <!-- choose from multiselect imageakt --></td>
-                        <td class="tablecell two"><?php if(!empty($menueditdata['imageakt'])): echo "<img src=\"".$menueditdata['imageakt']."\" border=\"0\" id=\"menuimg_imageakt_preview\" class=\"autocombo-previewimg\" />"; else: echo "<img src='/".$_SESSION['wspvars']['wspbasedir']."/media/screen/no.gif' border='0' id='menuimg_imageakt_preview' class='autocombo-previewimg' />"; endif; ?></td>
+                        <td class="tablecell two"><?php if(trim($menueditdata['imageakt'])!=""): echo "<img src=\"".$menueditdata['imageakt']."\" border=\"0\" id=\"menuimg_imageakt_preview\" class=\"autocombo-previewimg\" />"; else: echo "<img src='/".$_SESSION['wspvars']['wspbasedir']."/media/screen/no.gif' border='0' id='menuimg_imageakt_preview' class='autocombo-previewimg' />"; endif; ?></td>
                     </tr>
                     <tr>
                         <td class="tablecell two"><?php echo returnIntLang('structure edit image mouseover', true); ?></td>
@@ -1071,7 +1066,7 @@ if ($menudetails_res['num']==0): ?>
                             <option value=""></option>
                             <?php  echo imageSelect('/screen/', '', false, $menueditdata['imageon'], 150, true); ?>
                         </select> <!-- choose from multiselect imageon --></td>
-                        <td class="tablecell two"><?php if(!empty($menueditdata['imageon'])): echo "<img src=\"".$menueditdata['imageon']."\" border=\"0\" id=\"menuimg_imageon_preview\" class=\"autocombo-previewimg\" />"; else: echo "<img src='/".$_SESSION['wspvars']['wspbasedir']."/media/screen/no.gif' border='0' id='menuimg_imageon_preview' class='autocombo-previewimg' />"; endif; ?></td>
+                        <td class="tablecell two"><?php if(trim($menueditdata['imageon'])!=""): echo "<img src=\"".$menueditdata['imageon']."\" border=\"0\" id=\"menuimg_imageon_preview\" class=\"autocombo-previewimg\" />"; else: echo "<img src='/".$_SESSION['wspvars']['wspbasedir']."/media/screen/no.gif' border='0' id='menuimg_imageon_preview' class='autocombo-previewimg' />"; endif; ?></td>
                     </tr>
                     <tr>
                         <td class="tablecell two"><?php echo returnIntLang('structure edit image clicked', true); ?></td>
@@ -1079,7 +1074,7 @@ if ($menudetails_res['num']==0): ?>
                             <option value=""></option>
                             <?php  echo imageSelect('/screen/', '', false, $menueditdata['imageclick'], 150, true); ?>
                         </select> <!-- choose from multiselect imageclick --></td>
-                        <td class="tablecell two"><?php if(!empty($menueditdata['imageclick'])): echo "<img src=\"".$menueditdata['imageclick']."\" border=\"0\" id=\"menuimg_imageclick_preview\" class=\"autocombo-previewimg\" />"; else: echo "<img src='/".$_SESSION['wspvars']['wspbasedir']."/media/screen/no.gif' border='0' id='menuimg_imageclick_preview' class='autocombo-previewimg' />"; endif; ?></td>
+                        <td class="tablecell two"><?php if(trim($menueditdata['imageclick'])!=""): echo "<img src=\"".$menueditdata['imageclick']."\" border=\"0\" id=\"menuimg_imageclick_preview\" class=\"autocombo-previewimg\" />"; else: echo "<img src='/".$_SESSION['wspvars']['wspbasedir']."/media/screen/no.gif' border='0' id='menuimg_imageclick_preview' class='autocombo-previewimg' />"; endif; ?></td>
                     </tr>
                 </table>
             </div>
@@ -1096,10 +1091,6 @@ if ($menudetails_res['num']==0): ?>
                         $sitedata[trim($sresv['varname'])] = $sresv['varvalue'];
                     endforeach;
                 endif;
-
-                $menueditdata['pagetitle'] = '';
-                $menueditdata['pagekeys'] = '';
-                $menueditdata['pagedesc'] = '';
 
                 $pagemeta_sql = "SELECT * FROM `pageproperties` WHERE `mid` = ".intval($mid);
                 $pagemeta_res = doSQL($pagemeta_sql);

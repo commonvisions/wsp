@@ -1,37 +1,36 @@
 <?php
 /**
+ * ...
  * @author stefan@covi.de
+ * @copyright (c) 2019, Common Visions Media.Agentur (COVI)
  * @since 6.0
- * @version 6.9
+ * @version 7.0
  * @lastchange 2019-10-16
  */
-
 if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
-    session_start();
-    $wspdir = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".($_SESSION['wspvars']['wspbasediradd'] ?? "")."/".($_SESSION['wspvars']['wspbasedir'] ?? "")));
-	
-    require $wspdir.'/data/include/globalvars.inc.php';
-	require $wspdir.'/data/include/wsplang.inc.php';
-	require $wspdir."/data/include/dbaccess.inc.php";
-	require $wspdir."/data/include/funcs.inc.php";
-	require $wspdir."/data/include/filesystemfuncs.inc.php";
-	require $wspdir."/data/include/errorhandler.inc.php";
-	require $wspdir."/data/include/siteinfo.inc.php";
+session_start();
+include $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/globalvars.inc.php';
+require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/wsplang.inc.php';
+require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/dbaccess.inc.php";
+require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/ftpaccess.inc.php";
+require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir'].'/data/include/funcs.inc.php';
+require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php";
+require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php";
 
-    $fsizes = array('Byte', 'KB', 'MB', 'GB', 'TB');
-    $folder = array();
-    $mysortlist = array();
+$fsizes = array('Byte', 'KB', 'MB', 'GB', 'TB');
+$folder = array();
+$mysortlist = array();
 
-    if (isset($_POST) && isset($_POST['fkid'])): $fkid = intval($_POST['fkid']); else: $fkid = 0; endif;
+if (isset($_POST) && isset($_POST['fkid'])): $fkid = intval($_POST['fkid']); else: $fkid = 0; endif;
 
-    $files_sql = "SELECT * FROM `wspmedia` WHERE `mediafolder` = '".$_SESSION['fullstructure'][$fkid]['folder']."' AND `filename` !='' ";
-    if (isset($_POST) && isset($_POST['sort']) && $_POST['sort']=='date'):
-        $files_sql.= " ORDER BY `filedate`";
-    elseif (isset($_POST) && isset($_POST['sort']) && $_POST['sort']=='size'):
-        $files_sql.= " ORDER BY `filesize`";
-    else: // name
-        $files_sql.= " ORDER BY `filename`";
-    endif;
+$files_sql = "SELECT * FROM `wspmedia` WHERE `mediafolder` = '".$_SESSION['fullstructure'][$fkid]['folder']."' AND `filename` !='' ";
+if (isset($_POST) && isset($_POST['sort']) && $_POST['sort']=='date'):
+	$files_sql.= " ORDER BY `filedate`";
+elseif (isset($_POST) && isset($_POST['sort']) && $_POST['sort']=='size'):
+	$files_sql.= " ORDER BY `filesize`";
+else: // name
+	$files_sql.= " ORDER BY `filename`";
+endif;
 
     $files_res = doSQL($files_sql);		
     $countdelete = 0;
@@ -103,3 +102,5 @@ if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
     }
     
 }
+
+// EOF ?>

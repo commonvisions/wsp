@@ -3,25 +3,18 @@
  * @description basic class for module setup routine
  * @author stefan@covi.de
  * @since 3.1
- * @version 6.8.1
- * @lastchange 2018-09-18
+ * @version 7.0
+ * @lastchange 2019-03-11
  */
  
 class clsSetup {
-	/**
-	* Gibt die Modulversion zurück
-	*/
-	function version() {
-		return '';
-	}	// version()
-    
-    function minWSP() {
-        return false;
-    }
-    
-    function maxWSP() {
-        return false;
-    }
+
+    // return parser version or false for no versionizing
+    function version() { return false; }
+    // return min required wsp version or false for no requirement
+    function minWSP() { return false; }
+    // return max tested wsp version or false for no testing
+    function maxWSP() { return false; }
     
 	/**
 	* Gibt die GUID des Moduls zurück
@@ -40,9 +33,9 @@ class clsSetup {
 	/**
 	* Gibt ein Array mit den Modulen zurück, die installiert sein müssen (GUID, mind. Version)
 	*/
-	function dependences() {
+	function dependencies() {
 		return array();
-	}	// dependences()
+	}	// dependencies()
 
 	/**
 	* Gibt ein Array mit den Menüeinträgen zurück
@@ -59,6 +52,7 @@ class clsSetup {
 	*/
 	function cmsRights() {
 		$rights = array();
+
 		return $rights;
 	}	// cmsRightName()
 
@@ -68,6 +62,8 @@ class clsSetup {
 	*/
 	function getParser() {
 		$parser = array();
+//		$parser[] = '';
+
 		return $parser;
 	}	// getParser()
 
@@ -76,13 +72,15 @@ class clsSetup {
 	* @return: getMenuParser(Parsername, Classname, HTMLMode('yes', 'no'), Parserfile, Maxfields, GUID, Version)
 	*/
 	function getMenuParser() {
-		$menu = array();
-		return $menu;
+		$parser = array();
+
+		return $parser;
 	}	// getMenuParser()
 	
 	function getPlugin() {
-		$plugin = array();
-		return $plugin;
+		$parser = array();
+
+		return $parser;
 	}	// getMenuParser()
 
 	/**
@@ -94,6 +92,7 @@ class clsSetup {
 		$type['iscmsmodul'] = 0;
 		$type['ismenu'] = 0;
 		$type['isglobal'] = 0;
+
 		return $type;
 	}	// getType()
 
@@ -127,8 +126,10 @@ class clsSetup {
 	 * @return unknown
 	 */
 	function getSelfVars() {
-		$selfvars = array();
-		return $selfvars;
+		$aSelfVars = array();
+
+	
+		return $aSelfVars;
 	}	// getSelfVars()
 
 	/**
@@ -138,6 +139,7 @@ class clsSetup {
 	 */
 	function getSQLCreate() {
 		$sql = array();
+		
 		return $sql;
 	}
 	/* BEISPIEL ZU getSQLDescribe():
@@ -165,14 +167,16 @@ class clsSetup {
 		$sql[0]['key'][1]['name']="b";
 		$sql[0]['key'][1]['value'][0]="b";
 		$sql[0]['delete']=false;			
+		
 		return $sql;
 	}
 	****************************************************
 	 */
 	function getSQLDescribe() {
 		$sql = array();
+		
 		return $sql;
 	}
-}
 
-// EOF ?>
+}	// class headline
+?>
