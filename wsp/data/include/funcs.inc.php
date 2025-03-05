@@ -1,131 +1,29 @@
 <?php
 /**
- * @description Allgemeine Funktionen
  * @author stefan@covi.de
  * @since 3.1
- * @version 7.0
- * @lastchange 2021-09-16
+ * @version GIT
+ * 
+ * 6.11.1
+ * fixed error with missing getWSPProperties
+ * 
+ * 2023-01-09
+ * fixed exception on sql statement
+ * fixed deprecation error on prepareTextField
+ * 
+ * 2025-01-19
+ * added backtrace and error message to sql error message output
+ * fixed call of utf8_decode
+ * 
+ * 2025-02-14
+ * bugfixes
+ * 
+ * 2025-02-19
+ * removed "group replacement" in exchange to well formed sql statements 
+ * 
+ * 2025-03-05
+ * WSP7
  */
-
-// sql related functions
-if (!(function_exists('mysql_query'))) {
-    define('MYSQL_ASSOC', true);
-}
-// replacing deprecated mysql_query()
-if (!(function_exists('mysql_query'))) {
-    function mysql_query($sql) {
-        addWSPMsg('errormsg', 'mysql_query() called. '.var_export(debug_backtrace(), true)." <hr />");
-        return doSQL($sql);
-	}
-}
-// replacing deprecated mysql_num_rows()
-if (!(function_exists('mysql_num_rows'))) {
-    function mysql_num_rows($queryarray = array('num'=>0)) { 
-        addWSPMsg('errormsg', 'mysql_num_rows() called. '.var_export(debug_backtrace(), true)." <hr />");
-        return $queryarray['num'];
-    }
-}
-// replacing deprecated mysql_get_server_info()
-if (!(function_exists('mysql_get_server_info'))) {
-    function mysql_get_server_info() {
-        if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {
-            $data = mysqli_get_server_version($_SESSION['wspvars']['db']);
-            $main = floor($data/10000);
-            $minor = intval($data-(floor($data/10000)*10000))/100;
-            return $main.".".$minor;
-        }
-        else {
-            return "-";
-        }
-    }
-}
-// replacing deprecated mysql_get_client_info()
-if (!(function_exists('mysql_get_client_info'))) {
-    function mysql_get_client_info() {
-        addWSPMsg('errormsg', 'mysql_get_client_info() called. '.var_export(debug_backtrace(), true)." <hr />");
-        if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {
-            $data = mysqli_get_client_version();
-            $main = floor($data/10000);
-            $minor = intval($data-(floor($data/10000)*10000))/100;
-            return $main.".".$minor;
-        }
-        else {
-            return "-";
-        }
-    }
-}
-// replacing deprecated mysql_fetch_array()
-if (!(function_exists('mysql_fetch_array'))) {
-    function mysql_fetch_array($data, $datatype) {
-        addWSPMsg('errormsg', 'mysql_fetch_array() called. '.var_export(debug_backtrace(), true)." <hr />");
-        if (!(isset($_SESSION['mysql_fetch_array'][md5($data['sql'])]))) {
-            $_SESSION['mysql_fetch_array'][md5($data['sql'])] = $data['set'];
-        }
-        if (isset($_SESSION['mysql_fetch_array'][md5($data['sql'])])) {
-            if (count( $_SESSION['mysql_fetch_array'][md5($data['sql'])] )>0) {
-                $subdata = array_shift($_SESSION['mysql_fetch_array'][md5($data['sql'])]);
-                return $subdata;
-            }
-            else {
-                unset($_SESSION['mysql_fetch_array'][md5($data['sql'])]);
-                return false;
-            }
-        }
-    }
-};
-
-if (!(function_exists('mysql_fetch_assoc'))):
-function mysql_fetch_assoc($data, $datatype) {
-    addWSPMsg('errormsg', 'mysql_fetch_assoc() called. '.var_export(debug_backtrace(), true)." <hr />");
-    if (!(isset($_SESSION['mysql_fetch_array'][md5($data['sql'])]))):
-        $_SESSION['mysql_fetch_array'][md5($data['sql'])] = $data['set'];
-    endif;
-    if (isset($_SESSION['mysql_fetch_array'][md5($data['sql'])])):
-        if (count( $_SESSION['mysql_fetch_array'][md5($data['sql'])] )>0):
-            $subdata = array_shift($_SESSION['mysql_fetch_array'][md5($data['sql'])]);
-            return $subdata;
-        else:
-            unset($_SESSION['mysql_fetch_array'][md5($data['sql'])]);
-            return false;
-        endif;
-    endif;
-    }
-endif;
-
-// replacing deprecated mysql_result()
-if (!(function_exists('mysql_result'))) {
-    function mysql_result($resultset,$resultpos,$resultvar=false) { 
-        addWSPMsg('errormsg', 'mysql_result() called. '.var_export(debug_backtrace(), true)." <hr />");
-        // setting up numeric keys for older statements
-        $rnum = array();
-        foreach ($resultset['set'][0] AS $rkey => $rvalue) {
-            $rnum[] = $rkey;
-        }
-        if ($resultvar===false) {
-            return $resultset['set'][$resultpos][($rnum[0])];
-        } else if (is_int($resultvar)) {
-            return $resultset['set'][$resultpos][($rnum[intval($resultvar)])];
-        } else {
-            return $resultset['set'][$resultpos][$resultvar];
-        }
-	}
-}
-
-// replacing deprecated mysql_real_escape_string()
-if (!(function_exists('mysql_real_escape_string'))) {
-    function mysql_real_escape_string($string) { 
-        addWSPMsg('errormsg', 'mysql_real_escape_string() called. '.var_export(debug_backtrace(), true)." <hr />");
-        return escapeSQL($string);
-	}
-}
-
-// replacing deprecated mysql_db_name()
-if (!(function_exists('mysql_db_name'))) {
-    function mysql_db_name($result, $row, $field = NULL) { 
-        addWSPMsg('errormsg', 'mysql_db_name() called. '.var_export(debug_backtrace(), true)." <hr />");
-        return $result['set'][$row][$field];
-	}
-}
 
 // mysqli based functions 
 // sql result function for mysqli
@@ -4944,46 +4842,21 @@ if (!(function_exists('prepareTextField'))):
 endif;
 
 // check given raw strings for utf and converts to, if needed
-if (!(function_exists('setUTF8'))):
-	function setUTF8($givenstring) {
+if (!(function_exists("setUTF8"))) { 
+	function setUTF8($givenstring) { 
 		$stringtype = mb_detect_encoding($givenstring);
-		if (trim($stringtype)!=""):
-			if (mb_check_encoding($givenstring, $stringtype)):
-				if ($stringtype=='UTF-8'):
-					return $givenstring;
-				else:
-					return utf8_encode($givenstring);
-				endif;
-			else:
-				if ($stringtype=='UTF-8'):
-					return utf8_encode($givenstring);
-				else:
-					return $givenstring;
-				endif;
-			endif;
-		else:
-			return utf8_encode($givenstring);
-		endif;
+		if (trim($stringtype) && mb_check_encoding($givenstring, $stringtype)) {
+			return $stringtype === 'UTF-8' ? $givenstring : mb_convert_encoding($givenstring, 'UTF-8');
 		}
-endif;
+		return mb_convert_encoding($givenstring, 'UTF-8');
+	}
+}
 
 // deprecated ;)
 if (!(function_exists('mediaDirList'))):
 	function mediaDirList($path, $basefolder) {
         addWSPMsg('errormsg', 'mediaDirList() is deprecated');
-//		$showdir = dir(str_replace("//","/",str_replace("//","/",$_SERVER['DOCUMENT_ROOT'].$path)));
-//		if ($showdir):
-//			while (false !== ($folder = $showdir->read())):
-//				if (substr($folder, 0, 1) != '.'):
-//					if (is_dir($_SERVER['DOCUMENT_ROOT'].$path."/".$folder) && $folder!="thumbs"):
-//						$GLOBALS['directory'][] = str_replace("//","/",str_replace("//","/",$path."/".$folder));
-//						mediaDirList(str_replace("//","/", str_replace("//","/",$path."/".$folder)), $folder);
-//					endif;
-//				endif;
-//			endwhile;
-//		endif;
-//		$showdir->close();
-		}
+    }
 endif;
 
 // 2018-07-21
@@ -7157,14 +7030,15 @@ endif;
 
 if (!function_exists('buildModMenu')):
 	function buildModMenu($parent, $spaces, $rights) {
-		$modmenu = false;
+		$modmenu = null;
         $checkrights = array();
 		if (is_array($rights)):
 			foreach ($rights AS $key => $value) {
 				if ($value==1): $checkrights[] = $key; endif;
 			}
 		endif;
-		$wspmenu_sql = "SELECT `id`, `title`, `link`, `parent_id`, `position`, `guid` FROM `wspmenu` WHERE `parent_id` = ".intval($parent)." ORDER BY `position`, `title`";
+		$wspmenu_sql = "SELECT 
+            `id`, `title`, `link`, `parent_id`, `position`, `guid` FROM `wspmenu` WHERE `parent_id` = ".intval($parent)." ORDER BY `position`, `title`";
 		$wspmenu_res = doSQL($wspmenu_sql);
 		if ($wspmenu_res['num']>0) {
             foreach ($wspmenu_res['set'] AS $wrk => $wrv) {
@@ -7235,5 +7109,3 @@ function getFlashFiles( $path='/' , $selected = array() , $toppath = '' , $trimn
     return $mediafiles;
     }	// getFlashFiles()
 endif;
-
-?>
