@@ -19,16 +19,14 @@ ksort($_SESSION);
     <meta name="robots" content="nofollow" />
     <title>WSP 7.0</title>
     <!-- get bootstrap -->
-    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/bootstrap.css" />
+    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/bootstrap/bootstrap.min.css" />
     <!-- get fonts -->
     <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/fontface.css" />
     <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/font-awesome-5-7-2.css" />
     <!-- extended desktop stylesheets -->
     <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/bootstrap-tour.min.css" />
     <!-- get page based stylesheets -->
-<?php if(isset($_SESSION['wspvars']['addpagecss']) && is_array($_SESSION['wspvars']['addpagecss']) && count($_SESSION['wspvars']['addpagecss'])>0): foreach($_SESSION['wspvars']['addpagecss'] AS $addk => $addv): ?>
-    <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/<?php echo trim($addv); ?>" />
-<?php endforeach; endif; ?>
+    <?php if(isset($_SESSION['wspvars']['addpagecss']) && is_array($_SESSION['wspvars']['addpagecss']) && count($_SESSION['wspvars']['addpagecss'])>0) { foreach($_SESSION['wspvars']['addpagecss'] AS $addk => $addv) { echo '<link rel="stylesheet" href="' . cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR) . 'media/layout/' . trim($addv) . '" />'; }} ?>
     <!-- base desktop stylesheet -->
     <link rel="stylesheet" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/layout/wsp7.css" media="screen" type="text/css" />
     <?php if ((isset($_SESSION['wspvars']['nightmode']) && intval($_SESSION['wspvars']['nightmode'])==1) && (date('H')>=intval($_SESSION['wspvars']['startnight']) || date('H')<=intval($_SESSION['wspvars']['endnight']))) { ?>
@@ -42,7 +40,7 @@ ksort($_SESSION);
     <link rel="shortcut icon" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/screen/favicon.ico">
     <link rel="apple-touch-icon" href="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>media/screen/iphone_favicon.png" />
     <!-- load generic javascript -->
-    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/jquery/js/jquery-3.3.1.js"></script>
+    <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/jquery/js/jquery-3.7.1.js"></script>
     <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/jquery/js/jquery-ui.min.js"></script>
     <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/wspbase.min.js"></script>
     <script src="<?php echo cleanpath(DIRECTORY_SEPARATOR.WSP_DIR.DIRECTORY_SEPARATOR); ?>data/script/bootstrap/bootstrap.min.js"></script>
