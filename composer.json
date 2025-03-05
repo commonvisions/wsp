@@ -1,0 +1,21 @@
+{
+    "name": "covistefan/wsp",
+    "description": "WebsitePreview CMS",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Stefan Roscher",
+            "email": "stefan@covi.de",
+            "homepage": "https://www.websitepreview.de",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "wsp\\":"/"
+        }
+    }
+}

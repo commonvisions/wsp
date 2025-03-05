@@ -1,0 +1,28 @@
+/**
+ * @description WSP
+ * @author stefan@covi.de
+ * @since 5.0
+ * @type design
+ * @version 7.0
+ * @lastchange 2020-05-05
+ */
+
+fieldset {
+    position: relative;
+    padding: 0 0 0 1em;
+    margin-top: -2em;
+    border-left-style: solid;
+    border-left-color: darkred;
+    border-left-width: 3px;
+    margin-bottom: 1.5em;
+}
+
+fieldset legend {
+    margin-top: 0px;
+    padding-top: 1.5em;
+    padding-bottom: 5px;
+}
+
+.li-btn { margin-bottom: 1px; width: auto; }
+
+.dd-dragel .btn-default { background-color: #00a0f0; color: #fff; }
