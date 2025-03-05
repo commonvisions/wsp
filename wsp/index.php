@@ -28,58 +28,25 @@ require("./data/include/siteinfo.inc.php");
 /* define page specific vars ----------------- */
 
 // do update checks if admin user logged in
-if ($_SESSION['wspvars']['usertype']==1) {
+if ($_SESSION['wspvars']['usertype']==1 && defined('WSP_UPDSRV')) {
     $_SESSION['wspvars']['updatedate'] = 0;
     $_SESSION['wspvars']['updateversion'] = 0;
     $_SESSION['wspvars']['updatesystem'] = null;
     if (isCurl()) {
-        if (defined('WSP_UPDSRV') && WSP_UPDSRV=='git') {
-            $defaults = array( 
-                CURLOPT_URL => trim('https://api.github.com/repos/covistefan/wsp'),
-                CURLOPT_HEADER => 0,
-                CURLOPT_USERAGENT => 'WebSitePreview/7.0',
-                CURLOPT_POST => 0,
-                CURLOPT_RETURNTRANSFER => TRUE, 
-                CURLOPT_TIMEOUT => 4 
-            );
-            $ch = curl_init();
-            curl_setopt_array($ch, $defaults);    
-            if( ! $getgit = curl_exec($ch)) { addWSPMsg('errormsg', 'github returned: '.trigger_error(curl_error($ch))); }
-            curl_close($ch);
-            $getgit = (json_decode($getgit, true));
-            $_SESSION['wspvars']['updatedate'] = strtotime($getgit['pushed_at']);
-        } else {
-            $defaults = array( 
-                CURLOPT_URL => trim('https://'.WSP_UPDSRV.'/download/version.json'),
-                CURLOPT_HEADER => 0, 
-                CURLOPT_RETURNTRANSFER => TRUE, 
-                CURLOPT_TIMEOUT => 4 
-            );
-            $ch = curl_init();
-            curl_setopt_array($ch, $defaults);    
-            if( ! $getversion = curl_exec($ch)) { addWSPMsg('errormsg', trigger_error(curl_error($ch))); }
-            curl_close($ch);
-            $getversion = (json_decode($getversion, true));
-            $_SESSION['wspvars']['updatedate'] = intval($getversion['pushed_at']);
-            $_SESSION['wspvars']['updateversion'] = trim($getversion['version']);
-        }
-    }
-    else {
-        if (defined('WSP_UPDSRV') && WSP_UPDSRV=='git') {
-            // fopen is not supported … so we can't get information
-        } else {
-            $fh = @fopen('https://'.WSP_UPDSRV.'/download/version.json', 'r');
-            if (intval($fh)!=0) {
-                $getversion = '';
-                while (!feof($fh)) {
-                    $getversion .= fgets($fh);
-                }
-                fclose($fh);
-                $getversion = (json_decode($getversion, true));
-                $_SESSION['wspvars']['updatedate'] = intval($getversion['pushed_at']);
-                $_SESSION['wspvars']['updateversion'] = trim($getversion['version']);
-            }
-        }
+        $defaults = array( 
+            CURLOPT_URL => trim('https://api.github.com/repos/covistefan/wsp'),
+            CURLOPT_HEADER => 0,
+            CURLOPT_USERAGENT => 'WebSitePreview/7.0',
+            CURLOPT_POST => 0,
+            CURLOPT_RETURNTRANSFER => TRUE, 
+            CURLOPT_TIMEOUT => 4 
+        );
+        $ch = curl_init();
+        curl_setopt_array($ch, $defaults);    
+        if( ! $getgit = curl_exec($ch)) { addWSPMsg('errormsg', 'github returned: '.trigger_error(curl_error($ch))); }
+        curl_close($ch);
+        $getgit = (json_decode($getgit, true));
+        $_SESSION['wspvars']['updatedate'] = strtotime($getgit['pushed_at']);
     }
     // try to get information about stored version and last update
     if (getWSPProperties('lastupdate')!=false) {
