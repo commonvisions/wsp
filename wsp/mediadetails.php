@@ -6,7 +6,8 @@
  * @version GIT
  * 
  * 2025-01-19
- * 
+ * 2025-05-22
+ * Bugfix viewing documents other like imagefiles
  * 
  */
 
@@ -279,7 +280,7 @@ include ("./data/include/wspmenu.inc.php");
 	<?php if ($extern!=1) echo "<fieldset><h1>".returnIntLang('mediadetails headline', true)."</h1></fieldset>\n"; ?>
 	<?php
 	
-	if ($details['fileinfo']===false) {
+	if (empty($details['filesize'])) {
 		echo '<fieldset class="text"><p>' . returnIntLang('file doesnt exist in filesystem') . '</p></fieldset>';
 	} else {
 
@@ -451,7 +452,7 @@ include ("./data/include/wspmenu.inc.php");
 							3 => returnIntLang('mediadetails space MB', true),
 							4 => returnIntLang('mediadetails space GB', true),
 							5 => returnIntLang('mediadetails space TB', true)
-							);
+						);
 					
 						echo ceil($disk).' '.$spacevals[$c]; ?></li>
 						<li class="tablecell two"><?php echo returnIntLang('str filetype', true); ?> <?php 
@@ -546,12 +547,20 @@ include ("./data/include/wspmenu.inc.php");
 						<td class="tablecell six"><input type="text" name="media_filename" id="media_setfilename" onblur="checkMediaFileName();" value="<?php echo prepareTextField($details['filename']); ?>" class="full" /><input type="hidden" name="media_orgfilename" id="media_orgfilename" value="<?php echo prepareTextField($details['filename']); ?>" /></td>
 					</tr>
 					<tr>
-						<td class="tablecell two"><?php echo returnIntLang('mediadetails title or file description', true); ?></td>
-						<td class="tablecell six"><input type="text" name="media_desc" id="media_desc" value="<?php echo prepareTextField($details['mediadesc']); ?>" class="full" /></td>
-					</tr>
-					<tr>
-						<td class="tablecell two"><?php echo returnIntLang('mediadetails file keywords', true); ?></td>
-						<td class="tablecell six"><input type="text" name="media_keys" id="media_keys" value="<?php echo prepareTextField($details['mediakeys']); ?>" class="full" /></td>
+						<td class="tablecell two"><?php echo returnIntLang('str filesize', true); ?></td>
+						<td class="tablecell six"><?php $disk = $details['filesize'];
+						$c = 1; while ($disk>1024):
+							$disk = $disk/1024;
+							$c++;
+						endwhile;
+						$spacevals = array(
+							1 => returnIntLang('mediadetails space Byte', true),
+							2 => returnIntLang('mediadetails space kB', true),
+							3 => returnIntLang('mediadetails space MB', true),
+							4 => returnIntLang('mediadetails space GB', true),
+							5 => returnIntLang('mediadetails space TB', true)
+						);
+						echo ceil($disk).' '.$spacevals[$c]; ?></td>
 					</tr>
 				</table>
 				<input type="hidden" name="action" value="<?php if ($desc_num>0): echo "updatedesc"; else: echo "savedesc"; endif; ?>">
