@@ -2,8 +2,12 @@
 /**
  * @author stefan@covi.de
  * @since 6.0
- * @version 6.8.4
- * @lastchange 2019-10-16
+ * @version GIT
+ * 
+ * 2019-10-16
+ * 2025-05-22
+ * Fixed FTP-based removal of empty folders
+ * 
  */
 if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
     session_start();
@@ -26,7 +30,7 @@ if (isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER']!='') {
         if ($ftp) {
             // check for files in folder
             $foldercontent = @ftp_nlist($ftp, str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/".$finaldir)));
-            if ($foldercontent && count($foldercontent)==0) {
+            if (empty($foldercontent)) {
                 if (@ftp_rmdir($ftp, str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/".$finaldir)))) {
                     doSQL("DELETE FROM `wspmedia` WHERE `mediafolder` = '".$finaldir."'");
                     $result['success'] = true;
