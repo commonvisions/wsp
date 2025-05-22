@@ -10,6 +10,8 @@
  * Fixed error with $used 
  * 2025-01-19
  * Fixed detection of php-files in media folders
+ * 2025-05-22
+ * Fixed removal of files that had upload-errors
  * 
  */
 
@@ -135,19 +137,19 @@ if (isset($_REQUEST['op']) && $_REQUEST['op']=='readstructure'):
 	// resetting all folders	
 	$sql = "DELETE FROM `wspmedia` WHERE `mediatype` = '".escapeSQL($mediafolder)."' AND `filename` = ''";
 	$res = doSQL($sql);
-    foreach ($fullmediastructure AS $fmkey => $fmvalue):
+    foreach ($fullmediastructure AS $fmkey => $fmvalue) {
 		$d = dir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey)));
 		// adding folders to db
 		$sql = "INSERT INTO `wspmedia` SET `mediatype` = '".escapeSQL($mediafolder)."', `mediafolder` = '".escapeSQL(trim($fmkey))."', `filefolder` = '".escapeSQL(trim(str_replace("//","/",str_replace("//","/",str_replace("/media/".$mediafolder."/","/",$fmkey)))))."', `filename` = '', `filetype` = '', `filekey` = '', `filedata` = '', `filesize` = 0, `filedate` = 0, `thumb` = 0, `preview` = 0, `original` = 0, `embed` = 0, `lastchange` = ".$lastcheck;
 		$res = doSQL($sql);
 		if (!$res['res']) { var_export($res); }
 		// adding files to db
-		while (false !== ($entry = $d->read())):
-			if ((substr($entry, 0, 1)!='.') && (is_file(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)))) && $entry!='index.php'):
+		while (false !== ($entry = $d->read())) {
+			if ((substr($entry, 0, 1)!='.') && (is_file(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)))) && $entry!='index.php') {
 				$thisimgdata = @getimagesize(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)));
 				$thisfiledata = @stat(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey.'/'.$entry)));
-				if (intval($thisfiledata[7]) > 0):
-
+				
+				if (intval($thisfiledata[7]) > 0) {
 					$size = (!empty($thisimgdata) && intval($thisimgdata[0])>0) ? (intval($thisimgdata[0]).' x '.intval($thisimgdata[1])) : '';
 					$mytype = substr($entry,strrpos($entry, ".")+1);
 					
@@ -214,20 +216,33 @@ if (isset($_REQUEST['op']) && $_REQUEST['op']=='readstructure'):
 						$sql = "UPDATE `wspmedia` SET `filedata` = '".escapeSQL(serialize($filedata))."', `thumb` = ".intval($thumbnail).", `preview` = ".intval($preview).", `original` = ".intval($original).", `embed` = ".intval($inuse).", `lastchange` = ".intval($lastcheck)." WHERE `filekey` = '".md5(str_replace("//", "/", trim($fmkey)."/".trim($entry)))."'";						
 					}
 					$res = doSQL($sql);
-					if (!$res['res']) { var_export($res); }
 					// unsetting file facts
 					unset($size);
 					unset($filedata);
 					unset($thisimgdata);	
 					unset($thisfiledata);
-				endif;
-			endif;
-		endwhile;
+				} 
+				else {
+					@unlink(str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fmkey."/".$entry))));
+					addWSPMsg('errormsg', sprintf(
+						returnIntLang('Could not fetch data for "%s". File was removed.'), 
+						str_replace("//", "/", str_replace("//", "/", $fmkey.'/'.$entry))) . '<br />'
+					);
+				}
+			}
+		}
 		$d->close();
-	endforeach;
+	}
 	// removing older entries
 	$sql = "DELETE FROM `wspmedia` WHERE `mediatype` = '".escapeSQL($mediafolder)."' AND `lastchange` < ".intval($lastcheck-10);
-	doSQL($sql);	
+	$res = doSQL($sql);
+	if ($res['num']>0) { 
+		addWSPMsg('resultmsg', sprintf(
+			returnIntLang('Removed %s outdated files with mediatype "%s" from database'), 
+			$res['num'],
+			$mediafolder)
+		);
+	}
 endif;
 
 if ($extern==1):
@@ -253,16 +268,14 @@ $m_res = doSQL($m_sql);
 $filecount = 0;
 foreach ($fullmediastructure AS $fk => $fv) {
 	$scandir = scandir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fk);
-	$si = 0;
 	foreach ($scandir AS $sv) {
 		if (!(is_dir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$fk."/".$sv)) && !($sv=='index.php') && !(substr($sv,0,1)=='.')) {
-			$si++;
+			$filecount++;
 		}
 	}
-	$filecount = $filecount + $si;
 }
 $sysinfo = "[SYS:".$filecount."#DB:".$m_res['num']."]";
-$sysequal = (intval($filecount)==$m_res['num']);
+$sysequal = (intval($filecount) == $m_res['num']);
 
 ?>
 <div id="contentholder">
@@ -794,5 +807,3 @@ if ($extern==1):
 else:
 	include ("data/include/footer.inc.php");
 endif;
-
-// EOF ?>
