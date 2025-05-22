@@ -8,6 +8,8 @@
  * 2025-01-19
  * 2025-05-22
  * Bugfix viewing documents other like imagefiles
+ * Removed WSPmedia attributes
+ * Storing filesize on saving file data
  * 
  */
 
@@ -124,9 +126,9 @@ endif;
 if (isset($_POST['action']) && $_POST['action']=='savedesc'):
 	doSQL("INSERT INTO `mediadesc` SET `mediafile` = '".escapeSQL(trim($details['fullpath']))."', `filedesc` = '".escapeSQL(trim($_POST['media_desc']))."', `filekeys` = '".escapeSQL(trim($_POST['media_keys']))."'");	
 endif;
-// updatedesc
-if (isset($_POST['action']) && $_POST['action']=='updatedesc'):
-	doSQL("UPDATE `mediadesc` SET `filedesc` = '".escapeSQL(trim($_POST['media_desc']))."', `filekeys` = '".escapeSQL(trim($_POST['media_keys']))."' WHERE `mediafile` = '".escapeSQL(trim($details['fullpath']))."'");	
+// update filesize
+if (isset($_POST['action']) && intval($_POST['media_filesize']) > 0):
+	doSQL("UPDATE `wspmedia` SET `filesize` = ".intval($_POST['media_filesize'])." WHERE (`filename` = '".trim($_POST['media_orgfilename']).".".$details['filetype']."' AND `mediafolder` = '".trim($_POST['media_folder'])."')");	
 endif;
 // save changed filename
 if (isset($_POST['action']) && isset($_POST['media_filename']) && trim($_POST['media_filename'])!=trim($_POST['media_orgfilename'])):
@@ -563,10 +565,11 @@ include ("./data/include/wspmenu.inc.php");
 						echo ceil($disk).' '.$spacevals[$c]; ?></td>
 					</tr>
 				</table>
-				<input type="hidden" name="action" value="<?php if ($desc_num>0): echo "updatedesc"; else: echo "savedesc"; endif; ?>">
+				<input type="hidden" name="action" value="<?php if (!empty($details['filename'])): echo "updatedesc"; else: echo "savedesc"; endif; ?>">
 				<input type="hidden" name="showfile" value="<?php echo str_replace('//', '/', str_replace('//', '/', $_REQUEST['showfile'])); ?>" />
 				<input type="hidden" name="media_folder" value="<?php echo str_replace('//', '/', str_replace('//', '/', $details['fullfold'])); ?>" />
 				<input type="hidden" name="medialoc" value="<?php echo $_REQUEST['medialoc']; ?>" />
+				<input type="hidden" name="media_filesize" value="<?php echo intval($details['filesize']); ?>" />
 				</form>
 				<fieldset class="options innerfieldset">
 					<p><a href="#" onClick="document.getElementById('mediadescform').submit();" class="greenfield"><?php echo returnIntLang('button save data', false); ?></a></p>
