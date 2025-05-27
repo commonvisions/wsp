@@ -13,14 +13,14 @@ include_once $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']
 include_once $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/data/include/funcs.inc.php';
 include_once $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/data/include/dbaccess.inc.php';
 
-	function getMenuLevelTiny($parent, $spaces, $modi, $aSelectIDs = array(), $op = '', $gmlVisible = 1) {
+	function getMenuLevelTiny(int $parent, int $spaces = 0, $modi = 'gmlSelect', $aSelectIDs = array(), $op = '', $gmlVisible = 1) {
 		$menulevel_sql = "SELECT `mid`, `position`, `visibility`, `description`, `connected` FROM `menu` WHERE trash != 1 AND `connected` = ".intval($parent)." ORDER BY `position`";
 		$menulevel_res = doSQL($menulevel_sql);
 		
 		if ($menulevel_res['num']>0) {
 			$spacer = "";
 			for ($i=0; $i<$spaces; $i++) {
-                $spacer.= " "; 
+                $spacer.= "."; 
             }
             foreach ($menulevel_res['set'] AS $mlrsk => $mlrsv) {
                 $menuItem = "";
@@ -64,14 +64,5 @@ include_once $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd']
     }	// getMenuLevelTiny()
 
 echo "[\n";
-getMenuLevelTiny(0, '', gmlSelect);
+getMenuLevelTiny(0, 0, 'gmlSelect');
 echo "]";
-
-//[
-//    {title: 'My page 1', value: '[%PAGE1%]'},
-//    {title: ' My page 2', value: '[%PAGE2%]'},
-//    {title: '  My page 3', value: '[%PAGE3%]'},
-//    {title: ' My page 4', value: '[%PAGE47%]'}
-//]
-
-// EOF ?>

@@ -787,12 +787,12 @@ if (!(function_exists('getTemplateVars'))) {
 		if ($tempinfo_res['num']>0) {
 			$tempinfo['contentareas'] = array();
 			$template_content = trim($tempinfo_res['set'][0]['template']);
-			$c = '';
-			while (str_replace("[%CONTENTVAR".$c."%]","[%CONTENT%]",$template_content)!=$template_content) {
+			$c = 0;
+			while (str_replace("[%CONTENTVAR" . (empty($c) ? '' : $c) . "%]","[%CONTENT%]",$template_content)!=$template_content) {
 				$c++;
 				$tempinfo['contentareas'][] = $c;
 			}
-			while (str_replace("[%CONTENTVAR:".$c."%]","[%CONTENT%]",$template_content)!=$template_content) {
+			while (str_replace("[%CONTENTVAR:".(empty($c) ? '' : $c)."%]","[%CONTENT%]",$template_content)!=$template_content) {
 				$c++;
 				$tempinfo['contentareas'][] = $c;
 			}
@@ -3505,6 +3505,7 @@ endif;
 // check given raw strings for utf and converts to, if needed
 if (!(function_exists("setUTF8"))) { 
 	function setUTF8($givenstring) { 
+		if (empty($givenstring)) return '';
 		$stringtype = mb_detect_encoding($givenstring);
 		if (trim($stringtype) && mb_check_encoding($givenstring, $stringtype)) {
 			return $stringtype === 'UTF-8' ? $givenstring : mb_convert_encoding($givenstring, 'UTF-8');

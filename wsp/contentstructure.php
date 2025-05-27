@@ -78,6 +78,7 @@ if ((isset($_POST['op']) && $_POST['op']=='add') && isset($_POST['sid']) && isse
 	endif;
 	$nc_sql = "INSERT INTO `content` SET 
 		`mid` = ".intval($_POST['mid']).",
+		`uid` = " . intval($_SESSION['wspvars']['userid']) . ",
 		`globalcontent_id` = ".intval($globalcontentid).",
 		`connected` = 0,
 		`content_area` = ".intval($_POST['carea']).",
@@ -88,8 +89,6 @@ if ((isset($_POST['op']) && $_POST['op']=='add') && isset($_POST['sid']) && isse
 		`showtime` = '',
 		`sid` = 0,
 		`valuefields` = '',
-		`xajaxfunc` = '',
-		`xajaxfuncnames` = '',
 		`lastchange` = ".time().",
 		`interpreter_guid` = '".escapeSQL($interpreterguid)."'";
 	$nc_res = doSQL($nc_sql);
