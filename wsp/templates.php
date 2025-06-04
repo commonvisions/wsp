@@ -281,29 +281,28 @@ include ("./data/include/wspmenu.inc.php");
                 echo "</li>";
                 echo "<li class='tablecell two'>";
             
-                $usedstyles_sql = "SELECT `stylesheets_id` FROM `r_temp_styles` WHERE `templates_id` = ".intval($tsrv['id'])." ORDER BY `id`";
+                $usedstyles_sql = "SELECT `stylesheets_id` FROM `r_temp_styles` WHERE `templates_id` = " . intval($tsrv['id']) . " ORDER BY `id`";
                 $usedstyles_res = doSQL($usedstyles_sql);
 
-                if ($usedstyles_num!=0):
+                if ($usedstyles_res['num']>0):
                     $cssdisplay = FALSE;
-                    for ($u=0;$u<$usedstyles_num;$u++):
-                        $cssdata_sql = "SELECT `describ`, `cfolder` FROM `stylesheets` WHERE id = '".mysql_result($usedstyles_res,$u)."'";
-                        $cssdata_res = mysql_query($cssdata_sql);
-                        $cssdata_num = mysql_num_rows($cssdata_res);
+                    foreach ($usedstyles_res['set'] AS $usedstyle):
+                        $cssdata_sql = "SELECT `describ`, `cfolder` FROM `stylesheets` WHERE id = '" . intval($usedstyle['stylesheets_id']) . "'";
+                        $cssdata_res = doSQL($cssdata_sql);
                         if ($cssdisplay==FALSE):
                             echo "<span style=\"float: left; width: 3em;\">CSS: </span>";
                             $cssdisplay = TRUE;
                         else:
                             echo "<span style=\"float: left; width: 3em;\">&nbsp;</span>";
                         endif;
-                        if ($cssdata_num!=0):
-                            echo mysql_result($cssdata_res,0,'describ');
-                            if (trim(mysql_result($cssdata_res,0,'cfolder'))!=""):
+                        if ($cssdata_res['num']>0):
+                            echo $cssdata_res['set'][0]['describ'];
+                            if (trim($cssdata_res['set'][0]['cfolder'])!=""):
                                 echo " <em>Library</em>"; 
                             endif;
                             echo "<br />";
                         endif;
-                    endfor;
+                    endforeach;
                 endif;
 
                 // show used javascript-files

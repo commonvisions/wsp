@@ -120,8 +120,8 @@ include ("./data/include/wspmenu.inc.php");
 								}
 							}
 							else {
-								echo trim($qresv['param']); 
-								if(trim($qresv['lang'])!='') { 
+								echo trim($qresv['param'] ?? ''); 
+								if(trim($qresv['lang'] ?? '')!='') { 
 									echo " ; ".trim($qresv['lang']); 
 								}
 							}

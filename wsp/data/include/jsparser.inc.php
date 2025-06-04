@@ -1,40 +1,51 @@
 <?php
 /**
- * javascript parser-functions
  * @author stefan@covi.de
  * @since 6.0
- * @version 6.8
- * @lastchange 2019-01-22
+ * @version GIT
+ * 
+ * 2025-06-04
+ * introduced direct publishing
+ * 
  */
 
 if (!(function_exists('publishJS'))):
-function publishJS($jsid) {
-	$returnstat = false;
+	function publishJS(int $jsid, bool $ftp = false, bool $usedirect = false) {
+		$returnstat = $tmpfile = false;
     
-    $ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport']))); if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }} if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
-    
-	if ($ftp):
-		$js_sql = 'SELECT `id`, `file`, `scriptcode` FROM `javascript` WHERE `id` = '.intval($jsid);
+		$js_sql = 'SELECT `id`, `file`, `scriptcode` FROM `javascript` WHERE `id` = ' . intval($jsid);
 		$js_res = doSQL($js_sql);
-		if ($js_res['num']>0):
+		if ($js_res['num']>0) {
 			$tmppath = str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/"));
+
+            $cfile = trim($js_res['set'][0]['file'] ?? 'script' . intval($jsid));
 			$tmpfile = tempnam($tmppath, '');
 			$fh = fopen($tmpfile, "r+");
 			fwrite($fh, stripslashes($js_res['set'][0]['scriptcode']));
 			fclose($fh);
-			if (!ftp_put($ftp, $_SESSION['wspvars']['ftpbasedir']."/data/script/".trim($js_res['set'][0]['file']).'.js', $tmpfile, FTP_BINARY)):
-				$returnstat = false;
-				addWSPMsg('errormsg', "Kann erzeugte Datei <strong>".trim($js_res['set'][0]['file']).".js</strong> nicht hochladen. (Put)";
-			else:
-				$returnstat = true;
-				doSQL("UPDATE `javascript ` SET `lastpublish` = ".time()." WHERE `id` = ".intval($jsid));
-			endif;
-			unlink($tmpfile);
-		endif;
-        ftp_close($ftp);
-	endif;
-	return $returnstat;
+		}
+
+		if (is_file($tmpfile) && $ftp===true) {
+            $ftppath = $_SESSION['wspvars']['ftpbasedir'] . "/data/script/" . $cfile . '.js';
+            if (!ftp_put($ftp, $ftppath, $tmpfile, FTP_BINARY)) {
+                addWSPMsg('errormsg', "Could not upload file <strong>". $cfile .".js</strong> by FTP.");
+            } else {
+                doSQL("UPDATE `javascript` SET `lastpublish` = " . time() . " WHERE `id` = " . intval($jsid));
+                $returnstat = true;
+            }
+            unlink($tmpfile);
+        } else if (is_file($tmpfile) && $usedirect===true) {
+            $directpath = str_replace("//" , "/" , $_SERVER['DOCUMENT_ROOT'] . "/" . $_SESSION['wspvars']['wspbasediradd'] . "/data/script/" . $cfile . '.js');
+            if (!(copy($tmpfile, $directpath))) {
+                addWSPMsg('errormsg', "<p>" . returnIntLang('js publisher could not be written directly', false) . "</p>");
+                $returnstat = false;
+            } else {
+                doSQL("UPDATE `javascript` SET `lastpublish` = " . time() . " WHERE `id` = " . intval($jsid));
+                $returnstat = true;
+            }
+        } else {
+            addWSPMsg('errormsg', 'js publisher could not connect');
+        }
+		return $returnstat;
 	}	// publishJS()
 endif;
-
-// EOF ?>

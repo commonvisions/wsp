@@ -123,9 +123,9 @@ include ("data/include/wspmenu.inc.php");
 			echo "<tr>";
 			echo "<td class='tablecell two'><a style=\"cursor: pointer;\" onclick=\"document.getElementById('editform".intval($mresv['id'])."').submit();\">".((trim($mresv['title'])!='')?setUTF8(trim($mresv['title'])):'<em>no title</em>')."</a></td>";
 			echo "<td class='tablecell two'>";
-			if (trim($mresv['parser'])!=""):
+			if (trim($mresv['parser'] ?? '')!=""):
 				echo returnIntLang('menutmp parserfile');
-			elseif (trim($mresv['code'])!=""):
+			elseif (trim($mresv['code'] ?? '')!=""):
 				echo returnIntLang('menutmp cmcode');
 			else:
 				echo returnIntLang('menutmp emptycode');
@@ -161,11 +161,11 @@ include ("data/include/wspmenu.inc.php");
 		$title = prepareTextField(stripslashes(trim($editmenu_res['set'][0]['title'])));
 		$desc = prepareTextField(stripslashes(trim($editmenu_res['set'][0]['describ'])));
 		$slevel = intval($editmenu_res['set'][0]['startlevel']);
-		if (trim($editmenu_res['set'][0]['parser'])!=""):
+		if (trim($editmenu_res['set'][0]['parser'] ?? '')!=""):
 			$type = "parser";
 			$code = trimg($editmenu_res['set'][0]['parser']);
 			$jobkind = "save";
-		else:
+		elseif (trim($editmenu_res['set'][0]['code'] ?? '')!=""):
 			$code = trim($editmenu_res['set'][0]['code']);
 			$type = "code";
 			$jobkind = "save";
