@@ -832,12 +832,10 @@ if ($contentbackup_num>0):
 				tinymce.init({
 					language : '<?php echo $tiny_lang; ?>',
 		   			selector: ".mceNormal",
-		   			skin : "wsp",
+		   			license_key: 'gpl',
 					height: 150,
 					plugins: [
-						"compat3x advlist autolink link image lists charmap hr anchor pagebreak spellchecker",
-						"searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime nonbreaking",
-						"save table contextmenu directionality emoticons template paste textcolor"
+						"compat3x", "advlist", "autolink", "link", "image", "lists", "charmap", "hr", "anchor", "pagebreak", "searchreplace", "wordcount", "visualblocks", "visualchars", "code", "fullscreen", "insertdatetime", "nonbreaking", "save", "table", "directionality", "emoticons", "paste"
 						],
 					image_advtab: true,
 					relative_urls: false,
@@ -891,12 +889,10 @@ if ($contentbackup_num>0):
 	tinymce.init({
 		language : '<?php echo $tiny_lang; ?>',
 				selector: ".mceShort",
-				skin : "wsp",
+				api_key: 'GPL',
 		height: 150,
 		plugins: [
-			"compat3x advlist autolink link image lists charmap hr anchor pagebreak spellchecker",
-			"searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime nonbreaking",
-			"save table contextmenu directionality emoticons template paste textcolor"
+			"compat3x", "advlist", "autolink", "link", "image", "lists", "charmap", "hr", "anchor", "pagebreak", "searchreplace", "wordcount", "visualblocks", "visualchars", "code", "fullscreen", "insertdatetime", "nonbreaking", "save", "table", "directionality", "emoticons", "paste"
 			],
 		image_advtab: true,
 		relative_urls: false,
@@ -1017,20 +1013,18 @@ if ($contentbackup_num>0):
 		tinymce.init({
 			language : '<?php echo $tiny_lang; ?>',
    			selector: "textarea",
-   			skin : "wsp",
+   			license_key: 'gpl',
 			height: <?php echo $tiny_height; ?>,
 			plugins: [
-				"compat3x advlist autolink link image lists charmap hr anchor pagebreak spellchecker",
-				"searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime nonbreaking",
-				"save table contextmenu directionality emoticons template paste textcolor"
-				],
+				"compat3x", "advlist", "autolink", "link", "image", "lists", "charmap", "hr", "anchor", "pagebreak", "searchreplace", "wordcount", "visualblocks", "visualchars", "code", "fullscreen", "insertdatetime", "nonbreaking", "save", "table", "directionality", "emoticons", "paste"
+			],
 			image_advtab: true,
 			relative_urls: false,
 			convert_urls: false,
 			target_list: [
 		        {title: '<?php echo returnIntLang('tinymce target same page', false); ?>', value: '_self'},
 		        {title: '<?php echo returnIntLang('tinymce target new page', false); ?>', value: '_blank'}
-			    ],
+			],
 			document_base_url: "http://<?php echo $_SESSION['wspvars']['workspaceurl'] ?>/",
 			image_list: "/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/tinymce/plugins/image/imagelist.json.php?<?php echo time(); ?>",
 			link_list: "/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/tinymce/plugins/link/pagelist.json.php?<?php echo time(); ?>",

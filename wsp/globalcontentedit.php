@@ -292,7 +292,7 @@ if ($gc_res['num']>0):
 				tinymce.init({
 					language : '<?php echo $tiny_lang; ?>',
 		   			selector: ".mceNormal",
-		   			skin : "wsp",
+		   			license_key: 'gpl',
 					height: 150,
 					plugins: [
 						"compat3x advlist autolink link image lists charmap hr anchor pagebreak spellchecker",
@@ -522,7 +522,7 @@ tinymce.init({
 		tinymce.init({
 			language : '<?php echo $tiny_lang; ?>',
    			selector: "textarea",
-   			skin : "wsp",
+   			license_key: 'gpl',
 			height: <?php echo $tiny_height; ?>,
 			external_plugins: {
 				//"advlink": "/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/tinymce/plugins/advlink/editor_plugin.js"
