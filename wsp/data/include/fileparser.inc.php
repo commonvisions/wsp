@@ -901,7 +901,7 @@ function publishSites($pubid, $mode = 'publish', $lang = 'de', $newendmenu = fal
 						// build container
                         // 4 = NO CONTAINER
 						// 5 = COMBINE WITH ELEMENT BEFORE
-                        if (intval($coresv['container'])!=4 && intval($coresv['container'])!=5): 
+                        if (intval($coresv['container'])<4): 
 							$content[intval($coresv['content_area'])].= "<".$ccarray[intval($coresv['container'])]." id=\"".$containerid."\" ".$containerclass.">";
 						endif;
 						
@@ -950,9 +950,9 @@ function publishSites($pubid, $mode = 'publish', $lang = 'de', $newendmenu = fal
 						endif;
     
     					// close container
-						if (intval($coresv['container'])!=4):
-							$content[intval($coresv['content_area'] ?? 0)].= "</".$ccarray[intval($coresv['container'] ?? 0)].">";	
-						endif;
+						if (intval($coresv['container'])<4) {
+							$content[intval($coresv['content_area'] ?? 0)].= "</".$ccarray[intval($coresv['container'])].">";	
+						}
     
 						// close time based visibility
 						if ($mode!='preview'):

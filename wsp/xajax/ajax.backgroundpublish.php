@@ -144,14 +144,14 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)) {
                         error_log(date('Y-m-d H:i:s') . ' backgroundpublish : publishcss ' . intval($prsv['param']) . "\n", 3, $_SERVER['DOCUMENT_ROOT'] . '/' . $_SESSION['wspvars']['wspbasedir'] . '/tmp/wsp.log');
                     }
                     require_once ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/cssparser.inc.php");
-                    $returnpublish = publishCSS(intval($prsv['param']), $ftp);
+                    $returnpublish = publishCSS(intval($prsv['param']), ($ftp ?? false), ($usedirect ?? false));
                 }
                 elseif (trim($prsv['action'])=='publishjs') {
                     if (isset($_SESSION['wspvars']['logdevmsg']) && $_SESSION['wspvars']['logdevmsg']) {
                         error_log(date('Y-m-d H:i:s') . ' backgroundpublish : publishjs ' . intval($prsv['param']) . "\n", 3, $_SERVER['DOCUMENT_ROOT'] . '/' . $_SESSION['wspvars']['wspbasedir'] . '/tmp/wsp.log');
                     }
                     require_once ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/jsparser.inc.php");
-                    $returnpublish = publishJS(intval($prsv['param']), $ftp);
+                    $returnpublish = publishJS(intval($prsv['param']), ($ftp ?? false), ($usedirect ?? false));
                 }
                 elseif (trim($prsv['action'])=='publishrss') {
                     if (isset($_SESSION['wspvars']['logdevmsg']) && $_SESSION['wspvars']['logdevmsg']) {
@@ -159,7 +159,7 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)) {
                     }
                     // call publisher function
                     require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/rssparser.inc.php");
-                    $returnpublish = publishRSS(intval($prsv['param']), $ftp);
+                    $returnpublish = publishRSS(intval($prsv['param']), ($ftp ?? false), ($usedirect ?? false));
                 }
 
                 if (isset($_SESSION['wspvars']['logdevmsg']) && $_SESSION['wspvars']['logdevmsg']) {
