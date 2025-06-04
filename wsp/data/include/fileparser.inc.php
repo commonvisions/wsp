@@ -1355,7 +1355,7 @@ function publishSites($pubid, $mode = 'publish', $lang = 'de', $newendmenu = fal
 								$tmpbuf.= "</p>";
 								$tmpbuf.= "</form>";
 								$tmpbuf.= "</div>";
-								$tmpbuf.= "<script type='text/javascript' src='/data/script/447ce0a0-25ad-4967-82b1-405e31bf5bb4.js'></script>\n";
+								$tmpbuf.= "<script type='text/javascript' src='/data/script/cookiepolicy.js'></script>\n";
 								$tmpbuf.= "<script>\n";
             
 								$tmpbuf.= "$(document).ready(function(){\n";
