@@ -16,9 +16,9 @@ $_SESSION['wsppage']['allowstats'] = $_SESSION['wsppage']['allowstats'] ?? false
 $_SESSION['wsppage']['allowfonts'] = $_SESSION['wsppage']['allowfonts'] ?? false;
 
 // add allow stats
-if (intval($_POST['allowstats'] ?? 0)==1) { $_SESSION['wsppage']['allowstats'] = true; }
+if (intval($_POST['allow_stats'] ?? 0)==1) { $_SESSION['wsppage']['allowstats'] = true; }
 // add allow fonts
-if (intval($_POST['allowfonts'] ?? 0)==1) { $_SESSION['wsppage']['allowfonts'] = true; }
+if (intval($_POST['allow_fonts'] ?? 0)==1) { $_SESSION['wsppage']['allowfonts'] = true; }
 
 // add the posted blocks to session based allowblock param
 if (isset($_POST['allow_block']) && !empty($_POST['allow_block'])) {
