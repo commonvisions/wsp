@@ -277,7 +277,7 @@ if (!(function_exists('getHeadVar'))) {
             }
 			// predefined fonts
 			if (is_array($template_fonts)) {
-				$headvar .= $blockfonts ? "<"."?"."php if(!(isset(\$_SESSION['wsppage']['allowfonts'])) || (isset(\$_SESSION['wsppage']['allowfonts']) && \$_SESSION['wsppage']['allowfonts']===true)) { "."?".">\n" : "";
+				$headvar .= $blockfonts ? "<"."?"."php if((\$_SESSION['wsppage']['allowfonts'] ?? false)===true) { "."?".">\n" : "";
 				$headvar .= "<!-- wsp integrated fonts -->\n";
 				if (isset($template_fonts['source']) && $template_fonts['source']=='google' && isset($template_fonts['list']) && $template_fonts['list']!='') {
 					$headvar .= "<link href=\"//fonts.googleapis.com/css?family=".trim($template_fonts['list'])."\" rel=\"stylesheet\" type=\"text/css\">\n";

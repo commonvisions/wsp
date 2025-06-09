@@ -11,14 +11,14 @@ if (isset($_REQUEST['set_privacy'])) {
     header('location: ./');
 }
 
-// standard behaviour is blocking analytics
-$_SESSION['wsppage']['allowstats'] = isset($_SESSION['wsppage']['allowstats']) ? $_SESSION['wsppage']['allowstats'] : false;
-$_SESSION['wsppage']['allowfonts'] = isset($_SESSION['wsppage']['allowfonts']) ? $_SESSION['wsppage']['allowfonts'] : false;
+// standard behaviour is blocking fonts & analytics 
+$_SESSION['wsppage']['allowstats'] = $_SESSION['wsppage']['allowstats'] ?? false;
+$_SESSION['wsppage']['allowfonts'] = $_SESSION['wsppage']['allowfonts'] ?? false;
 
 // add allow stats
-if (isset($_POST['allowstats']) && intval($_POST['allowstats'])==1) { $_SESSION['wsppage']['allowstats'] = true; }
+if (intval($_POST['allowstats'] ?? 0)==1) { $_SESSION['wsppage']['allowstats'] = true; }
 // add allow fonts
-if (isset($_POST['allowfonts']) && intval($_POST['allowfonts'])==1) { $_SESSION['wsppage']['allowfonts'] = true; }
+if (intval($_POST['allowfonts'] ?? 0)==1) { $_SESSION['wsppage']['allowfonts'] = true; }
 
 // add the posted blocks to session based allowblock param
 if (isset($_POST['allow_block']) && !empty($_POST['allow_block'])) {

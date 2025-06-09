@@ -62,7 +62,7 @@ if (!isset($sitedata['privacy_text']) || empty($sitedata['privacy_text'])!='') {
 ?>
 <div id="contentholder">
 	<fieldset><h1><?php echo returnIntLang('privacy headline'); ?></h1></fieldset>
-	<fieldset><p>Ein Cookie-Hinweis ist bei SESSION-Cookies <strong>nicht</strong> notwendig. Nutzen Sie daher den Cookie-Layer als Inhalt, wenn sie langfristige Cookies einsetzen. Der Aufruf des Cookie-Layers sollte sich in diesem Falle auf <strong>allen</strong> Seiten befinden. Sie können den Cookie-Layer über den 'DSGVO Cookie Overlay' Interpreter gezielt einbinden oder die Einstellungen seitenweit anwenden.</p></fieldset>
+	<fieldset><p>Ein Cookie-Hinweis ist bei SESSION-Cookies <strong>nicht</strong> notwendig. Nutzen Sie daher den Cookie-Layer als Inhalt, wenn sie langfristige Cookies einsetzen. Der Aufruf des Cookie-Layers sollte sich in diesem Falle auf <strong>allen</strong> Seiten befinden. Sie können den Cookie-Layer über den 'DSGVO Cookie Overlay' Interpreter gezielt einbinden oder die Einstellungen seitenweit anwenden. Um das Cookie-Banner nachträglich aufzurufen, erstellen sie eine Verlinkung auf '?set_privacy' auf den Seiten, auf denen es eingebunden ist.</p></fieldset>
 	<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" enctype="application/x-www-form-urlencoded" id="frmprefs" style="margin: 0px;">
 		<fieldset id="fieldset_privacy">
 			<legend><?php echo returnIntLang('privacypref headline'); ?> <?php echo legendOpenerCloser('fieldset_privacy_content', 'open'); ?></legend>
