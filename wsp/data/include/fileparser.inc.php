@@ -1207,8 +1207,8 @@ function publishSites($pubid, $mode = 'publish', $lang = 'de', $newendmenu = fal
 						$blockstats = ((int)doResultSQL("SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'privacy_disablestats'")===1);
 						$phpheader.= str_replace("//", "/", str_replace("//", "/", "@include \$_SERVER['DOCUMENT_ROOT'].'/".$_SESSION['wspvars']['wspbasediradd']."/data/include/doprepareprivacy.inc.php';\n"));
 						$phpheader.= "if (!isset(\$_COOKIE['cookieAccepted']) || intval(\$_COOKIE['cookieAccepted'])!=1) {\n";
-						$phpheader.= $blockfonts ? "\t\$_SESSION['wsppage']['allowfonts'] == false;\n" : "" ;
-						$phpheader.= $blockstats ? "\t\$_SESSION['wsppage']['allowstats'] == false;\n" : "" ;
+						$phpheader.= $blockfonts ? "\t\$_SESSION['wsppage']['allowfonts'] = false;\n" : "" ;
+						$phpheader.= $blockstats ? "\t\$_SESSION['wsppage']['allowstats'] = false;\n" : "" ;
 						$phpheader.= "\t\$_SESSION['wsppage']['blockelem'] = [];\n";
 						for ($e=0; $e<5; $e++) { 
 							if (!empty(getWSPProperties('privacy_blockelement_' . $e . '_text'))) {
