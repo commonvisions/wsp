@@ -2,9 +2,11 @@
 /**
  * Userverwaltung
  * @author stefan@covi.de
-  * @since 3.1
- * @version 6.11
- * @lastchange 2022-10-25
+ * @since 3.1
+ * @version GIT
+ * 
+ * 2025-08-02
+ * Fixed bug creating users with administration rights
  */
 
 /* start session ----------------------------- */
@@ -129,10 +131,11 @@ if (isset($_POST['user_data']) && $op=="user_new" && $_POST['new_username']!="" 
 	$newuser_res = doSQL($newuser_sql);
 	if ($newuser_res['num']==0):
 		if ($_POST['new_position']=="admin"):
+			$changerights = [];
 			for ($r=0;$r<count($_SESSION['wspvars']['rightabilities']);$r++):
 				$changerights[$_SESSION['wspvars']['rightabilities'][$r]] = 1;
 			endfor;
-			$sql = "INSERT INTO `restrictions` SET `usertype` = 1, `user` = '".escapeSQL($_POST['new_username'])."', `realname` = '".escapeSQL($_POST['new_realname'])."', `realmail` = '".escapeSQL($_POST['new_email'])."', rights = '".escapeSQL(serialize($changerights))."', idrights = ''";
+			$sql = "INSERT INTO `restrictions` SET `usertype` = 1, `user` = '".escapeSQL($_POST['new_username'])."', `realname` = '".escapeSQL($_POST['new_realname'])."', `realmail` = '".escapeSQL($_POST['new_email'])."', `usernotice` = '', `pass` = '', `userprops` = '', `rights` = '".escapeSQL(serialize($changerights))."', `idrights` = ''";
 			$res = doSQL($sql);
 			$_SESSION['wspvars']['hiddengetvars'] = array(
 				'userrid' => $res['inf'],
@@ -140,7 +143,7 @@ if (isset($_POST['user_data']) && $op=="user_new" && $_POST['new_username']!="" 
 			header ("location: useredit.php");
 			die();
 		else:
-			$addsql = "";
+			$addsql = ", `rights` = '" . serialize([]) . "', `idrights` = '" . serialize([]) . "' ";
 			if (intval($_POST['new_position'])>0):
 				// clone rights from given user
 				$clone_sql = "SELECT `rights`, `idrights` FROM `restrictions` WHERE `rid` = ".intval($_POST['new_position']);
@@ -149,7 +152,7 @@ if (isset($_POST['user_data']) && $op=="user_new" && $_POST['new_username']!="" 
 					$addsql = " , `rights` = '".escapeSQL(serialize(unserializeBroken($clone_res['set'][0]['rights'])))."', `idrights` = '".escapeSQL(serialize(unserializeBroken($clone_res['set'][0]['idrights'])))."' ";
 				endif;
 			endif;
-			$sql = "INSERT INTO `restrictions` SET `usertype` = 2, `user` = '".escapeSQL(trim($_POST['new_username']))."', `realname` = '".escapeSQL(trim($_POST['new_realname']))."', `realmail` = '".escapeSQL(trim($_POST['new_email']))."' ".$addsql;
+			$sql = "INSERT INTO `restrictions` SET `usertype` = 2, `user` = '".escapeSQL(trim($_POST['new_username']))."', `realname` = '".escapeSQL(trim($_POST['new_realname']))."', `realmail` = '".escapeSQL(trim($_POST['new_email']))."', `usernotice` = '', `pass` = '', `userprops` = '' ".$addsql;
             $res = doSQL($sql);
 			if ($res['inf']>0):
 				$_SESSION['wspvars']['hiddengetvars'] = array('userrid' => $res['inf']);
