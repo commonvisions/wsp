@@ -1,7 +1,15 @@
 # WSP
 WebSitePreview
 
-## 6.25.6 (pre-release)
+## 6.25.8
+
+- useredit
+    - fixed bug with missing predefined rights in useredit
+    - fixed bug with undefined folders in media section
+- usermanagement
+    - fixed bug on creating users with admin rights
+
+## 6.25.6
 
 - introduced direct publishing on CSS
 - introduced direct publishing on JS
