@@ -2,9 +2,13 @@
 /**
  * Userdaten bearbeiten
  * @author stefan@covi.de
-  * @since 3.1
- * @version 6.11
- * @lastchange 2022-10-25
+ 	* @since 3.1
+ * @version GIT
+ * 
+ * 2025-08-02
+ * fixed bug with missing predefined rights
+ * fixed bug with undefined folders in media section
+ * 
  */
 
 /* start session ----------------------------- */
@@ -41,88 +45,68 @@ endif;
 
 if (trim($predefined)!="" && trim($predefined)!="undefined"):
 	if (trim($predefined)=="developer"):
-		$rights['siteprops'] = 1;
+		$rights = [
+			'siteprops' => 1, 'sitestructure' => 1, 'contents' => 1, 'filesystem' => 1,
+			'rss' => 1, 'publisher' => 1, 'imagesfolder' => '/', 'downloadfolder' => '/',
+			'flashfolder' => '/', 'design' => 1
+		];
 		$_POST['changerights_siteprops'] = 1;
-		$rights['sitestructure'] = 1;
 		$_POST['changerights_sitestructure'] = 1;
-		$rights['contents'] = 1;
 		$_POST['changerights_contents'] = 1;
-		$rights['filesystem'] = 1;
 		$_POST['changerights_filesystem'] = 1;
-		$rights['rss'] = 1;
 		$_POST['changerights_rss'] = 1;
-		$rights['publisher'] = 1;
 		$_POST['changerights_publisher'] = 1;
-		$rights['imagesfolder'] = "/";
 		$_POST['changerights_imagesfolder'] = "/";
-		$rights['downloadfolder'] = "/";
 		$_POST['changerights_downloadfolder'] = "/";
-		$rights['flashfolder'] = "/";
 		$_POST['changerights_flashfolder'] = "/";
-		$rights['design'] = 1;
 		$_POST['changerights_design'] = 1;
 	elseif (trim($predefined)=="technics"):
-		$rights['siteprops'] = 0;
+		$rights = [
+			'siteprops' => 0, 'sitestructure' => 0, 'contents' => 0, 'filesystem' => 0,
+			'rss' => 0, 'publisher' => 0, 'imagesfolder' => '/', 'downloadfolder' => '0',
+			'flashfolder' => '0', 'design' => 1
+		];
 		$_POST['changerights_siteprops'] = 0;
-		$rights['sitestructure'] = 0;
 		$_POST['changerights_sitestructure'] = 0;
-		$rights['contents'] = 0;
 		$_POST['changerights_contents'] = 0;
-		$rights['filesystem'] = 0;
 		$_POST['changerights_filesystem'] = 0;
-		$rights['rss'] = 0;
 		$_POST['changerights_rss'] = 0;
-		$rights['publisher'] = 0;
 		$_POST['changerights_publisher'] = 0;
-		$rights['imagesfolder'] = "/";
 		$_POST['changerights_imagesfolder'] = "/";
-		$rights['downloadfolder'] = "0";
 		$_POST['changerights_downloadfolder'] = "0";
-		$rights['flashfolder'] = "/";
-		$_POST['changerights_flashfolder'] = "/";
-		$rights['design'] = 1;
+		$_POST['changerights_flashfolder'] = "0";
 		$_POST['changerights_design'] = 1;
 	elseif (trim($predefined)=="seo"):
-		$rights['siteprops'] = 1;
+		$rights = [
+			'siteprops' => 1, 'sitestructure' => 3, 'contents' => 0, 'filesystem' => 0,
+			'rss' => 0, 'publisher' => 0, 'imagesfolder' => '0', 'downloadfolder' => '0',
+			'flashfolder' => '0', 'design' => 0
+		];
 		$_POST['changerights_siteprops'] = 1;
-		$rights['sitestructure'] = 3;
 		$_POST['changerights_sitestructure'] = 3;
-		$rights['contents'] = 0;
 		$_POST['changerights_contents'] = 0;
-		$rights['filesystem'] = 0;
 		$_POST['changerights_filesystem'] = 0;
-		$rights['rss'] = 0;
 		$_POST['changerights_rss'] = 0;
-		$rights['publisher'] = 0;
 		$_POST['changerights_publisher'] = 0;
-		$rights['imagesfolder'] = "0";
 		$_POST['changerights_imagesfolder'] = "0";
-		$rights['downloadfolder'] = "0";
 		$_POST['changerights_downloadfolder'] = "0";
-		$rights['flashfolder'] = "0";
 		$_POST['changerights_flashfolder'] = "0";
-		$rights['design'] = 0;
 		$_POST['changerights_design'] = 0;
 	elseif (trim($predefined)=="redaktion"):
-		$rights['siteprops'] = 0;
+		$rights = [
+			'siteprops' => 0, 'sitestructure' => 1, 'contents' => 1, 'filesystem' => 1,
+			'rss' => 0, 'publisher' => 1, 'imagesfolder' => '/', 'downloadfolder' => '/',
+			'flashfolder' => '0', 'design' => 0
+		];
 		$_POST['changerights_siteprops'] = 0;
-		$rights['sitestructure'] = 1;
 		$_POST['changerights_sitestructure'] = 1;
-		$rights['contents'] = 1;
 		$_POST['changerights_contents'] = 1;
-		$rights['filesystem'] = 1;
 		$_POST['changerights_filesystem'] = 1;
-		$rights['rss'] = 1;
-		$_POST['changerights_rss'] = 1;
-		$rights['publisher'] = 1;
+		$_POST['changerights_rss'] = 0;
 		$_POST['changerights_publisher'] = 1;
-		$rights['imagesfolder'] = "/";
 		$_POST['changerights_imagesfolder'] = "/";
-		$rights['downloadfolder'] = "/";
 		$_POST['changerights_downloadfolder'] = "/";
-		$rights['flashfolder'] = "0";
 		$_POST['changerights_flashfolder'] = "0";
-		$rights['design'] = 0;
 		$_POST['changerights_design'] = 0;
 	endif;
 endif;
@@ -338,19 +322,17 @@ include ("./data/include/wspmenu.inc.php");
 	//
 	// einblendung der modularen rechte sichern
 	//
-	$modrights['devolveadmin'] = "0";
-	if ($saved_rights!=""):
-		foreach (unserializeBroken($saved_rights) as $key => $value):
-			if (strlen($key)==36):
+	$modrights = ['devolveadmin' => 0];
+	$rights = [];
+	if ($saved_rights!="") {
+		foreach (unserializeBroken($saved_rights) as $key => $value) {
+			if (strlen($key)==36) {
 				$modrights[$key] = $value;
-			else:
+			} else {
 				$rights[$key] = $value;
-			endif;
-		endforeach;
-	else:
-		$modrights = array();
-		$rights = array();
-	endif;
+			}
+		}
+	}
 	
 	if ($saved_usertype!=1):
 	?>
@@ -482,7 +464,7 @@ include ("./data/include/wspmenu.inc.php");
 							
 							foreach ($directory AS $dkey => $dvalue):
 								echo "<option value=\"".trim(str_replace("//", "/", $dvalue))."\"";
-								if ($rights[$key]==$dvalue):
+								if (isset($rights[$key]) && $rights[$key]==$dvalue):
 									echo " selected=\"selected\"";
 								endif;
 								echo ">".$dvalue."</option>\n";
