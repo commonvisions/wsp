@@ -148,7 +148,7 @@ $lang['de'] = array(
 'home actual' => 'Aktuelle Informationen zu WSP',
 'home noconnect' => 'Leider konnte die gewünschte Verbindung zu <a href=\"http://www.websitepreview.de\" target=\"_blank\">www.websitepreview.de</a> nicht aufgebaut werden. Deshalb k&ouml;nnen wir Ihnen derzeit an dieser Stelle keine aktuellen Informationen zu WSP anbieten.',
 'home followtwitter' => 'Verfolgen Sie diese Nachrichten auf',
-'home info' => '<strong style="font-size: 1.4em;">WSP 6.25.5</strong></p><p>WSP 6.25 wurde mit PHP 8.0 - 8.3.21 getestet. Es besteht jedoch die Möglichkeit, das Module oder Interpreter nicht richtig funktionieren, wenn sie nicht für PHP 8 optimiert wurden. Sollten Sie auf der Webseite Probleme mit Datenbankbasierten Inhalten haben, kontrollieren Sie bitte die dbaccess.inc.php auf die neue Schreibweise der Datenbankzugriffsdefinition.</p><p>Sie sind angemeldet zur Bearbeitung von',
+'home info' => '<strong style="font-size: 1.4em;">WSP 6.25.8</strong></p><p>WSP 6.25 wurde mit PHP 8.0 - 8.3.21 getestet. Es besteht jedoch die Möglichkeit, das Module oder Interpreter nicht richtig funktionieren, wenn sie nicht für PHP 8 optimiert wurden. Sollten Sie auf der Webseite Probleme mit Datenbankbasierten Inhalten haben, kontrollieren Sie bitte die dbaccess.inc.php auf die neue Schreibweise der Datenbankzugriffsdefinition.</p><p>Sie sind angemeldet zur Bearbeitung von',
 'home rights' => 'Ihre Nutzerrechte können Sie der Menüstruktur entnehmen. Zum &Auml;ndern Ihrer Rechte wenden Sie sich bitte an einen Administrator.',
 'home faqhint' => 'Mit Fragen oder Hinweisen zum Content Management System wenden Sie sich an <a href="mailto:help@websitepreview.de">help@websitepreview.de</a>. Melden Sie Fehler bitte über die WSP-Website unter <a href="http://wsp3.de/entwickler/buglist.php" target="_blank">Entwickler » Fehler melden</a>.',
 'home logouthint' => 'Zum korrekten Abmelden benutzen Sie bitte den "Abmelden"-Button im Dropdown, damit auch Ihre tempor&auml;ren Daten gelöscht werden.',
@@ -256,7 +256,9 @@ $lang['de'] = array(
 
 'rights filesystem images' => 'Dateisystem Bilder',
 'rights filesystem docs' => 'Dateisystem Dokumente',
-'rights filesystem swf' => 'Dateisystem SWF',
+'rights filesystem swf' => 'Dateisystem SWF (deprecated)',
+'rights filesystem video' => 'Dateisystem Video',
+'rights filesystem fonts' => 'Dateisystem Schriftarten',
 'rights filesystem noaccess' => 'Kein Zugriff',
 'rights filesystem norestriction' => 'Keine Einschränkung',
 
