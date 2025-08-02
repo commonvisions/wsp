@@ -6,7 +6,8 @@
  * @version GIT
  * 
  * 2025-08-02
- * Fixed bug creating users with administration rights
+ * fixed bug on creating users with admin rights
+ * 
  */
 
 /* start session ----------------------------- */
