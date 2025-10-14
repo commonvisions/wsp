@@ -1,9 +1,11 @@
 <?php
 /**
- * Globale Inhalte editieren
  * @author stefan@covi.de
  * @since 3.1
- * @version 6.9
+ * @version GIT
+ * 
+ * 2025-10-14
+ * fixed bug with empty vars
  */
 
 /* start session ----------------------------- */
@@ -42,21 +44,21 @@ $worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
 /* define page specific funcs ---------------- */
 
 // deleteglobalfrompage
-if (isset($_REQUEST) && array_key_exists('op', $_REQUEST) && trim($_REQUEST['op'])=='deleteglobalfrompage' && intval($_REQUEST['gcid'])>0):
-	doSQL("UPDATE `content` SET `visibility` = 0, trash = 1, lastchange = ".time()." WHERE `globcalcontent_id` = ".intval($_REQUEST['gcid']));
+if (isset($_REQUEST) && array_key_exists('op', $_REQUEST) && trim($_REQUEST['op'])=='deleteglobalfrompage' && intval($_REQUEST['gcid'])>0) {
+	doSQL("UPDATE `content` SET `visibility` = 0, trash = 1, lastchange = " . time() . " WHERE `globcalcontent_id` = " . intval($_REQUEST['gcid']));
 	header("Location: ./globalcontent.php");
-endif;
+}
 
 // text2generic
-if (isset($_REQUEST) && array_key_exists('op', $_REQUEST) && trim($_REQUEST['op'])=='togeneric'):
-	doSQL("UPDATE `globalcontent` SET `interpreter_guid` = 'genericwysiwyg' WHERE `id` = ".intval($_REQUEST['gcid']));
-endif;
+if (isset($_REQUEST) && array_key_exists('op', $_REQUEST) && trim($_REQUEST['op'])=='togeneric') {
+	doSQL("UPDATE `globalcontent` SET `interpreter_guid` = 'genericwysiwyg' WHERE `id` = " . intval($_REQUEST['gcid']));
+}
 
 if (isset($_POST['op']) && ($_POST['op']=='save' || $_POST['op']=='saveglobal') && intval($gcid)>0):
 	// Interpreter einlesen
 
 	$value = serialize($_POST['field']);
-	doSQL("UPDATE `globalcontent` SET `valuefield`= '".escapeSQL(trim($value))."', `content_lang` = '".$_POST['content_lang']."' WHERE `id` = " . intval($gcid));
+	doSQL("UPDATE `globalcontent` SET `valuefield`= '" . escapeSQL(trim($value ?? '')) . "', `content_lang` = '" . ($_POST['content_lang'] ?? $_SESSION['wspvars']['locallang'] ?? 'de') . "' WHERE `id` = " . intval($gcid));
 	doSQL("UPDATE `menu` `m`, `content` `c` SET `m`.`contentchanged` = 2, `m`.`lastchange` = ".time().", `m`.`changetime` = ".time()." WHERE `c`.`mid` = `m`.`mid` AND `c`.`globalcontent_id` = ".intval($gcid));
 	doSQL("UPDATE `content` SET `lastchange` = ".time().", `interpreter_guid` = '".$_POST['interpreter_guid']."' WHERE `globalcontent_id` = ".intval($gcid));
 	
@@ -504,7 +506,7 @@ tinymce.init({
 			$tiny_lang = "en";
 		endif;
 		
-		$fieldvalue = unserializeBroken(trim($gc_res['set'][0]["valuefield"]));
+		$fieldvalue = unserializeBroken(trim($gc_res['set'][0]["valuefield"] ?? ''));
 		$fieldvaluestyle = "array";
 		$interpreterClass = "genericwysiwyg";
 
@@ -515,7 +517,7 @@ tinymce.init({
 		<input type="hidden" name="gcid" id="" value="<?php echo $gcid; ?>" />
 		<input type="hidden" name="interpreter" id="interpreter" value="<?php echo $file; ?>" />
 		<input type="hidden" name="interpreter_guid" id="interpreter_guid" value="<?php echo $guid; ?>" />
-		<?php if (strlen(stripslashes($fieldvalue['content']))<500): $tiny_height=150; else: $tiny_height=300; endif; ?>
+		<?php if (strlen(stripslashes($fieldvalue['content'] ?? ''))<500): $tiny_height=150; else: $tiny_height=300; endif; ?>
 		<script type="text/javascript" src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/tinymce/tinymce.min.js"></script>
 		<script language="javascript" type="text/javascript">
 		<!--
