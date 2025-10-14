@@ -2,11 +2,12 @@
 /**
  * @author stefan@covi.de
  * @since 6.0
- * @version 6.11
+ * @version GIT
  * 
  * 2023-01-96
  * fixed error with less params in call on global content
- * 
+ * 2025-10-14
+ * fixed bug with empty global contents in adding modal
  */
 
 
@@ -167,7 +168,7 @@ if (isset($_POST) && array_key_exists('mid', $_POST) && intval($_POST['mid'])>0)
                                 endif;
 							else:
 								echo "<option value=\"".intval($gcrsv["id"])."\">".returnIntLang('hint generic wysiwyg', false);
-								echo " - ".$fieldvalue['desc'];
+								echo " - " . ($fieldvalue['desc'] ?? returnIntLang('addcontent no description', false));
 								echo "</option>";
 							endif;
 						}

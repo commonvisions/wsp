@@ -3,6 +3,9 @@
  * @author stefan@covi.de
  * @since 3.1
  * @version GIT
+ * 
+ * 2025-10-14
+ * fixed bug checking usage of global contents
  */
 
 /* start session ----------------------------- */
@@ -185,7 +188,7 @@ include ("data/include/wspmenu.inc.php");
                     }
 					else if ($file=='genericwysiwyg') {
 						// genericwysiwyg
-						if (trim($fieldvalue['desc'])!='') {
+						if (trim($fieldvalue['desc'] ?? '')!='') {
 							$interpreterdesc = $name." » ".$fieldvalue['desc'];
 						} else {
                             $interpreterdesc = $name;
@@ -196,7 +199,7 @@ include ("data/include/wspmenu.inc.php");
 					}
 					// getting contents
 					// jetzt mit zusätzlicher Überprüfung ob die Contents nicht gelöscht sind
-					$gcusage_sql = "SELECT m.`description` AS `menudesc`, m.`mid` AS `mid`, c.`cid` AS `cid` FROM `content` AS c, `menu` AS m WHERE c.`globalcontent_id` = ".intval($gcresv['id'])." AND c.`mid` = m.`mid` AND c.`trash`=0 AND m.`trash`=0 GROUP BY c.`mid`";
+					$gcusage_sql = "SELECT m.`description` AS `menudesc`, m.`mid` AS `mid`, c.`cid` AS `cid` FROM `content` AS c, `menu` AS m WHERE c.`globalcontent_id` = ".intval($gcresv['id'])." AND c.`mid` = m.`mid` AND c.`trash`=0 AND m.`trash` = 0";
 					$gcusage_res = doSQL($gcusage_sql);
 					$gcusage_num = $gcusage_res['num'];
 					

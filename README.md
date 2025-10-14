@@ -1,6 +1,15 @@
 # WSP
 WebSitePreview
 
+## 6.25.10
+
+- globalcontent
+    - fixed bug checking usage of global contents
+- globalcontentedit
+    - fixed bug with empty vars
+- contentedit
+    - fixed bug with empty global contents in adding modal
+
 ## 6.25.8
 
 - useredit
