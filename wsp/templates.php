@@ -70,6 +70,7 @@ if ($op == 'savetemplate'):
 		else:
 			$sql.= ", `fonts` = ''";
 		endif;
+		$sql.= ", `iphone_optimize` = 0, `iphone_viewport` = NULL, `ipad_optimize` = 0, `ipad_viewport` = NULL";
 		$res = doSQL($sql);
 		$id = $res['inf'];
 		// create output message
@@ -396,26 +397,26 @@ include ("./data/include/wspmenu.inc.php");
 
 	?>
 	<fieldset id="templateeditor" <?php if ($op!="edit"): ?>style="display: none;"<?php endif; ?>>
-		<legend><?php if ($id<1 && $op="edit"): ?><?php echo returnIntLang('templates create template'); ?><?php else: ?><?php echo returnIntLang('templates edittemplate'); ?> <?php echo setUTF8($edittemp_name); endif; ?></legend>
+		<legend><?php if ($id<1 && $op="edit"): ?><?php echo returnIntLang('templates create template'); ?><?php else: ?><?php echo returnIntLang('templates edittemplate'); ?> <?php echo setUTF8($edittemp_name ?? ''); endif; ?></legend>
 		<form id="formedittemplate" name="formedittemplate" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
 		<table class="tablelist">
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates templatename'); ?></td>
-				<td class="tablecell six"><input type="text" maxlength="200" id="templatename" name="templatename" value="<?php echo $edittemp_name; ?>" class="one full" /><input type="hidden" name="rssfile" value="0" /></td>
+				<td class="tablecell six"><input type="text" maxlength="200" id="templatename" name="templatename" value="<?php echo ($edittemp_name ?? ''); ?>" class="one full" /><input type="hidden" name="rssfile" value="0" /></td>
 			</tr>
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates frameworks'); ?></td>
 				<td class="tablecell two"><ul class="checklist">
                     <?php if(is_file('../data/script/jquery/jquery-3.3.1.js')): ?>
-					   <li><input type="checkbox" name="framework[jquery]" id="framework_jquery" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('jquery', $edittemp_framework) && intval($edittemp_framework['jquery'])==1): echo "checked=\"checked\""; endif; ?> /> jQuery 3.3.1 local (JavaScript)</li>
+					   <li><input type="checkbox" name="framework[jquery]" id="framework_jquery" value="1" <?php if (intval($edittemp_framework['jquery'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> jQuery 3.3.1 local (JavaScript)</li>
                     <?php endif; ?>
                     <?php if(is_file('../data/script/bootstrap/bootstrap.js')): ?>
 					   <li><input type="checkbox" name="framework[bootstrap]" id="framework_bootstrap" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('bootstrap', $edittemp_framework) && intval($edittemp_framework['bootstrap'])==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 3 local (JavaScript)</li>
                     <?php endif; ?>
-                    <?php if(is_file('../data/script/bootstrap_5/bootstrap.js')): ?>
-					   <li><input type="checkbox" name="framework[bootstrap_5]" id="framework_bootstrap_5" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('bootstrap_5', $edittemp_framework) && intval($edittemp_framework['bootstrap_5'])==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 5 local (JavaScript)</li>
+					<?php if(is_file('../data/script/bootstrap-5-2-2/bootstrap.js')): ?>
+					   <li><input type="checkbox" name="framework[bootstrap_5]" id="framework_bootstrap_5" value="1" <?php if (intval($edittemp_framework['bootstrap_5'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 5 local (JS Part)</li>
                     <?php endif; ?>
-					<li><input type="checkbox" name="framework[covifuncs]" id="framework_covifuncs" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('covifuncs', $edittemp_framework) && intval($edittemp_framework['covifuncs'])==1): echo "checked=\"checked\""; endif; ?> /> COVI Scripts (JavaScript)</li>
+                    <li><input type="checkbox" name="framework[covifuncs]" id="framework_covifuncs" value="1" <?php if (intval($edittemp_framework['covifuncs'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> COVI Scripts (JavaScript)</li>
 				</ul></td>
 				<td class="tablecell two"><?php echo returnIntLang('templates jslib'); ?></td>
 				<td class="tablecell two"><?php
@@ -546,11 +547,11 @@ include ("./data/include/wspmenu.inc.php");
 			</tr>
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates head'); ?></td>
-				<td class="tablecell six"><textarea name="selfhead" id="selfhead" cols="80" rows="5" class="full medium noresize"><?php echo $edittemp_head; ?></textarea></td>
+				<td class="tablecell six"><textarea name="selfhead" id="selfhead" cols="80" rows="5" class="full medium noresize"><?php echo ($edittemp_head ?? ''); ?></textarea></td>
 			</tr>
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates template'); ?></td>
-				<td class="tablecell six"><textarea name="template" id="template" cols="80" rows="15" class="full large"><?php echo $edittemp_temp; ?></textarea></td>
+				<td class="tablecell six"><textarea name="template" id="template" cols="80" rows="15" class="full large"><?php echo ($edittemp_temp ?? ''); ?></textarea></td>
 			</tr>
 		</table>
 		<ul class="tablelist">
