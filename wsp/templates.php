@@ -421,7 +421,7 @@ include ("./data/include/wspmenu.inc.php");
 				<td class="tablecell two"><?php echo returnIntLang('templates jslib'); ?></td>
 				<td class="tablecell two"><?php
 				
-				$javascript_sql = "SELECT `id`, `describ` FROM `javascript` WHERE `describ`!='' AND `cfolder` != '' ORDER BY `describ`";
+				$javascript_sql = "SELECT `id`, `describ` FROM `javascript` WHERE `describ`!='' AND `cfolder` != '' AND `cfolder` != `lastchange` ORDER BY `describ`";
 				$javascript_res = doSQL($javascript_sql);
 				if ($javascript_res['num']==0):
 					echo returnIntLang('templates nojsdefined');
@@ -458,7 +458,7 @@ include ("./data/include/wspmenu.inc.php");
 				<td class="tablecell two"><?php echo returnIntLang('templates javascript'); ?></td>
 				<td class="tablecell two"><?php
 				
-				$javascript_sql = "SELECT `id`, `describ` FROM `javascript` WHERE `describ` != '' AND `cfolder` = '' ORDER BY `describ`";
+				$javascript_sql = "SELECT `id`, `describ` FROM `javascript` WHERE `describ` != '' AND (`cfolder` = '' OR (`cfolder` != '' AND `cfolder` = `lastchange`)) ORDER BY `describ`";
 				$javascript_res = doSQL($javascript_sql);
 				if ($javascript_res['num']==0):
 					echo returnIntLang('templates nojsdefined');
@@ -518,7 +518,7 @@ include ("./data/include/wspmenu.inc.php");
 								echo "checked=\"checked\"";
 							endif;
 							echo " />&nbsp;<span class=\"handle\" style=\"cursor: move;\">".$value['describ'];
-							if ($value['cfolder']!=""): echo " <em>Library</em>"; endif;
+							if ($value['cfolder']!="" && intval($value['cfolder'])!=$value['cfolder']): echo " <em>Library</em>"; endif;
 							echo "</span></li>";
 						endif;
 					endforeach;
