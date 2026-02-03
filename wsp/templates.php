@@ -235,7 +235,7 @@ include ("./data/include/wspmenu.inc.php");
 	?>
 	<fieldset>
 		<legend><?php echo returnIntLang('templates existingtemplates'); ?> <span class="opencloseButton bubblemessage" rel="templates_fieldset">↕</span></legend>
-		<div id="templates_fieldset" style="<?php echo $_SESSION['opentabs']['templates_fieldset']; ?>">
+		<div id="templates_fieldset" style="<?php echo ($_SESSION['opentabs']['templates_fieldset'] ?? ''); ?>">
 		<?php
 		if ($templates_res['num']==0) {
 			echo "<p>".returnIntLang('templates notemplates')."</p>\n";
