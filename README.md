@@ -1,6 +1,12 @@
 # WSP
 WebSitePreview
 
+## 6.26.1
+
+- frontend
+    - added bootstrap 5.2.2
+    - added slick 1.8.1
+
 ## 6.25.10
 
 - globalcontent
