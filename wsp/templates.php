@@ -401,30 +401,7 @@ include ("./data/include/wspmenu.inc.php");
 		<table class="tablelist">
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates templatename'); ?></td>
-				<td class="tablecell two"><input type="text" maxlength="200" id="templatename" name="templatename" value="<?php echo $edittemp_name; ?>" class="one full" /></td>
-				<td class="tablecell two"><?php echo returnIntLang('templates rss'); ?></td>
-				<td class="tablecell two"><?php
-				
-				$rssfiles_sql = "SELECT * FROM rssdata";
-				$rssfiles_res = doSQL($rssfiles_sql);
-				if ($rssfiles_res['num']==0):
-					echo returnIntLang('templates norssdefined');
-				else:
-					?><select name="rssfile" id="rssfile" size="1" class="one full">
-						<option value="0"><?php echo returnIntLang('hint choose', false); ?></option>
-						<?php
-                        foreach ($rssfiles_res['set'] AS $rssrsk => $rssrsv) {
-							$rsscon_sql = "SELECT * FROM `r_temp_rss` WHERE `templates_id` = ".intval($id)." AND `rss_id` = ".intval($rssrsv['rid']);
-							$rsscon_res = doSQL($rsscon_sql);
-							echo "<option value=\"".intval($rssrsv['rid'])."\"";
-							if ($rsscon_res['num']>0):
-								echo " selected";
-							endif;
-							echo ">".setUTF8(trim($rssrsv['rsstitle']))."</option>";
-						}
-						?>
-					</select><?php
-				endif; ?></td>
+				<td class="tablecell six"><input type="text" maxlength="200" id="templatename" name="templatename" value="<?php echo $edittemp_name; ?>" class="one full" /><input type="hidden" name="rssfile" value="0" /></td>
 			</tr>
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates frameworks'); ?></td>
