@@ -39,11 +39,11 @@ $GLOBALS['under'] = array();
 /* define page specific functions ------------ */
 
 function getSubTemplate($mid) { // Auslesen aller untergeordneter Menupunkte/Inhalte die kein eigenes Seitentemplate benutzen
+	$return = [];
 	foreach($mid as $midvalue):
 		$under_sql = "SELECT mid FROM `menu` WHERE `templates_id` = '0' AND `connected` = ".intval($midvalue);
 		$under_res = doSQL($under_sql);
 		if($under_res['num']>0):
-			$return = array();
 			foreach ($under_res['set'] AS $k => $row) {
 				$return[] = $row['mid'];
             }
@@ -53,7 +53,7 @@ function getSubTemplate($mid) { // Auslesen aller untergeordneter Menupunkte/Inh
             }
 		endif;
 	endforeach;
-    return ($return);
+    return $return;
 	} //getUnderTemplate();		
 
 if ($op == 'savetemplate'):
@@ -408,15 +408,18 @@ include ("./data/include/wspmenu.inc.php");
 				<td class="tablecell two"><?php echo returnIntLang('templates frameworks'); ?></td>
 				<td class="tablecell two"><ul class="checklist">
                     <?php if(is_file('../data/script/jquery/jquery-3.3.1.js')): ?>
-					   <li><input type="checkbox" name="framework[jquery]" id="framework_jquery" value="1" <?php if (intval($edittemp_framework['jquery'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> jQuery 3.3.1 local (JavaScript)</li>
+					   <li><input type="checkbox" name="framework[jquery]" id="framework_jquery" value="1" <?php if (intval($edittemp_framework['jquery'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> jQuery 3.3.1</li>
                     <?php endif; ?>
                     <?php if(is_file('../data/script/bootstrap/bootstrap.js')): ?>
-					   <li><input type="checkbox" name="framework[bootstrap]" id="framework_bootstrap" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('bootstrap', $edittemp_framework) && intval($edittemp_framework['bootstrap'])==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 3 local (JavaScript)</li>
+					   <li><input type="checkbox" name="framework[bootstrap]" id="framework_bootstrap" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('bootstrap', $edittemp_framework) && intval($edittemp_framework['bootstrap'])==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 3</li>
                     <?php endif; ?>
 					<?php if(is_file('../data/script/bootstrap-5-2-2/bootstrap.js')): ?>
-					   <li><input type="checkbox" name="framework[bootstrap_5]" id="framework_bootstrap_5" value="1" <?php if (intval($edittemp_framework['bootstrap_5'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 5 local (JS Part)</li>
+					   <li><input type="checkbox" name="framework[bootstrap_5]" id="framework_bootstrap_5" value="1" <?php if (intval($edittemp_framework['bootstrap_5'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 5.2.2</li>
                     <?php endif; ?>
-                    <li><input type="checkbox" name="framework[covifuncs]" id="framework_covifuncs" value="1" <?php if (intval($edittemp_framework['covifuncs'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> COVI Scripts (JavaScript)</li>
+					<?php if(is_file('../data/script/slick-1-8-1/slick.js')): ?>
+					   <li><input type="checkbox" name="framework[slick]" id="framework_slick" value="1" <?php if (intval($edittemp_framework['slick'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> Slick 1.8.1</li>
+                    <?php endif; ?>
+                    <li><input type="checkbox" name="framework[covifuncs]" id="framework_covifuncs" value="1" <?php if (intval($edittemp_framework['covifuncs'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> COVI Scripts</li>
 				</ul></td>
 				<td class="tablecell two"><?php echo returnIntLang('templates jslib'); ?></td>
 				<td class="tablecell two"><?php
