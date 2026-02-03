@@ -303,19 +303,7 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 		<p><?php echo returnIntLang('home rights'); ?></p>
 		<p><?php echo returnIntLang('home faqhint'); ?></p>
 		<p><?php echo returnIntLang('home logouthint'); ?></p></fieldset>
-        <?php if (_isCurl()) {
-            $wspinfo = array( 
-                CURLOPT_URL => trim($_SESSION['wspvars']['updateuri']."/wspinfo.php?sys=".$_SESSION['wspvars']['wspversion']."&lang=".$_SESSION['wspvars']['locallang']), 
-                CURLOPT_HEADER => 0, 
-                CURLOPT_RETURNTRANSFER => TRUE, 
-                CURLOPT_TIMEOUT => 4 
-            );
-            $ch = curl_init();
-            curl_setopt_array($ch, $wspinfo);
-            if( ! $getinfo = curl_exec($ch)) {} 
-            curl_close($ch);
-            if (trim($getinfo)!='') { echo $getinfo; }
-        }
+        <?php 
 
 		$plugin_sql = "SELECT * FROM `wspplugins`";
 		$plugin_res = doSQL($plugin_sql);
