@@ -119,9 +119,9 @@ include ("data/include/wspmenu.inc.php");
 		<legend><?php echo returnIntLang('js existingfolder'); ?> <?php echo legendOpenerCloser('jsfolder'); ?></legend>
 		<?php
 		
-		if ($js_num==0):
+		if ($js_num==0) {
 			echo "<p>".returnIntLang('js nofolder')."</p>\n";
-		else:
+		} else {
 			?>
 			<div id="jsfolder">
 			<table class="tablelist">
@@ -179,11 +179,11 @@ include ("data/include/wspmenu.inc.php");
                 echo "<td class='tablecell two'><a href=\"".$_SERVER['PHP_SELF']."?op=deletefolder&id=".intval($jsrsv['id'])."\" onclick=\"return confirm('".returnIntLang('js confirmdeletefolder', false)."');\"><span class=\"bubblemessage red\">".strtoupper(returnIntLang('bubble delete', false))."</span></a></td>";
                 echo "</tr>\n";
             }
-            endif;
+			echo '</table></div>';
+
+		}
 	   ?>
-                </table>
-                </div>
-                </fieldset>
+	</fieldset>
 	<?php
 	
 	endif;
@@ -411,7 +411,7 @@ include ("data/include/wspmenu.inc.php");
 				range.select();
 				}
 				
-  /* fr neuere auf Gecko basierende Browser */
+  /* for newer, Gecko based Browser */
   else if(typeof input.selectionStart != 'undefined')
   {
     /* Einfgen des Formatierungscodes */
@@ -445,7 +445,6 @@ include ("data/include/wspmenu.inc.php");
     var insText = prompt("Bitte geben Sie den zu formatierenden Text ein:");
     input.value = input.value.substr(0, pos) + aTag + insText + eTag + input.value.substr(pos);
   }
-} // pasteTab
 		
 	function uploadJS() {
 		document.getElementById('editjs').style.display = 'none';
