@@ -100,8 +100,8 @@ function ftpCreateDir($basedir = '', $finaldir = '') {
 //	if (trim($basedir)=='' || strstr($basedir, "..")):
 //		$basedir = $_SESSION['wspvars']['ftpbasedir'];
 //	endif;
-//	$substructure = str_replace($finaldir, '', $basedir);
-
+	
+	$substructure = str_replace($finaldir, '', $basedir);
 	addWSPMsg('noticemsg', $substructure);
 
 	if ($substructure==$finaldir):
@@ -355,7 +355,7 @@ if (!(function_exists('newUploadMedia'))):
 	} // newUploadMedia();
 endif;
 
-if (!(function_exists("getDirList"))):
+if (!(function_exists("getDirList"))) {
 /**
  * Ermittelt alle Unterverzeichnisse des gegebenen Verzeichnisses; ausgehend von DocumentRoot
  *
@@ -363,7 +363,7 @@ if (!(function_exists("getDirList"))):
  * @param Boolean $bRecursive	Sollen auch die Untervezeichnisse durchsucht werden
  * @return array
  */
-function getDirList($sDir, $bRecursive) {
+function getDirList(string $sDir, bool $bRecursive = false) {
 	// define subdir array
 	$subdirs = array();
 	// open directory
@@ -379,6 +379,4 @@ function getDirList($sDir, $bRecursive) {
 	$d->close();
 	return $subdirs;
 	}
-endif;
-
-// EOF ?>
+}
