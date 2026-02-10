@@ -237,7 +237,7 @@ function modRights() {
 		<?php
 		
 		$colset = array();
-		$modtable_sql = "SELECT `TABLE_NAME` FROM `information_schema`.`tables` WHERE `TABLE_SCHEMA` = '" . escapeSQL(defined('DB_NAME') ? DB_NAME : ($_SESSION['wspvars']['dbname'] ?? 'modtable')) . "' AND `TABLE_NAME` LIKE '".escapeSQL(trim($mresv['module_guid']))."%'";
+		$modtable_sql = "SELECT `TABLE_NAME` FROM `information_schema`.`tables` WHERE `TABLE_SCHEMA` = '" . escapeSQL(defined('DB_NAME') ? DB_NAME : ($_SESSION['wspvars']['dbname'] ?? 'modtable')) . "' AND `TABLE_NAME` LIKE '".escapeSQL(trim($mresv['module_guid'] ?? ''))."%'";
 		$modtable_res = getResultSQL($modtable_sql);
 		if (is_array($modtable_res)):
 
@@ -265,7 +265,7 @@ function modRights() {
                     <div class="col-md-6"><p><strong><?php echo returnIntLang('moddetails affects tablename', false); ?></strong></p></div>
                     <div class="col-md-6"><p><strong><?php echo returnIntLang('moddetails affects fieldname', false); ?></strong></p></div>
                 </div>
-                <input type="hidden" name="module_guid" value="<?php echo trim($mresv['module_guid']); ?>" />
+                <input type="hidden" name="module_guid" value="<?php echo trim($mresv['module_guid'] ?? ''); ?>" />
                 <?php foreach ($colset AS $csk => $csv): 
                     foreach ($csv AS $csfk => $csfv): ?>
                         <?php if (isset($actcsk) && $actcsk!=$csk) { echo "<hr />"; } ?>
@@ -595,9 +595,10 @@ include ("./data/include/wspmenu.inc.php");
 						
 						$details_sql = 'SELECT `name`, `version`, `sid` FROM `interpreter` WHERE `module_guid` = "'.trim($presv["guid"]).'" ORDER BY `name`';
 						$details_res = doSQL($details_sql);
-						
-						if ($details_res['num']>0):
-                            for ($r=0; $r<(ceil($details_res['num']/3)); $r++):
+						$details_num = $details_res['num'];
+
+						if ($details_num>0):
+                            for ($r=0; $r<(ceil($details_num/3)); $r++):
 								echo "<tr id=\"\" class=\"details-".intval($presv["id"])."\" style=\"display: none;\">";
 								echo "<td class='tablecell two'>";
 								if ($r==0): echo "<em>".returnIntLang('modules parser')."</em>"; endif;
@@ -637,10 +638,11 @@ include ("./data/include/wspmenu.inc.php");
 						
 						$details_sql = 'SELECT `name`, `version` FROM `interpreter` WHERE `module_guid` = "'.trim($cresv["guid"]).'" ORDER BY `name`';
 						$details_res = doSQL($details_sql);
-						
+						$details_num = $details_res['num'];
+
                         echo trim($cresv["name"])." ".trim($cresv["version"]);
 						$detailset = array();
-                        if ($details_res['num']>0):
+                        if ($details_num>0):
 							foreach ($details_res['set'] AS $dresk => $dresv):
 								$detailset[] = "<em>".trim($dresv["name"])." - ".trim($dresv["version"])."</em>";
 							endforeach;
@@ -723,9 +725,10 @@ include ("./data/include/wspmenu.inc.php");
 						
 						$details_sql = 'SELECT `name`, `version` FROM `interpreter` WHERE `module_guid` = "'.trim($aresv['guid']).'" ORDER BY `name`';
 						$details_res = doSQL($details_sql);
-						
+						$details_num = $details_res['num'];
+
 						echo trim($aresv['name'])." ".trim($aresv['version']);
-						if ($details_res['num']>0):
+						if ($details_num > 0):
 							echo " <a href=\"\" title=\"Details\"><img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/expandm.gif\" border=\"0\" align=\"texttop\" style=\"cursor: pointer;\" /></a>";
 						endif;
 						
