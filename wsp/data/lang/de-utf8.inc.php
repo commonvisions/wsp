@@ -1134,7 +1134,7 @@ $lang['de'] = array(
 
 //Gestaltung -> JavaScript
 'js headline' => 'JavaScript-Dateien und Dateisammlungen verwalten',
-'js info' => 'Verwalten Sie hier JavaScripte und JavaScript-Sammlungen wie Scriptaculous.',
+'js info' => 'Verwalten Sie hier JavaScripte und JavaScript-Sammlungen.',
 'js existingfolder' => 'Bestehende JavaScript-Sammlungen',
 'js existingfiles' => 'Bestehende JavaScript-Dateien',
 'js createnewfile' => 'Neue JavaScript-Datei anlegen',

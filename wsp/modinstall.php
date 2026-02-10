@@ -48,14 +48,32 @@ require ("./data/include/clsinterpreter.inc.php");
 if (!(function_exists('copyTree'))) {
     function copyTree($src, $dest) {
         
-        $ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])));
-        if ($ftp!==false) {if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { $ftp = false; }}
-        if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); }
+		$src = str_replace('//', '/', $src);
+		$dest = str_replace('//', '/', $dest);
+		$ftp = null;
+		$ftpt = 0;
+
+		if (isset($_SESSION['wspvars']['directwriting']) && $_SESSION['wspvars']['directwriting']===true) {
+			$usedirect = true;
+		} else {
+			while (empty($ftp) && $ftpt<3) {
+				$ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])));
+				if ($ftp!==false) {
+					if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { 
+						$ftp = false; 
+					}
+				}
+				if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { 
+					ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); 
+				}
+				$ftpt++;
+			}
+		}
         
-        if ($ftp!==false) {
+        if ($ftp) {
             $dh = dir($src);
             while (false !== ($entry = $dh->read())) {
-                if (($entry != '.') && ($entry != '..')) {
+                if (substr($entry, 0, 1) != '.') {
                     if (is_dir($src."/".$entry)) {
                         @ftp_mkdir($ftp, $dest."/".$entry);
                         copyTree($src."/".$entry, $dest."/".$entry);
@@ -67,7 +85,29 @@ if (!(function_exists('copyTree'))) {
             }
             ftp_close($ftp);
             return true;
-        }
+        } 
+		else if ($usedirect) {
+			$dh = dir($src);
+			$dest = $_SERVER['DOCUMENT_ROOT'] . '/' . $_SESSION['wspvars']['wspbasediradd'] . '/' . $_SESSION['wspvars']['wspbasedir'] . '/data/interpreter/';
+            $dest = str_replace('//', '/', $dest);
+			while (false !== ($entry = $dh->read())) {
+				if (substr($entry, 0, 1) != '.') {
+                    if (is_dir($src."/".$entry)) {
+                        /*
+						mkdir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT'] . '/'. $_SESSION['wspvars']['wspbasediradd']. '/' . returnPath(intval($mid_res['set'][0]['mid']), 1, '', $lang))), 0755, true)
+						*/
+                        copyTree($src."/".$entry, $dest."/".$entry);
+                    }
+                    elseif (is_file($src."/".$entry)) {
+						copy(
+							$src."/".$entry, 
+							str_replace('//', '/', $dest."/".$entry)
+						);
+                    }
+                }
+            }
+            return true;
+		}
         else {
             addWSPMsg('errormsg', 'modinstall copytree failed');
             return false;
@@ -150,7 +190,9 @@ function regParser($modul, $aParser, $modguid) {
 			if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/modules/install".$modul."/wsp/data/interpreter/".$value)) {
 				include_once ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/tmp/".$_SESSION['wspvars']['usevar']."/modules/install".$modul."/wsp/data/interpreter/".$value);
 				$parser = new $interpreterClass();
-				$parser->dbCon = $_SESSION['wspvars']['dbcon'];
+				if (property_exists($parser, 'dbCon')) {
+					$parser->dbCon = $_SESSION['wspvars']['dbcon'];
+				}
 				$sql = "SELECT `version` FROM `interpreter` WHERE `guid` = '".$parser->guid."'";
 				$res = doSQL($sql);
 	
@@ -649,7 +691,7 @@ include ("./data/include/wspmenu.inc.php");
                             }
                         }
 
-                    }else{
+                    } else {
                         $sql_query="CREATE TABLE `".$sql['tablename']."` ( ";
                         $count=0;
                         foreach ($sql['fields'] as $fields) {
@@ -731,12 +773,12 @@ include ("./data/include/wspmenu.inc.php");
             // Modul registrieren
             $sql = "SELECT `id`, `settings` FROM `modules` WHERE `guid`='".$modsetup->getGUID()."'";
             $res = doSQL($sql);
-            $dependences = '';
+            $dependencies = '';
 
             foreach ($modsetup->dependences() as $key => $value):
-                $dependences .= $key." ";
+                $dependencies .= $key." ";
             endforeach;
-            $dependences = trim($dependences);
+            $dependencies = trim($dependencies);
 
             if ($res['num'] == 0):
                 $sql = "INSERT INTO `modules` SET
@@ -744,7 +786,6 @@ include ("./data/include/wspmenu.inc.php");
                     `version` = '".$modsetup->version()."',
                     `guid` = '".$modsetup->getGUID()."',
                     `archive` = '".$modfile."',
-                    `dependences` = '".$dependences."',
                     `isparser` = '".(isset($type['isparser'])?intval($type['isparser']):0)."',
                     `iscmsmodul` = '".(isset($type['iscmsmodul'])?intval($type['iscmsmodul']):0)."',
                     `ismenu` = '".(isset($type['ismenu'])?intval($type['ismenu']):0)."',
@@ -761,7 +802,7 @@ include ("./data/include/wspmenu.inc.php");
                     `version` = '".$modsetup->version()."',
                     `guid` = '".$modsetup->getGUID()."',
                     `archive` = '".$modfile."',
-                    `dependences` = '".$dependences."',
+                    `dependencies` = '".$dependencies."',
                     `isparser` = '".(isset($type['isparser'])?intval($type['isparser']):0)."',
                     `iscmsmodul` = '".(isset($type['iscmsmodul'])?intval($type['iscmsmodul']):0)."',
                     `ismenu` = '".(isset($type['ismenu'])?intval($type['ismenu']):0)."',
@@ -870,12 +911,12 @@ include ("./data/include/wspmenu.inc.php");
 							?></td>
 						</tr>
 						<tr>
-							<td class="tablecell two"><?php echo returnIntLang('str dependences'); ?></td>
+							<td class="tablecell two"><?php echo returnIntLang('str dependencies'); ?></td>
 							<td class="tablecell six"><?php
 								
 							if (count($modsetup->dependences()) == 0):
 								// keine abhaengigkeiten vorhanden
-								echo returnIntLang('modinstall no dependences');
+								echo returnIntLang('modinstall no dependencies');
 								$canInstall = true;
 							else:
 								// abhaengigkeiten vorhanden
@@ -944,15 +985,17 @@ include ("./data/include/wspmenu.inc.php");
 									echo "<td class='tablecell four'>";
 						
 									// loading info
-									if (is_file($modtmpdir."/wsp/data/interpreter/".$value)):
-										require $modtmpdir."/wsp/data/interpreter/".$value;
+									if (is_file($modtmpdir."/wsp/data/interpreter/".$value)) {
+										require $modtmpdir . "/wsp/data/interpreter/" . $value;
 										$parser = new $interpreterClass();
-										$parser->dbCon = $_SESSION['wspvars']['dbcon'];
+										if (property_exists($parser, 'dbCon')) {
+											$parser->dbCon = $_SESSION['wspvars']['dbcon'];
+										}
 										echo $parser->title.' '.$parser->version.'&nbsp;';
-									else:
+									} else {
 										echo "Fehler bei der Namensaufl&ouml;sung<br /><em>".$value."</em>";
 										$break = true;
-									endif;
+									}
 									
 									echo "</td>";
 									
@@ -970,7 +1013,7 @@ include ("./data/include/wspmenu.inc.php");
 							endif;
 							
 							if (isset($type['iscmsmodul']) && $type['iscmsmodul']!=0):
-								
+
 								$output = false;
 								foreach ($modsetup->getParser() as $value):
 									echo "<tr>";

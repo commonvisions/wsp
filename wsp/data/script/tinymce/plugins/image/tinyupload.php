@@ -52,12 +52,12 @@ unset ($fullmediatmp);
 $desc_sql = "SELECT * FROM `mediadesc`"; // check mediadesc
 $desc_res = doSQL($desc_sql);
 $allmediadesc = array(); // empty mediadetails
-//$mediakeys = ''; // empty mediadetails
-if ($desc_res['num']>0):
-    foreach($desc_res['set'] AS $mdk => $mdv):
+
+if ($desc_res['num']>0) {
+    foreach($desc_res['set'] AS $mdk => $mdv) {
         $allmediadesc[trim($mdv["mediafile"])] = trim($mdv["filedesc"]);			
-    endfor;
-endif;
+    }
+}
 
 $_SESSION['xajaxmedialist'] = array();
 foreach ($fullmediastructure AS $fmkey => $fmvalue):

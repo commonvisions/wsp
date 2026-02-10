@@ -34,9 +34,9 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
 			'request' => serialize($_REQUEST)
 			);
 		if (intval($qdone_res['num'])>0):
-			foreach ($qdone_res['set'] AS $qdsk => $qdsv)
+			foreach ($qdone_res['set'] AS $qdsk => $qdsv) {
 				$result['id'][] = intval($qdsv['id']);
-			endforeach;
+			}
 			$result['id'] = array_unique($result['id']);
 		endif;
 	else:

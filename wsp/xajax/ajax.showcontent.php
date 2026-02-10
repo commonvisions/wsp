@@ -89,7 +89,9 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
                         if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/interpreter/".$file)) {
                             include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/interpreter/".$file;
                             $clsInterpreter = new $interpreterClass;
-                            $clsInterpreter->dbCon = $_SESSION['wspvars']['dbcon'];
+                            if (property_exists($clsInterpreter, 'dbCon')) {
+                                $clsInterpreter->dbCon = $_SESSION['wspvars']['dbcon'];
+                            }
                             if (method_exists($interpreterClass, 'getView')) {
                                 $contentdesc = $clsInterpreter->getView($contentvalue, intval($csresv['mid']), $cid);
                             }

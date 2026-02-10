@@ -116,12 +116,12 @@ function mobileJump(jumpValue) {
 					<?php endif; ?>
 					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/siteprefs.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/siteprefs.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu siteprefs generell', false); ?></option>
 					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/semanagement.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/semanagement.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu siteprefs seo', false); ?></option>
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/analytics.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/analytics.php'): echo " selected=\"selected\" "; endif; echo ">".returnIntLang('menu siteprefs analytics', false); ?></option>
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/privacy.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/privacy.php'): echo " selected=\"selected\" "; endif; echo ">".returnIntLang('menu siteprefs privacy', false); ?></option> 
+					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/analytics.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/analytics.php'): echo " selected=\"selected\" "; endif; ?>><?php echo returnIntLang('menu siteprefs analytics', false); ?></option>
+					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/privacy.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/privacy.php'): echo " selected=\"selected\" "; endif; ?>><?php echo returnIntLang('menu siteprefs privacy', false); ?></option>
 				</optgroup>
 				<?php endif; ?>
 				<?php if ($standardtemp>0): /* allow structure/contents only with defined standard template */ ?>
-					<?php if (!($_SESSION['wspvars']['rights']['sitestructure']==0 && $_SESSION['wspvars']['rights']['contents']==0 && $_SESSION['wspvars']['rights']['rss']==0)): ?>
+					<?php if (!($_SESSION['wspvars']['rights']['sitestructure']==0 && $_SESSION['wspvars']['rights']['contents']==0)): ?>
 						<optgroup label="<?php echo returnIntLang('menu content', false); ?>">
 							<?php if ($_SESSION['wspvars']['rights']['sitestructure']!=0): ?>
 								<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/menuedit.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/menuedit.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu content structure', false); ?></option>
@@ -132,15 +132,9 @@ function mobileJump(jumpValue) {
 							<?php $worklang = unserialize($_SESSION['wspvars']['sitelanguages']); if ($_SESSION['wspvars']['usertype']==1): ?>
 								<!-- <option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/languagetools.php"><?php echo returnIntLang('menu content localize'); ?></option> -->
 							<?php endif; ?>
-							<?php if ($_SESSION['wspvars']['rights']['contents']==1): ?>
+							<?php if ($_SESSION['wspvars']['rights']['contents']==1) { ?>
 								<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/globalcontent.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/globalcontent.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu content global'); ?></option>
-							<?php endif; ?>
-							<?php if ($_SESSION['wspvars']['rights']['rss']!=0 && $isextended==1): ?>
-								<!-- <option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/rssedit.php"><?php echo returnIntLang('menu content rss'); ?></option> -->
-							<?php endif; ?>
-							<?php if ($_SESSION['wspvars']['rights']['contents']!=0): ?>
-								<!-- <option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/imexport.php"><?php echo returnIntLang('menu content port'); ?></option> -->
-							<?php endif; ?>
+							<?php } ?>
 						</optgroup>
 					<?php endif; ?>
 				<?php endif; ?>
@@ -469,7 +463,7 @@ function mobileJump(jumpValue) {
 		endif;
 		
 		if ($standardtemp>0): /* allow structure/contents only with defined standard template */ ?>
-			<?php $mp = 5; if ((array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('sitestructure', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['sitestructure']!="0") || (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('contents', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['contents']!="0") || (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('rss', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['rss']!="0")): ?>
+			<?php $mp = 5; if ((array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('sitestructure', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['sitestructure']!="0") || (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('contents', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['contents']!="0")): ?>
 				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu content'); ?></a>
 				<ul class="basic level1">
 					<?php if ($_SESSION['wspvars']['rights']['sitestructure']!=0): ?>
@@ -493,13 +487,6 @@ function mobileJump(jumpValue) {
 						<li class="level1" id="m_<?php echo $mp; ?>_2">
 							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/globalcontent.php"><?php echo returnIntLang('menu content global'); ?></a>
 						</li>
-					<?php endif; ?>
-					<?php if ($isextended==1): ?>
-						<?php if ($_SESSION['wspvars']['rights']['rss']!=0): ?>
-							<li class="level1" id="m_<?php echo $mp; ?>_6">
-								<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/rssedit.php"><?php echo returnIntLang('menu content rss'); ?></a>
-							</li>
-						<?php endif; ?>
 					<?php endif; ?>
 				</ul>
 				</li>

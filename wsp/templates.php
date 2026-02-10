@@ -39,11 +39,11 @@ $GLOBALS['under'] = array();
 /* define page specific functions ------------ */
 
 function getSubTemplate($mid) { // Auslesen aller untergeordneter Menupunkte/Inhalte die kein eigenes Seitentemplate benutzen
+	$return = [];
 	foreach($mid as $midvalue):
 		$under_sql = "SELECT mid FROM `menu` WHERE `templates_id` = '0' AND `connected` = ".intval($midvalue);
 		$under_res = doSQL($under_sql);
 		if($under_res['num']>0):
-			$return = array();
 			foreach ($under_res['set'] AS $k => $row) {
 				$return[] = $row['mid'];
             }
@@ -53,7 +53,7 @@ function getSubTemplate($mid) { // Auslesen aller untergeordneter Menupunkte/Inh
             }
 		endif;
 	endforeach;
-    return ($return);
+    return $return;
 	} //getUnderTemplate();		
 
 if ($op == 'savetemplate'):
@@ -70,6 +70,7 @@ if ($op == 'savetemplate'):
 		else:
 			$sql.= ", `fonts` = ''";
 		endif;
+		$sql.= ", `iphone_optimize` = 0, `iphone_viewport` = NULL, `ipad_optimize` = 0, `ipad_viewport` = NULL";
 		$res = doSQL($sql);
 		$id = $res['inf'];
 		// create output message
@@ -235,7 +236,7 @@ include ("./data/include/wspmenu.inc.php");
 	?>
 	<fieldset>
 		<legend><?php echo returnIntLang('templates existingtemplates'); ?> <span class="opencloseButton bubblemessage" rel="templates_fieldset">↕</span></legend>
-		<div id="templates_fieldset" style="<?php echo $_SESSION['opentabs']['templates_fieldset']; ?>">
+		<div id="templates_fieldset" style="<?php echo ($_SESSION['opentabs']['templates_fieldset'] ?? ''); ?>">
 		<?php
 		if ($templates_res['num']==0) {
 			echo "<p>".returnIntLang('templates notemplates')."</p>\n";
@@ -396,54 +397,34 @@ include ("./data/include/wspmenu.inc.php");
 
 	?>
 	<fieldset id="templateeditor" <?php if ($op!="edit"): ?>style="display: none;"<?php endif; ?>>
-		<legend><?php if ($id<1 && $op="edit"): ?><?php echo returnIntLang('templates create template'); ?><?php else: ?><?php echo returnIntLang('templates edittemplate'); ?> <?php echo setUTF8($edittemp_name); endif; ?></legend>
+		<legend><?php if ($id<1 && $op="edit"): ?><?php echo returnIntLang('templates create template'); ?><?php else: ?><?php echo returnIntLang('templates edittemplate'); ?> <?php echo setUTF8($edittemp_name ?? ''); endif; ?></legend>
 		<form id="formedittemplate" name="formedittemplate" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
 		<table class="tablelist">
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates templatename'); ?></td>
-				<td class="tablecell two"><input type="text" maxlength="200" id="templatename" name="templatename" value="<?php echo $edittemp_name; ?>" class="one full" /></td>
-				<td class="tablecell two"><?php echo returnIntLang('templates rss'); ?></td>
-				<td class="tablecell two"><?php
-				
-				$rssfiles_sql = "SELECT * FROM rssdata";
-				$rssfiles_res = doSQL($rssfiles_sql);
-				if ($rssfiles_res['num']==0):
-					echo returnIntLang('templates norssdefined');
-				else:
-					?><select name="rssfile" id="rssfile" size="1" class="one full">
-						<option value="0"><?php echo returnIntLang('hint choose', false); ?></option>
-						<?php
-                        foreach ($rssfiles_res['set'] AS $rssrsk => $rssrsv) {
-							$rsscon_sql = "SELECT * FROM `r_temp_rss` WHERE `templates_id` = ".intval($id)." AND `rss_id` = ".intval($rssrsv['rid']);
-							$rsscon_res = doSQL($rsscon_sql);
-							echo "<option value=\"".intval($rssrsv['rid'])."\"";
-							if ($rsscon_res['num']>0):
-								echo " selected";
-							endif;
-							echo ">".setUTF8(trim($rssrsv['rsstitle']))."</option>";
-						}
-						?>
-					</select><?php
-				endif; ?></td>
+				<td class="tablecell six"><input type="text" maxlength="200" id="templatename" name="templatename" value="<?php echo ($edittemp_name ?? ''); ?>" class="one full" /><input type="hidden" name="rssfile" value="0" /></td>
 			</tr>
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates frameworks'); ?></td>
 				<td class="tablecell two"><ul class="checklist">
                     <?php if(is_file('../data/script/jquery/jquery-3.3.1.js')): ?>
-					   <li><input type="checkbox" name="framework[jquery]" id="framework_jquery" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('jquery', $edittemp_framework) && intval($edittemp_framework['jquery'])==1): echo "checked=\"checked\""; endif; ?> /> jQuery 3.3.1 local (JavaScript)</li>
+					   <li><input type="checkbox" name="framework[jquery]" id="framework_jquery" value="1" <?php if (intval($edittemp_framework['jquery'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> jQuery 3.3.1</li>
                     <?php endif; ?>
                     <?php if(is_file('../data/script/bootstrap/bootstrap.js')): ?>
-					   <li><input type="checkbox" name="framework[bootstrap]" id="framework_bootstrap" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('bootstrap', $edittemp_framework) && intval($edittemp_framework['bootstrap'])==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 3 local (JavaScript)</li>
+					   <li><input type="checkbox" name="framework[bootstrap]" id="framework_bootstrap" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('bootstrap', $edittemp_framework) && intval($edittemp_framework['bootstrap'])==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 3</li>
                     <?php endif; ?>
-                    <?php if(is_file('../data/script/bootstrap_5/bootstrap.js')): ?>
-					   <li><input type="checkbox" name="framework[bootstrap_5]" id="framework_bootstrap_5" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('bootstrap_5', $edittemp_framework) && intval($edittemp_framework['bootstrap_5'])==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 5 local (JavaScript)</li>
+					<?php if(is_file('../data/script/bootstrap-5-2-2/bootstrap.js')): ?>
+					   <li><input type="checkbox" name="framework[bootstrap_5]" id="framework_bootstrap_5" value="1" <?php if (intval($edittemp_framework['bootstrap_5'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> Bootstrap 5.2.2</li>
                     <?php endif; ?>
-					<li><input type="checkbox" name="framework[covifuncs]" id="framework_covifuncs" value="1" <?php if (is_array($edittemp_framework) && array_key_exists('covifuncs', $edittemp_framework) && intval($edittemp_framework['covifuncs'])==1): echo "checked=\"checked\""; endif; ?> /> COVI Scripts (JavaScript)</li>
+					<?php if(is_file('../data/script/slick-1-8-1/slick.js')): ?>
+					   <li><input type="checkbox" name="framework[slick]" id="framework_slick" value="1" <?php if (intval($edittemp_framework['slick'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> Slick 1.8.1</li>
+                    <?php endif; ?>
+                    <li><input type="checkbox" name="framework[covifuncs]" id="framework_covifuncs" value="1" <?php if (intval($edittemp_framework['covifuncs'] ?? 0)==1): echo "checked=\"checked\""; endif; ?> /> COVI Scripts</li>
 				</ul></td>
 				<td class="tablecell two"><?php echo returnIntLang('templates jslib'); ?></td>
 				<td class="tablecell two"><?php
 				
-				$javascript_sql = "SELECT `id`, `describ` FROM `javascript` WHERE `describ`!='' AND `cfolder` != '' ORDER BY `describ`";
+				$javascript_sql = "SELECT `id`, `describ` FROM `javascript` WHERE `describ`!='' AND `cfolder` != '' AND `cfolder` != `lastchange` ORDER BY `describ`";
 				$javascript_res = doSQL($javascript_sql);
 				if ($javascript_res['num']==0):
 					echo returnIntLang('templates nojsdefined');
@@ -480,7 +461,7 @@ include ("./data/include/wspmenu.inc.php");
 				<td class="tablecell two"><?php echo returnIntLang('templates javascript'); ?></td>
 				<td class="tablecell two"><?php
 				
-				$javascript_sql = "SELECT `id`, `describ` FROM `javascript` WHERE `describ` != '' AND `cfolder` = '' ORDER BY `describ`";
+				$javascript_sql = "SELECT `id`, `describ` FROM `javascript` WHERE `describ` != '' AND (`cfolder` = '' OR (`cfolder` != '' AND `cfolder` = `lastchange`)) ORDER BY `describ`";
 				$javascript_res = doSQL($javascript_sql);
 				if ($javascript_res['num']==0):
 					echo returnIntLang('templates nojsdefined');
@@ -540,7 +521,7 @@ include ("./data/include/wspmenu.inc.php");
 								echo "checked=\"checked\"";
 							endif;
 							echo " />&nbsp;<span class=\"handle\" style=\"cursor: move;\">".$value['describ'];
-							if ($value['cfolder']!=""): echo " <em>Library</em>"; endif;
+							if ($value['cfolder']!="" && intval($value['cfolder'])!=$value['cfolder']): echo " <em>Library</em>"; endif;
 							echo "</span></li>";
 						endif;
 					endforeach;
@@ -569,11 +550,11 @@ include ("./data/include/wspmenu.inc.php");
 			</tr>
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates head'); ?></td>
-				<td class="tablecell six"><textarea name="selfhead" id="selfhead" cols="80" rows="5" class="full medium noresize"><?php echo $edittemp_head; ?></textarea></td>
+				<td class="tablecell six"><textarea name="selfhead" id="selfhead" cols="80" rows="5" class="full medium noresize"><?php echo ($edittemp_head ?? ''); ?></textarea></td>
 			</tr>
 			<tr>
 				<td class="tablecell two"><?php echo returnIntLang('templates template'); ?></td>
-				<td class="tablecell six"><textarea name="template" id="template" cols="80" rows="15" class="full large"><?php echo $edittemp_temp; ?></textarea></td>
+				<td class="tablecell six"><textarea name="template" id="template" cols="80" rows="15" class="full large"><?php echo ($edittemp_temp ?? ''); ?></textarea></td>
 			</tr>
 		</table>
 		<ul class="tablelist">

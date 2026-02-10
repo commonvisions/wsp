@@ -746,6 +746,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
 			endforeach;
 		else:
 			echo "<p>".returnIntLang('media filestructure missing')."</p>";
+			$sysequal = true;
 		endif;
 		?>
 	</fieldset>

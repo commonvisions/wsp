@@ -258,17 +258,36 @@ if (!(function_exists('getHeadVar'))) {
 			// predefined frameworks
 			if (is_array($template_framework)) {
 				$headvar .= "<!-- wsp integrated frameworks -->\n";
+				$jquery = false;
 				foreach ($template_framework AS $tfwk => $tfwv) {
 					if ($tfwk=='jquery' && $tfwv==1) {
 						$headvar .= "<script src=\"/data/script/jquery/jquery-3.3.1.js\" type=\"text/javascript\"></script>\n";
+						$jquery = true;
 					}
                     if ($tfwk=='bootstrap' && $tfwv==1) {
-                        $headvar .= "<link rel='stylesheet' href='/media/layout/bootstrap/bootstrap.css'>\n";
+                        if (!$jquery) {
+							$headvar .= "<script src=\"/data/script/jquery/jquery-3.3.1.js\" type=\"text/javascript\"></script>\n";
+							$jquery = true;
+						}
+						$headvar .= "<link rel='stylesheet' href='/media/layout/bootstrap/bootstrap.css'>\n";
                         $headvar .= "<script src='/data/script/bootstrap/bootstrap.js'></script>\n";
                     }
 					if ($tfwk=='bootstrap_5' && $tfwv==1) {
-                        $headvar .= "<link rel='stylesheet' href='/media/layout/bootstrap_5/bootstrap.css'>\n";
-                        $headvar .= "<script src='/data/script/bootstrap_5/bootstrap.js'></script>\n";
+                        if (!$jquery) {
+							$headvar .= "<script src=\"/data/script/jquery/jquery-3.3.1.js\" type=\"text/javascript\"></script>\n";
+							$jquery = true;
+						}
+						$headvar .= "<link rel='stylesheet' href='/media/layout/bootstrap-5-2-2/bootstrap.min.css' media='all' type='text/css' />\n";
+                        $headvar .= "<script src='/data/script/bootstrap-5-2-2/bootstrap.bundle.min.js'></script>\n";
+                    }
+					if ($tfwk=='slick' && $tfwv==1) {
+                        if (!$jquery) {
+							$headvar .= "<script src=\"/data/script/jquery/jquery-3.3.1.js\" type=\"text/javascript\"></script>\n";
+							$jquery = true;
+						}
+						$headvar .= "<link rel='stylesheet' href='/media/layout/slick-1-8-1/slick.css' media='all' type='text/css' />";
+						$headvar .= "<link rel='stylesheet' href='/media/layout/slick-1-8-1/slick-theme.css' media='all' type='text/css' />\n";
+                        $headvar .= "<script src='/data/script/slick-1-8-1/slick.min.js'></script>\n";
                     }
 					if ($tfwk=='covifuncs' && $tfwv==1) {
 						$headvar .= "<script src=\"/data/script/covifuncs.js\" type=\"text/javascript\"></script>\n";

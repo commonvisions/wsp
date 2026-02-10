@@ -15,11 +15,11 @@ $msg_sql = "SELECT `id`, `message` FROM `wspmsg` WHERE `targetuid` = ".intval($_
 $msg_res = doSQL($msg_sql);
 $msgbarcontent = "";
 if ($msg_res['num']>0):
-	foreach ($msg_res['set'] AS $msgk => $msgv)
+	foreach ($msg_res['set'] AS $msgk => $msgv) {
 		$msgbarcontent.= "<fieldset class=\"msgbox\" id=\"wspmsg".intval($msgv['id'])."\" style=\"opacity: 0.8; background: white; -moz-box-shadow: 0px 0px 10px #000; -webkit-box-shadow: 0px 0px 10px #000; box-shadow: 0px 0px 10px #000;\">";
 		$msgbarcontent.= "<p class=\"msglegend\" style=\"text-align: right; margin: 0px; padding: 0px;\"><a onclick=\"closeMsg(".intval($msgv['id']).")\"><span class=\"bubblemessage red\">CLOSE</span></a></p>";
 		$msgbarcontent.= "<p>".setUTF8($msgv['message'])."</p>";
 		$msgbarcontent.= "</fieldset>";
-	endforeach;
+	}
 endif;
 if (trim($msgbarcontent!="")) { echo $msgbarcontent; }
