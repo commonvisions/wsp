@@ -22,6 +22,8 @@
 !media/layout/slick*/*
 !media/layout/slick*/*/*
 
+!wsp/composer.json
+
 wsp/test.php
 wsp/tmp
 wsp/data/modules/*
