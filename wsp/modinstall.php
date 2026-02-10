@@ -773,12 +773,12 @@ include ("./data/include/wspmenu.inc.php");
             // Modul registrieren
             $sql = "SELECT `id`, `settings` FROM `modules` WHERE `guid`='".$modsetup->getGUID()."'";
             $res = doSQL($sql);
-            $dependences = '';
+            $dependencies = '';
 
             foreach ($modsetup->dependences() as $key => $value):
-                $dependences .= $key." ";
+                $dependencies .= $key." ";
             endforeach;
-            $dependences = trim($dependences);
+            $dependencies = trim($dependencies);
 
             if ($res['num'] == 0):
                 $sql = "INSERT INTO `modules` SET
@@ -802,7 +802,7 @@ include ("./data/include/wspmenu.inc.php");
                     `version` = '".$modsetup->version()."',
                     `guid` = '".$modsetup->getGUID()."',
                     `archive` = '".$modfile."',
-                    `dependences` = '".$dependences."',
+                    `dependencies` = '".$dependencies."',
                     `isparser` = '".(isset($type['isparser'])?intval($type['isparser']):0)."',
                     `iscmsmodul` = '".(isset($type['iscmsmodul'])?intval($type['iscmsmodul']):0)."',
                     `ismenu` = '".(isset($type['ismenu'])?intval($type['ismenu']):0)."',
@@ -911,12 +911,12 @@ include ("./data/include/wspmenu.inc.php");
 							?></td>
 						</tr>
 						<tr>
-							<td class="tablecell two"><?php echo returnIntLang('str dependences'); ?></td>
+							<td class="tablecell two"><?php echo returnIntLang('str dependencies'); ?></td>
 							<td class="tablecell six"><?php
 								
 							if (count($modsetup->dependences()) == 0):
 								// keine abhaengigkeiten vorhanden
-								echo returnIntLang('modinstall no dependences');
+								echo returnIntLang('modinstall no dependencies');
 								$canInstall = true;
 							else:
 								// abhaengigkeiten vorhanden
