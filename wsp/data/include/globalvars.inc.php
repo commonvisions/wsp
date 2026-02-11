@@ -21,13 +21,13 @@ global $loginindex;
 global $styleinclude;
 
 /* wsp infovars */
-$wspvars['sitetitle'] = "WSP 6.25.10";
+$wspvars['sitetitle'] = "WSP 6.26.1";
 $wspvars['wspbasedir'] = "wsp";
 $tmpbase = __DIR__; $tmpbase = trim(substr($tmpbase,0,-13)); $tmpbase = explode("/", $tmpbase); $tmpbase = trim(@array_pop($tmpbase));
 if ($tmpbase!=$wspvars['wspbasedir']): $wspvars['wspbasedir'] = str_replace("/", "", $tmpbase); endif;
-$wspvars['wspversion'] = "6.25.10";
-$wspvars['wsplongname'] = "WebSitePreview 6.25.10";
-$wspvars['wspshortname'] = "WSP 6.25.10";
+$wspvars['wspversion'] = "6.26.1#1";
+$wspvars['wsplongname'] = "WebSitePreview 6.26.1";
+$wspvars['wspshortname'] = "WSP 6.26.1";
 $wspvars['wspurl'] = "https://www.wsp3.de";
 $wspvars['updatekey'] = 'ahfsa9r278rtSNDKJaou387zrfsdfchizqrw';
 $wspvars['updateuri'] = 'https://update.wsp-server.info/wsp';
