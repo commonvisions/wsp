@@ -3242,7 +3242,7 @@ if (!(function_exists('returnStructureArray'))):
 function returnStructureArray($startmid=0,$depth=999) {
 	$mnu = array();
 	$str_sql = "SELECT `mid`, `connected`, `level` FROM `menu` WHERE `connected` = ".intval($startmid)." AND `trash` = 0 AND `visibility` = 1 ORDER BY `position` ASC";
-	$str_res = doQL($str_sql);
+	$str_res = doSQL($str_sql);
 	if ($str_res['num']>0):
 		foreach ($str_res['set'] AS $smresk => $smresv):
 			$mnu[intval($smresv['mid'])] = '';
@@ -3273,6 +3273,7 @@ if (!(function_exists('startElement'))) {
         }
 	}	// startElement()
 }
+
 if (!(function_exists('endElement'))) {
 	function endElement($parser, $name) {
 		global $insideitem, $tag, $title, $description, $link, $updated, $countitem, $topvalue, $xmlstyle;
@@ -3619,106 +3620,11 @@ if (!(function_exists('getImageDesc'))) {
  * @param string $path Unterverzeichnis, das aufgelistet werden soll
  * @return $mediafiles
  */
-if (!(function_exists('getImageFiles'))):
+if (!(function_exists('getImageFiles'))) {
 	function getImageFiles($path = '/', $selected = [], $toppath = '', $trimname = 40, $buildforjs = true) {
-		//
-		// array $selected abfangen 
-		//
-		if (!(is_array($selected))): $selected = [$selected]; endif;
-		// set empty return string
-		$mediafiles = '';
-		// get hidemedia option
-		$hide_sql = "SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'hiddenmedia'";
-		$hide_res = doResultSQL($hide_sql);
-		// define hidemedia sql statement
-		$hidemedia = "";
-		if ($hide_res!==false && trim($hide_res)!=''): 
-			$hiddenmedia = explode(",", trim($hide_res));
-			$hideoption = array(" `filefolder` NOT LIKE '/thumbs/%' ");
-			foreach ($hiddenmedia AS $k => $v):
-				$hideoption[] = " `filefolder` NOT LIKE '/".$v."/%' ";
-			endforeach;
-			$hidemedia = " AND (".implode(" AND ", $hideoption).") ";	
-		endif;
-		// get last 10 uploads
-		$l_sql = "SELECT * FROM `wspmedia` WHERE `mediatype` = 'images' AND `filefolder` LIKE '".$path."%' ".$hidemedia." ORDER BY `filedate` DESC, `filefolder` ASC, `filename` ASC LIMIT 0,10";
-		$l_res = doSQL($l_sql);
-
-        if ($l_res['num']>0):
-			$mediafiles.= '<optgroup label="last uploaded">';
-			if (!($buildforjs)): $mediafiles .= "\n"; endif;
-			$mediafiles .= "<option value=\".\" >last uploaded</option>"; if (!($buildforjs)): $mediafiles .= "\n"; endif;
-			foreach ($l_res['set'] AS $lrsk => $lrsv) {
-				$value = str_replace("//", "/", str_replace("//", "/", trim("/".trim($lrsv['filefolder'])."/".trim($lrsv['filename']))));
-				$mediafiles .= "<option value=\"".$value."\" >";
-				$mediadesc = '';
-				$desc_sql = "SELECT * FROM `mediadesc` WHERE `mediafile` LIKE '%".$value."%'";
-				$desc_res = doResultSQL($desc_sql);
-				if ($desc_res!==false && trim($desc_res)!='') {
-					$mediadesc = setUTF8(trim($desc_res));
-                }
-				if (trim($toppath)!="" && $toppath!="/"):
-					$value = str_replace($toppath, "", $value);
-				endif;
-				if (trim($mediadesc)!="") {
-					$mediafiles .= $mediadesc;
-				} else if (strlen($value)>$trimname) {
-					$mediafiles .= substr($value,0,5)."...".substr($value,-($trimname-5));
-				} else {
-					$mediafiles .= $value;
-				}
-				$mediafiles .= "</option>"; if (!($buildforjs)): $mediafiles .= "\n"; endif;
-            }
-			$mediafiles.= '</optgroup>';
-			if (!($buildforjs)): $mediafiles .= "\n"; endif;
-		endif;
-		
-		$i_sql = "SELECT * FROM `wspmedia` WHERE `mediatype` = 'images' AND `filefolder` LIKE '".$path."%' ".$hidemedia." ORDER BY `filefolder`, `filename`";
-		$i_res = doSQL($i_sql);
-		
-		if ($i_res['num']>0):
-			$mediafiles.= "<optgroup label=\"".str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", ("/".$path."/")))))."\">";
-			if (!($buildforjs)): $mediafiles .= "\n"; endif;
-            $filefolder = '';
-			foreach ($i_res['set'] AS $irsk => $irsv) {
-				if ($r>0 && (trim($irsv['filefolder'])!=$filefolder)):
-					$mediafiles.= '</optgroup>';
-					if (!($buildforjs)): $mediafiles .= "\n"; endif;
-					$mediafiles.= "<optgroup label=\"".str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", ("/".trim($irsv['filefolder'])."/")))))."\">";
-					if (!($buildforjs)): $mediafiles .= "\n"; endif;
-				endif;
-                $filefolder = trim($irsv['filefolder']);
-				$value = str_replace("//", "/", str_replace("//", "/", trim("/".trim($irsv['filefolder'])."/".trim($irsv['filename']))));
-				$mediafiles .= "<option value=\"".$value."\" ";
-				if (in_array($value, $selected)):
-					$mediafiles .= " selected=\"selected\"";
-				endif;
-				$mediafiles .= ">";
-				$mediadesc = '';
-				$desc_sql = "SELECT * FROM `mediadesc` WHERE `mediafile` LIKE '%".$value."%'";
-				$desc_res = doResultSQL($desc_sql);
-				if ($desc_res!==false && trim($desc_res)!='') {
-					$mediadesc = setUTF8(trim($desc_res));
-                }
-				if (trim($toppath)!="" && $toppath!="/"):
-					$value = str_replace($toppath, "", $value);
-				endif;
-				if (trim($mediadesc)!="") {
-					$mediafiles .= $mediadesc;
-				} else if (strlen($value)>$trimname) {
-					$mediafiles .= substr($value,0,5)."...".substr($value,-($trimname-5));
-				} else {
-					$mediafiles .= $value;
-				}
-				$mediafiles .= "</option>"; if (!($buildforjs)): $mediafiles .= "\n"; endif;
-            }
-			$mediafiles.= '</optgroup>';
-			if (!($buildforjs)): $mediafiles .= "\n"; endif;
-		endif;
-		
-		return $mediafiles;
-		}	// getImageFiles()
-endif;
+		return imageSelect('images/' . $path, $toppath, false, $selected, $trimname, $buildforjs, false);
+	}
+}
 
 if (!(function_exists('mediaLoc'))):
 // returns type of mediadb for different wsp versions
@@ -3749,7 +3655,7 @@ if (!(function_exists('imageSelect'))) {
 	// toppath => point in path, from which data will be returned as value (e.g. path = / , toppath = /media/images => return will start below /images)
 	// hidepath => hide path in selection (show only filenames)
 	// selected => array ausgewählter Dateien
-	function imageSelect($path = '/', $toppath = '', $hidepath = false, $selected = [], $trimname = 60, $buildforjs = true) {
+	function imageSelect($path = '/', $toppath = '', $hidepath = false, $selected = [], $trimname = 60, $buildforjs = true, $hideLast = false) {
 		if (isset($_SESSION['wspvars']['stripfilenames']) && intval($_SESSION['wspvars']['stripfilenames'])>intval($trimname)):
 			$trimname = intval($_SESSION['wspvars']['stripfilenames']);
 		endif;
@@ -3773,50 +3679,54 @@ if (!(function_exists('imageSelect'))) {
 		$toppath = str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", str_replace("//", "/", "/".$toppath."/"))));
 		// unset mediafiles
 		$mediafiles = '';
-		// get last 10 uploads
-		$l_sql = "SELECT * FROM `wspmedia` WHERE `mediatype` = 'images' AND `filefolder` LIKE '".$path."%' ".$hidemedia." ORDER BY `filedate` DESC, `filefolder` ASC, `filename` ASC LIMIT 0,10";
-		$l_res = doSQL($l_sql);
-		if ($l_res['num']>0) {
-			$mediafiles.= '<optgroup label="last uploaded">';
-			$mediafiles .= "<option value=\"#\" >last uploaded</option>"; if (!($buildforjs)) { $mediafiles .= "\n"; }
-			if (!($buildforjs)) { $mediafiles .= "\n"; }
-			foreach ($l_res['set'] AS $lresk => $lresv) {
-				$value = str_replace("//", "/", str_replace("//", "/", trim("/".trim($lresv['filefolder'])."/".trim($lresv['filename']))));
-				if (trim($toppath)!="" && $toppath!="/") {
-					$value = str_replace($toppath, "", $value);
+		if (!$hideLast) {
+			// get last 10 uploads
+			$l_sql = "SELECT * FROM `wspmedia` WHERE `mediatype` = 'images' AND `filefolder` LIKE '".$path."%' ".$hidemedia." ORDER BY `filedate` DESC, `filefolder` ASC, `filename` ASC LIMIT 0,10";
+			$l_res = doSQL($l_sql);
+			if ($l_res['num']>0) {
+				$mediafiles.= '<optgroup label="last uploaded">';
+				$mediafiles .= "<option value=\"#\" >last uploaded</option>"; if (!($buildforjs)) { $mediafiles .= "\n"; }
+				if (!($buildforjs)) { $mediafiles .= "\n"; }
+				foreach ($l_res['set'] AS $lresk => $lresv) {
+					$value = str_replace("//", "/", str_replace("//", "/", trim("/".trim($lresv['filefolder'])."/".trim($lresv['filename']))));
+					if (trim($toppath)!="" && $toppath!="/") {
+						$value = str_replace($toppath, "", $value);
+					}
+					$mediafiles .= "<option value=\"".$value."\" >";
+					$mediadesc = '';
+					$desc_sql = "SELECT * FROM `mediadesc` WHERE `mediafile` LIKE '%".escapeSQL($value)."%'";
+					$desc_res = doResultSQL($desc_sql);
+					if ($desc_res!==false && trim($desc_res)!='') {
+						$mediadesc = setUTF8(trim($desc_res));
+					}
+					if (trim($mediadesc)!="") {
+						$mediafiles .= $mediadesc;
+					} else if (strlen($value)>$trimname) {
+						$mediafiles .= substr($value,0,5)."...".substr($value,-($trimname-5));
+					} else {
+						$mediafiles .= $value;
+					}
+					$mediafiles .= "</option>"; if (!($buildforjs)) { $mediafiles .= "\n"; }
 				}
-                $mediafiles .= "<option value=\"".$value."\" >";
-				$mediadesc = '';
-				$desc_sql = "SELECT * FROM `mediadesc` WHERE `mediafile` LIKE '%".escapeSQL($value)."%'";
-				$desc_res = doResultSQL($desc_sql);
-				if ($desc_res!==false && trim($desc_res)!='') {
-					$mediadesc = setUTF8(trim($desc_res));
-                }
-				if (trim($mediadesc)!="") {
-					$mediafiles .= $mediadesc;
-				} else if (strlen($value)>$trimname) {
-					$mediafiles .= substr($value,0,5)."...".substr($value,-($trimname-5));
-				} else {
-					$mediafiles .= $value;
-				}
-				$mediafiles .= "</option>"; if (!($buildforjs)) { $mediafiles .= "\n"; }
+				$mediafiles.= '</optgroup>';
+				if (!($buildforjs)): $mediafiles .= "\n"; endif;
 			}
-			$mediafiles .= "<option value=\"#\" >--------</option>"; if (!($buildforjs)): $mediafiles .= "\n"; endif;
-			$mediafiles.= '</optgroup>';
-			if (!($buildforjs)): $mediafiles .= "\n"; endif;
-        }
+		}
 		
 		// setup empty arrays
-		$files = array();
-		$dir = array();
-		if (is_dir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/media/".$path)))):
-			$d = dir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/media/".$path)));
+		$handle = $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd'];
+		$files = [];
+		$dir = [];
+		if (is_dir(str_replace("//", "/", str_replace("//", "/", $handle."/media/".$path)))):
+			$d = dir(str_replace("//", "/", str_replace("//", "/", $handle."/media/".$path)));
 			while (false !== ($entry = $d->read())) {
 				// get only folders with images in
 				if (substr($entry, 0, 1)!='.' && (stristr($path.$entry, 'images') || stristr($path.$entry, 'screen')) && !(in_array($entry, ($hiddenmedia ?? [])))) {
-					if (is_file(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd'].'/media/'.$path."/".$entry)))) {
-						$files[] = str_replace("//", "/", str_replace("//", "/", "/media/".$path."/".$entry));
-					} else if (is_dir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd'].'/media/'.$path."/".$entry)))) {
+					if (is_file(str_replace("//", "/", str_replace("//", "/", $handle.'/media/'.$path."/".$entry)))) {
+						if (substr($entry, 0, 1) != '.' && substr($entry, -4) != '.php') {
+							$files[] = str_replace("//", "/", str_replace("//", "/", "/media/".$path."/".$entry));
+						}
+					} else if (is_dir(str_replace("//", "/", str_replace("//", "/", $handle.'/media/'.$path."/".$entry)))) {
 						$dir[] = str_replace("//", "/", str_replace("//", "/", "/".$path."/".$entry."/"));
 					}
 				}
@@ -3835,7 +3745,7 @@ if (!(function_exists('imageSelect'))) {
 					$showvalue = substr($value, (strrpos($value, "/")+1));
 				endif;
 				$mediafiles .= "<option value=\"".$returnvalue."\"";
-				if (in_array($returnvalue, $selected)):
+				if (in_array(trim($returnvalue), $selected)):
 					$mediafiles .= " selected=\"selected\"";
 				endif;
 				$mediafiles .= ">";
@@ -3997,70 +3907,14 @@ if (!(function_exists('documentSelect'))) {
 
 
 /**
- * ermittelt alle Bild-Dateien und gibt sie fuer ein select aufbereitet zurueck
- *
  * @param string $path Unterverzeichnis, das aufgelistet werden soll
  * @return $mediafiles
  */
 if (!(function_exists('getFlashFiles'))):
+	// deprecated 
 	function getFlashFiles($path='/', $selected = [], $toppath = '', $trimname = 40, $buildforjs = true) {
-		//
-		// array $selected abfangen 
-		//
-		if (!(is_array($selected))):
-			$selected = array($selected);
-		endif;
-		$mediafiles = '';
-		$files = array();
-		$dir = array();
-		if (is_dir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/media/flash".$path)):
-			$d = dir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/media/flash".$path);
-			while (false !== ($entry = $d->read())) {
-				if (substr($entry, 0, 1)!='.') {
-					if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd'].'/media/flash'.$path.$entry)) {
-						if (substr($entry,-8)!="_pvw.jpg" && substr($entry,-8)!="_pvw.png") {
-							$files[] = $path.$entry;
-                        }
-                    } else if (is_dir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd'].'/media/flash'.$path.$entry) && str_replace("/","",trim($entry))!="thumbs") {
-                        $dir[] = $path.$entry;
-                    }
-                }
-            }
-            $d->close();
-			sort($files);
-			sort($dir);
-			foreach($files AS $value) {
-				$mediafiles .= "<option value=\"".$value."\"";
-				if (in_array($value, $selected)) {
-					$mediafiles .= " selected=\"selected\"";
-				}
-				$mediafiles .= ">";
-				$mediadesc = '';
-				$desc_sql = "SELECT * FROM `mediadesc` WHERE `mediafile` LIKE '%".str_replace("//", "/", str_replace("//", "/", $value))."%'";
-				$desc_res = doResultSQL($desc_sql);
-				if ($desc_res!==false && trim($desc_res)!='') {
-					$mediadesc = setUTF8(trim($desc_res));
-                }
-				if (trim($toppath)!="" && $toppath!="/") {
-					$value = str_replace($toppath, "", $value);
-				}
-				if (trim($mediadesc)!="") {
-					$mediafiles .= $mediadesc;
-				} else if (strlen($value)>$trimname) {
-					$mediafiles .= substr($value,0,5)."...".substr($value,-($trimname-5));
-				} else {
-					$mediafiles .= $value;
-                }
-				$mediafiles .= "</option>"; if (!($buildforjs)): $mediafiles .= "\n"; endif;
-			}
-			foreach($dir AS $value):
-				$mediafiles .= "<optgroup label=\"".substr($value,1)."\">"; if (!($buildforjs)): $mediafiles .= "\n"; endif;
-				$mediafiles .= getFlashFiles($value.'/', $selected, $toppath, $trimname, $buildforjs);
-				$mediafiles .= "</optgroup>"; if (!($buildforjs)): $mediafiles .= "\n"; endif;
-			endforeach;
-		endif;
-		return $mediafiles;
-		}	// getFlashFiles()
+		return [];
+	}
 endif;
 
 /**
