@@ -1,5 +1,37 @@
 {
     "require-dev": {
         "rector/rector": "2.3.6"
+    },
+    "require": {
+        "twbs/bootstrap": "^4.0",
+        "datatables.net/datatables.net-dt": "^3.0",
+        "fortawesome/font-awesome": "^7.3",
+        "components/jquery": "^3.0",
+        "components/jqueryui": "^1",
+        "components/jquery-migrate": "^3.0"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@copy-assets"
+        ],
+        "post-update-cmd": [
+            "@copy-assets"
+        ],
+        "copy-assets": [
+            "mkdir -p ./assets/css ./assets/js ./assets/fonts ./assets/webfonts",
+            "cp vendor/twbs/bootstrap/dist/css/bootstrap.min.css ./assets/css",
+            "cp vendor/twbs/bootstrap/dist/css/bootstrap.min.css.map ./assets/css",
+            "cp vendor/twbs/bootstrap/dist/js/bootstrap.min.js ./assets/js", 
+            "cp vendor/twbs/bootstrap/dist/js/bootstrap.min.js.map ./assets/js", 
+            "cp vendor/datatables.net/datatables.net/js/dataTables.min.js ./assets/js/",
+            "cp vendor/datatables.net/datatables.net-dt/js/dataTables.dataTables.min.js ./assets/js/",
+            "cp vendor/datatables.net/datatables.net-dt/css/dataTables.dataTables.min.css ./assets/css/",
+            "cp vendor/components/jquery/jquery.min.js ./assets/js/",
+            "cp vendor/components/jquery-migrate/jquery-migrate.min.js ./assets/js/",
+            "cp vendor/components/jqueryui/jquery-ui.min.js ./assets/js/",
+            "cp vendor/fortawesome/font-awesome/css/all.min.css ./assets/css/",
+            "cp -r vendor/fortawesome/font-awesome/webfonts/* ./assets/webfonts/",
+            "curl -L https://cdn.datatables.net/plug-ins/2.3.4/i18n/de-DE.json -o ./assets/js/datatables.de-DE.json"
+        ]
     }
 }

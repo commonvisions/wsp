@@ -2,22 +2,13 @@
 
 !wsp/
 !data/
+!assets/
 !data/script/
-!data/script/bootstrap*
-!data/script/bootstrap*/*
-!data/script/bootstrap*/*/*
-!data/script/jquery*
-!data/script/jquery*/*
-!data/script/jquery*/*/*
 !data/script/slick*
 !data/script/slick*/*
 !data/script/slick*/*/*
 !media/
 !media/layout/
-!media/layout/jquery.*
-!media/layout/bootstrap*
-!media/layout/bootstrap*/*
-!media/layout/bootstrap*/*/*
 !media/layout/slick*
 !media/layout/slick*/*
 !media/layout/slick*/*/*
