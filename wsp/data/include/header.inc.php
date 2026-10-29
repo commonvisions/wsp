@@ -10,7 +10,8 @@ ksort($_SESSION);
 if (!(isset($_POST['previewid']))):
 	
 	$errormsgarray = array();
-	
+	$wspDir = ($_SESSION['wspvars']['wspbasedir'] ?? 'wsp');
+
 	?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
 	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 	<html lang="de">
@@ -20,32 +21,36 @@ if (!(isset($_POST['previewid']))):
 		<meta name="copyright" content="http://www.covi.de">
 		<meta name="publisher" content="http://www.covi.de">
 		<meta name="robots" content="nofollow">
-		<title><?php echo (isset($_SESSION['wspvars']['sitetitle'])?$_SESSION['wspvars']['sitetitle']:'WSP Admin Panel'); ?></title>
+		<title><?php echo ($_SESSION['wspvars']['sitetitle'] ?? 'WSP Admin Panel'); ?></title>
 		<!-- viewport definitions especially for mobile devices -->
 		<meta name="viewport" content="width=device-width, user-scalable=no">
+		<!-- WSP 6.27 ASSETS integration -->
+		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/bootstrap.min.css">
+		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/bootstrap-theme.min.css">
+		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/dataTables.dataTables.min.css">
+		<link rel="stylesheet" id="assets-fontawesome" href="/<?php echo $wspDir; ?>/assets/css/all.min.css">
+		<script src="/<?php echo $wspDir; ?>/assets/js/jquery.min.js"></script>
+		<script src="/<?php echo $wspDir; ?>/assets/js/jquery-migrate.min.js"></script>
+		<script src="/<?php echo $wspDir; ?>/assets/js/jquery-ui.min.js"></script>
+		<script src="/<?php echo $wspDir; ?>/assets/js/bootstrap.min.js"></script>
+		<script src="/<?php echo $wspDir; ?>/assets/js/dataTables.min.js"></script>
+		<script src="/<?php echo $wspDir; ?>/assets/js/dataTables.dataTables.min.js"></script>
 		<!-- base desktop stylesheet -->
-		<link rel="stylesheet" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/layout/flexible.css.php" media="screen" type="text/css">
-		<!-- print_screen extensions -->
-		<link rel="stylesheet" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/layout/print.css.php" media="print" type="text/css">
-		<!-- self colorize extensions -->
-		<?php if (array_key_exists('wspstyle', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['wspstyle'])!=""): echo "<link rel=\"stylesheet\" href=\"/".$_SESSION['wspvars']['wspbasedir']."/media/layout/".trim($_SESSION['wspvars']['wspstyle']).".css.php\" media=\"screen\" type=\"text/css\">\n"; else: echo "<link rel=\"stylesheet\" href=\"/".$_SESSION['wspvars']['wspbasedir']."/media/layout/wsp.css.php\" media=\"screen\" type=\"text/css\">\n"; endif; ?>
-		<link rel="shortcut icon" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/screen/favicon.ico">
-		<link rel="apple-touch-icon" href="<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo "/".$_SESSION['wspvars']['wspbasedir']; else: echo '/wsp'; endif; ?>/media/screen/iphone_favicon.png" />
-		<!-- get jquery -->
-		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/jquery/jquery-3.7.1.min.js"></script>
-		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/jquery/jquery-migrate-1.4.1.min.js"></script>
-		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/jquery-ui/jquery-ui.min.js"></script>
+		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/media/layout/flexible.css.php" media="screen" type="text/css">
+		<!-- icons -->
+		<link rel="shortcut icon" href="/<?php echo $wspDir; ?>/media/screen/favicon.ico">
+		<link rel="apple-touch-icon" href="/<?php echo $wspDir; ?>/media/screen/iphone_favicon.png" />
 		<!-- get WSP supported and/or required base scripts -->
-		<script src="/<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbasedir', $_SESSION['wspvars'])): echo $_SESSION['wspvars']['wspbasedir']; else: echo 'wsp'; endif; ?>/data/script/basescript.js.php"></script>
+		<script src="/<?php echo $wspDir; ?>/data/script/basescript.js.php"></script>
 		<!-- fancyBox -->
-		<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/jquery.fancybox.css?v=2.1.5" type="text/css" media="screen" />
-		<script type="text/javascript" src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/jquery.fancybox.pack.js?v=2.1.5"></script>
+		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/data/script/fancybox/jquery.fancybox.css?v=2.1.5" type="text/css" media="screen" />
+		<script type="text/javascript" src="/<?php echo $wspDir; ?>/data/script/fancybox/jquery.fancybox.pack.js?v=2.1.5"></script>
 		<!-- fancybox helpers -->
-		<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-buttons.css?v=1.0.5" type="text/css" media="screen" />
-		<script type="text/javascript" src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-buttons.js?v=1.0.5"></script>
-		<script type="text/javascript" src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-media.js?v=1.0.6"></script>
-		<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-thumbs.css?v=1.0.7" type="text/css" media="screen" />
-		<script type="text/javascript" src="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/fancybox/helpers/jquery.fancybox-thumbs.js?v=1.0.7"></script>
+		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/data/script/fancybox/helpers/jquery.fancybox-buttons.css?v=1.0.5" type="text/css" media="screen" />
+		<script type="text/javascript" src="/<?php echo $wspDir; ?>/data/script/fancybox/helpers/jquery.fancybox-buttons.js?v=1.0.5"></script>
+		<script type="text/javascript" src="/<?php echo $wspDir; ?>/data/script/fancybox/helpers/jquery.fancybox-media.js?v=1.0.6"></script>
+		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/data/script/fancybox/helpers/jquery.fancybox-thumbs.css?v=1.0.7" type="text/css" media="screen" />
+		<script type="text/javascript" src="/<?php echo $wspDir; ?>/data/script/fancybox/helpers/jquery.fancybox-thumbs.js?v=1.0.7"></script>
 		<?php
 		
 		if(array_key_exists('wspvars', $_SESSION) && key_exists('userid', $_SESSION['wspvars']) && $_SESSION['wspvars']['userid']>0):
@@ -100,8 +105,8 @@ if (!(isset($_POST['previewid']))):
 			
 			</script>
 		<?php if(intval($_SESSION['wspvars']['menustyle'])==1 && intval($_SESSION['wspvars']['userid'])>0): ?>
-			<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/media/layout/vertical.css.php" media="screen" type="text/css">
-			<link rel="stylesheet" type="text/css" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/data/script/ddmenu/css/ddsmoothmenu-v.css" />
+			<link rel="stylesheet" href="/<?php echo $wspDir; ?>/media/layout/vertical.css.php" media="screen" type="text/css">
+			<link rel="stylesheet" type="text/css" href="/<?php echo $wspDir; ?>/data/script/ddmenu/css/ddsmoothmenu-v.css" />
 			<script type="text/javascript">
 			
 			$(window).load(function(){
@@ -119,7 +124,7 @@ if (!(isset($_POST['previewid']))):
 			
 			</script>
 		<?php else: ?>
-			<link rel="stylesheet" href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/media/layout/horizontal.css.php" media="screen" type="text/css">
+			<link rel="stylesheet" href="/<?php echo $wspDir; ?>/media/layout/horizontal.css.php" media="screen" type="text/css">
 			<script type="text/javascript">
 			
 			$(window).load(function(){

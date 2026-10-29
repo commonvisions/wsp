@@ -161,7 +161,18 @@ if (isset($_SESSION['wspvars']['devstat']) && $_SESSION['wspvars']['devstat']===
 	<p><strong><a href="http://www.websitepreview.de" target="_blank">WebSitePreview</a></strong> &copy; <a href="http://www.covi.de" target="_blank">COVI</a><span class="cleardate"> </span>2001 - 2025</p>
 </div>
 <script type="text/javascript">
-<!--
+
+$(document).ready(function() {
+	$('.datatable').each(function () {
+		if (!$.fn.DataTable.isDataTable(this)) {
+			$(this).DataTable({
+				language: {
+					url: './assets/js/dataTables.de-DE.json'
+				}
+			});
+		}
+	});
+});
 
 <?php 
 $queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
@@ -416,7 +427,6 @@ $(window).bind('beforeunload', function () {
 	});
 <?php endif; ?>
 
-// -->
 </script>
 <?php
 
