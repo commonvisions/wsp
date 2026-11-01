@@ -66,6 +66,17 @@ hr.clearbreak { width: 100%; height: 0.1px; clear: both; float: none; background
 
 @media screen and (max-device-width: 1290px) { body { font-size: 12px; } }
 
+/** BootStrap redefinitions */
+
+.btn-xs {
+	padding: 0.15rem 0.3rem 0.05rem 0.3rem;
+	font-size: 0.75rem;
+}
+
+legend {
+	width: auto;
+}
+
 /* fieldsets */
 	
 fieldset { padding: 0.5%; margin: 5px 0px; border: 1px solid #D3DDE3; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; }

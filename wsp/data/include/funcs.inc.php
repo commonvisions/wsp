@@ -1703,7 +1703,7 @@ if (!(function_exists('getjMenuStructure'))) {
 					
 					if ($outputtype=="structure") {
                         // avaiable options
-						$getList.= "<li class=\"tablecell two\">";
+						$getList.= "<li class=\"tablecell col-3\">";
 						// show sublist
 						if (!($mpfacts['ext'])) {
 							$getList.= "<a style=\"cursor: pointer;\" onclick=\"showSub(".intval($gmsv["mid"]).", ".intval($gmsv["level"]).");\">";
@@ -1811,7 +1811,7 @@ if (!(function_exists('getjMenuStructure'))) {
 							$getList.= "</li>";
 							// end of options
 							// description and edit-click-area
-							$getList.= "<li class=\"tablecell three\">";
+							$getList.= "<li class=\"tablecell col-4\">";
 							$getList.= "<span id=\"\" class=\"levelclass\"></span>";
 							$getList.= "<a style=\"cursor: pointer;\" onclick=\"editMenupoint(".intval($gmsv["mid"]).")\">".$mpfacts['sd']."</a>";
 							// development
@@ -1872,24 +1872,24 @@ if (!(function_exists('getjMenuStructure'))) {
 	
 						} else if ($_SESSION['wspvars']['rights']['sitestructure']==3 || ($_SESSION['wspvars']['rights']['sitestructure']==4 && in_array(intval($gmsv["mid"]), $_SESSION['wspvars']['rights']['sitestructure_array']))) {
 							// description and edit-click-area
-							$getList.= "<li class=\"tablecell three\">";
+							$getList.= "<li class=\"tablecell col-4\">";
 							$getList.= "<span style=\"float: left; margin-right: 4px;\"><a style=\"cursor: pointer;\" onclick=\"editMenupoint(".intval($gmsv["mid"]).");\">".$mpfacts['sd']."</a></span><span class=\"handle\"></span>";
 							$getList.= "</li>\n";
 						} else if ($_SESSION['wspvars']['rights']['sitestructure']==7 && in_array(intval($gmsv["mid"]), $_SESSION['structuremidlist'])) {
 							// description and edit-click-area
-							$getList.= "<li class=\"tablecell three\">";
+							$getList.= "<li class=\"tablecell col-4\">";
 							$getList.= "<span style=\"float: left; margin-right: 4px;\"><a href=\"".$_SERVER['PHP_SELF']."?action=edit&mid=".intval($gmsv["mid"])."\">".$mpfacts['sd']."</a></span><span class=\"handle\"></span>";
 							$getList.= "</li>\n";
 						} else {
 							// description
-							$getList.= "<li class=\"tablecell three\">";
+							$getList.= "<li class=\"tablecell col-4\">";
 							$getList.= "<span style=\"float: left; margin-right: 4px;\">".$mpfacts['sd']."</span><span class=\"handle\" style=\"display: none;\"></span>";
 							$getList.= "</li>\n";
                         }
 
 						if ($tplopt_res['num']>0) {
 							// preview button
-							$getList.= "<li class=\"tablecell one alignright\">";
+							$getList.= "<li class=\"tablecell col-2 alignright\">";
 							foreach ($tplopt_res['set'] AS $tplok => $tplov) {
 								$getList.= "<div class='chstpl mid".intval($gmsv["mid"])." tpl".intval($tplov['id'])."' ";
 								if (intval($tmplid)!=intval($tplov['id'])): $getList.= " style='display: none;' "; endif;
@@ -1897,7 +1897,7 @@ if (!(function_exists('getjMenuStructure'))) {
 							}			
 							$getList.= "</li>";
 							// template chooser
-							$getList.= "<li class=\"tablecell two\">";
+							$getList.= "<li class=\"tablecell col-3\">";
 							$getList.= "<select id='usepreviewtemplate-".intval($gmsv["mid"])."' class='one full' onchange='showPreviewTemplate(".intval($gmsv["mid"]).", this.value)'>";
 							$getList.= "<option value='".$tmplid."'>".returnIntLang('structure choose preview template')."</option>";
 							foreach ($tplopt_res['set'] AS $tplok => $tplov) {
@@ -2333,7 +2333,9 @@ function deleteMenuItems($mid, $ftp) {
 if (!(function_exists('getSiteStructure'))): function getSiteStructure($parent, $spaces, $modi, $aSelectIDs = array(), $op = '', $showmidpath = '') { return "function deprecated"; } endif;
 
 if (!(function_exists('getMenuLevel'))):
-	function getMenuLevel($parent, $spaces, $modi, $aSelectIDs = array(), $op = '', $gmlVisible = 1, $allowselfselect = true) {
+	function getMenuLevel(int $parent, int $spaces = 0, int $modi = 11, 
+		array $aSelectIDs = [], mixed $op = null, 
+		int $gmlVisible = 1, bool $allowselfselect = true) {
 		//
 		// 2012-05-09 added "gmlVisible" to limit output between visible and hidden menupoints
 		// 
@@ -2355,7 +2357,7 @@ if (!(function_exists('getMenuLevel'))):
 		// 10 => showSitemap
 		// 11 => gmlMIDArray
 		//
-		$menulevel_sql = "SELECT * FROM `menu` WHERE trash = 0 AND `connected` = '".intval($parent)."' ORDER BY `position`";
+		$menulevel_sql = "SELECT * FROM `menu` WHERE trash = 0 AND `connected` = " . $parent . " ORDER BY `position`";
 		$menulevel_res = doSQL($menulevel_sql);
 		
 		if ($menulevel_res['num']>0) {
@@ -2380,7 +2382,7 @@ if (!(function_exists('getMenuLevel'))):
 				if ($modi == gmlTable) {
 	
 					$sub_sql = "SELECT `mid` FROM `menu` WHERE trash != 1 AND `connected` = ".intval($mlrv['mid']);
-					$sub_res = doSQL($sql);
+					$sub_res = doSQL($sub_sql);
 					if ($sub_res['num']>0) {
                         foreach ($sub_res['set'] AS $subrk => $subrv) {
                             // GLOBALS should be changed !!!!
@@ -2406,7 +2408,7 @@ if (!(function_exists('getMenuLevel'))):
 					$menuItem .= str_replace("&nbsp;&nbsp;&nbsp;","<img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/no.gif\" width=\"12\" height=\"12\" border=\"0\" style=\"float: left; margin-right: 2px;\" />",$spacer);
 	
 					if ($editable) {
-						$menuItem .= "<a href=\"menueditdetails.php?usevar=$usevar&op=editdetails&mid=".$mlrv['mid']."\" title=\"Men&uuml;punkt bearbeiten\" onmouseover=\"status='Men&uuml;punkt bearbeiten'; return true;\" onmouseout=\"status=''; return true;\" style=\"float: left; margin-right: 5px;\">";
+						$menuItem .= "<a href=\"menueditdetails.php?usevar=" . ($_SESSION['wspvars']['usevar'] ?? '') . "&op=editdetails&mid=".$mlrv['mid']."\" title=\"Men&uuml;punkt bearbeiten\" onmouseover=\"status='Men&uuml;punkt bearbeiten'; return true;\" onmouseout=\"status=''; return true;\" style=\"float: left; margin-right: 5px;\">";
 					}	// if
 					if ($mlrv['visibility'] != "yes") {
 						$menuItem .= "<span style=\"text-decoration: line-through;\">";
@@ -2419,13 +2421,13 @@ if (!(function_exists('getMenuLevel'))):
 						$menuItem .= "</a>";
 					}	// if
 					if ($menulevel_num >$i && $editable) {
-						$menuItem .= "<a href=\"".$_SERVER['PHP_SELF']."?usevar=".$_SESSION['wspvars']['usevar']."&mid=".$mlrv['mid']."&op=posdn\" title=\"Men&uuml;punkt eine Position nach unten verschieben\" onmouseover=\"window.status='Men&uuml;punkt eine Position nach unten verschieben'; return true;\" onmouseout=\"window.status=''; return true;\"><img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/btn_down.gif\" alt=\"&#x2193;\" width=\"10\" height=\"10\" border=\"1\" style=\"float: left; margin-right: 2px; border: 1px solid #E8994B; font-size: 9px; text-align: center; line-height: 8px;\" /></a>";
+						$menuItem .= "<a href=\"".$_SERVER['PHP_SELF']."?usevar=" . ($_SESSION['wspvars']['usevar'] ?? '') ."&mid=".$mlrv['mid']."&op=posdn\" title=\"Men&uuml;punkt eine Position nach unten verschieben\" onmouseover=\"window.status='Men&uuml;punkt eine Position nach unten verschieben'; return true;\" onmouseout=\"window.status=''; return true;\"><img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/btn_down.gif\" alt=\"&#x2193;\" width=\"10\" height=\"10\" border=\"1\" style=\"float: left; margin-right: 2px; border: 1px solid #E8994B; font-size: 9px; text-align: center; line-height: 8px;\" /></a>";
                         }
 					else {
 						$menuItem .= "<img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/btn_down.gif\" alt=\"&#x2193;\" width=\"10\" height=\"10\" border=\"1\" style=\"float: left; margin-right: 2px; opacity: 0.2; filter: alpha(opacity: 20); font-size: 9px; text-align: center; line-height: 8px;\" />";
 					}
 					if (($i > 1) && ($editable)) {
-						$menuItem .= "<a href=\"".$_SERVER['PHP_SELF']."?usevar=$usevar&mid=".$mlrv['mid']."&op=posup\" title=\"Men&uuml;punkt eine Position nach oben verschieben\" onmouseover=\"window.status='Men&uuml;punkt eine Position nach oben verschieben'; return true;\" onmouseout=\"window.status=''; return true;\"><img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/btn_up.gif\" alt=\"&#x2191;\" width=\"10\" height=\"10\" border=\"1\" style=\"float: left; margin-right: 2px; border: 1px solid #E8994B; font-size: 9px; text-align: center; line-height: 8px;\" /></a>";
+						$menuItem .= "<a href=\"".$_SERVER['PHP_SELF']."?usevar=" . ($_SESSION['wspvars']['usevar'] ?? '') ."&mid=".$mlrv['mid']."&op=posup\" title=\"Men&uuml;punkt eine Position nach oben verschieben\" onmouseover=\"window.status='Men&uuml;punkt eine Position nach oben verschieben'; return true;\" onmouseout=\"window.status=''; return true;\"><img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/btn_up.gif\" alt=\"&#x2191;\" width=\"10\" height=\"10\" border=\"1\" style=\"float: left; margin-right: 2px; border: 1px solid #E8994B; font-size: 9px; text-align: center; line-height: 8px;\" /></a>";
 					}
 					else {
 						$menuItem .= "<img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/btn_up.gif\" alt=\"&#x2191;\" width=\"10\" height=\"10\" border=\"1\" style=\"float: left; margin-right: 2px; opacity: 0.2; filter: alpha(opacity: 20); font-size: 9px; text-align: center; line-height: 8px;\" />";
@@ -2634,7 +2636,7 @@ if (!(function_exists('getMenuLevel'))):
                     $menuItem .= "<pre>function 'getMenuLevel' is deprecated since wsp 6.0 and must be replaced with getjMenuLevel</pre>";
 				} 
 				else if ($modi == 4) {
-					if ($spaces=="-1"):
+					if ($spaces < 0):
 					$spacer = "";
 					endif;
 					$menuItem = "<option value=\"".$mlrv['mid']."\"";
@@ -2646,7 +2648,7 @@ if (!(function_exists('getMenuLevel'))):
 					$menuItem .= ">".$spacer.$menudescription."</option>\n";
 				}
 				else if ($modi == 12) {
-					if ($spaces=="-1"):
+					if ($spaces < 0):
 					$spacer = "";
 					endif;
 					$menuItem = "<option value=\"".$mlrv['mid']."\"";
@@ -2733,21 +2735,21 @@ if (!(function_exists('getMenuLevel'))):
 				endif;
 				
 				if ($modi == gmlContent):
-					echo getContents($mlrv['mid'], (intval($spaces)+3), 0, null, $editable, $contentareas);
+					echo getContents($mlrv['mid'], ($spaces + 3), 0, null, $editable, $contentareas);
 					echo "</div>";
 				endif;
 				
-				if ($spaces=="-1") {
-					getMenuLevel($mlrv['mid'], intval($spaces), $modi, $aSelectIDs, $op, $gmlVisible, $allowselfselect);
+				if ($spaces < 0) {
+					getMenuLevel($mlrv['mid'], $spaces, $modi, $aSelectIDs, $op, $gmlVisible, $allowselfselect);
                 } else {
 					echo "";
 					if (!isset($getsubs)) {
-						getMenuLevel($mlrv['mid'], (intval($spaces)+3), $modi, $aSelectIDs, $op, $gmlVisible, $allowselfselect);
+						getMenuLevel($mlrv['mid'], ($spaces + 3), $modi, $aSelectIDs, $op, $gmlVisible, $allowselfselect);
 						if ($modi == gmlContent):
 							echo "</div>\n";
 						endif;
 					} else if ($getsubs) {
-						getMenuLevel($mlrv['mid'], (intval($spaces)+3), $modi, $aSelectIDs, $op, $gmlVisible, $allowselfselect);
+						getMenuLevel($mlrv['mid'], ($spaces + 3), $modi, $aSelectIDs, $op, $gmlVisible, $allowselfselect);
 					}
 				}
 				$i++;
@@ -4234,9 +4236,6 @@ if (!(function_exists('checkandsendMail'))):
 					$mail->Body = $value['mailTXT'];
 					$mail->AltBody = "";
 				endif;
-//				if($value['mailReturnPath']!=""):
-//					$mail->Sender = $value['mailReturnPath'];
-//				endif;
 				$mail->From     = trim($value['mailFrom'][0]);
 				$mail->FromName = setUTF8(trim($value['mailFrom'][1]));
 				for($to=0;$to<count($value['mailTo']);$to++):
