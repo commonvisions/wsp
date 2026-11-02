@@ -14,6 +14,10 @@
 !media/layout/slick*/*/*
 
 !wsp/composer.json
+!wsp/data/
+!wsp/data/interpreter/
+!wsp/data/interpreter/gallery.php
+!wsp/data/interpreter/imgbox.php
 
 wsp/test.php
 wsp/tmp

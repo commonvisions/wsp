@@ -869,7 +869,7 @@ function buildMenu($code=array(), $startlevel=1, $basemid=0, $actmid=0, $lang='d
 					$buf['menucode'].= "[";
 				endif;
 				$dsc = trim($midfacts_res['set'][0]['description']);
-				$lng = unserializeBroken(trim($midfacts_res['set'][0]['langdescription']));
+				$lng = unserializeBroken(trim($midfacts_res['set'][0]['langdescription'] ?? ''));
 				if(count($_SESSION['wspvars']['lang'])>1): if (is_array($lng) && array_key_exists($lang, $lng)): $dsc = $lng[$lang]; endif; endif;
 
 				$menuimage = '';

@@ -68,13 +68,31 @@ hr.clearbreak { width: 100%; height: 0.1px; clear: both; float: none; background
 
 /** BootStrap redefinitions */
 
+.btn-square {
+	aspect-ratio: 1/1;
+}
+
 .btn-xs {
 	padding: 0.15rem 0.3rem 0.05rem 0.3rem;
 	font-size: 0.75rem;
 }
 
+.btn-xs.btn-square {
+	padding: 0.3rem 0.2rem 0 0.2rem;
+}
+
 legend {
 	width: auto;
+}
+
+/* */
+
+#menuholder li.basic.level0.active {
+	background: #354E65;
+	color: white;
+	> a {
+		color: white;
+	}
 }
 
 /* fieldsets */
@@ -695,6 +713,7 @@ table.contenttable input[type="checkbox"] {
 	display: none;
 	top: 100%;
 	left: 0;
+	margin-top: -1px;
 }
 	
 #menuholder.vertical li.level0 ul.level1 {
