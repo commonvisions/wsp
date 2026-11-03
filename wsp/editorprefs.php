@@ -145,132 +145,132 @@ endif;
 
 ?>
 <div id="contentholder">
-	<fieldset><h1><?php echo returnIntLang('editorprefs headline'); ?></h1></fieldset>
-	<fieldset>
-		<legend><?php echo returnIntLang('str legend', true); ?> <?php echo legendOpenerCloser('wsplegend'); ?></legend>
-		<div id="wsplegend">
+	<div class="breadcrumb">
+		<h1>Verwaltung</h1>
+		<h1><?php echo returnIntLang('editorprefs headline'); ?></h1>
+	</div>
+	<div class="card">
+		<div class="card-header card-header-sm"><?php echo returnIntLang('str legend', true); ?> <?php echo cardOpenerCloser('wsplegend'); ?></div>
+		<div class="card-body" id="wsplegend">
 			<p><?php echo returnIntLang('editorprefs desc'); ?></p>
 		</div>
-	</fieldset>
+	</div>
 	<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" enctype="multipart/form-data" id="frmprefs" style="margin: 0px;">
-	<fieldset id="fieldset_environment">
-		<legend><?php echo returnIntLang('editorprefs environment'); ?> <?php echo legendOpenerCloser('environment'); ?></legend>
-		<div id="environment">
-			<table class="tablelist">
-				<tr>
-					<td class="tablecell two"><?php echo returnIntLang('editorprefs devurl'); ?> <?php helpText(returnIntLang('editorprefs devurl help', false)); ?></td>
-					<td class="tablecell six"><input type="text" name="devurl" id="devurl" value="<?php echo $sitedata['devurl']; ?>" class="one full" placeholder="<?php echo returnIntLang('editorprefs devurl without http://', false); ?>" /></td>
-				</tr>
-				<tr>
-					<td class="tablecell two"><?php echo returnIntLang('editorprefs base template'); ?></td>
-					<td class="tablecell two"><select name="templates_id" class="three full">
-						<?php
-	                   
-                        $template_sql = "SELECT `id`, `name` FROM `templates` ORDER BY `name`";
-                        $template_res = doSQL($template_sql);
-                        if ($template_res['num']>0):
-                            foreach ($template_res['set'] AS $rsk => $row):
-                                if ($row['id']==$sitedata['templates_id']):
-                                    echo "<option value=\"".$row['id']."\" selected=\"selected\">".$row['name']."</option>\n";
-                                else:
-                                    echo "<option value=\"".$row['id']."\">".$row['name']."</option>\n";
-                                endif;
-                            endforeach;
-                        endif;
-                        
-						?>
-					</select></td>
-					<td class="tablecell two"><?php echo returnIntLang('editorprefs menudisplay'); ?></td>
-					<td class="tablecell two"><select name="menustyle" class="one full">
-						<option value="0" <?php if(intval($sitedata['menustyle'])==0) echo " selected=\"selected\" "; ?>><?php echo returnIntLang('editorprefs menustyle horizontal', false); ?></option>
-						<option value="1" <?php if(intval($sitedata['menustyle'])==1) echo " selected=\"selected\" "; ?>><?php echo returnIntLang('editorprefs menustyle vertical', false); ?></option>
-					</select></td>
-				</tr>
-				<tr>
-					<td class="tablecell two"><?php echo returnIntLang('editorprefs wspstyle'); ?></td>
-					<td class="tablecell two"><?php
-						
-					/* read all files from /media/layout/ and find files with @type design */
-					$funcfolder = array();
-					$designfiles = array();
-					$functiondir = opendir ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasediradd']."/".$wspvars['wspbasedir']."/media/layout/");
-				    while ($entry = readdir($functiondir)):
-						if (stristr($entry, ".css.php")):
-							$cssfile[] = $entry;
-						endif;
-					endwhile;
-				    closedir ($functiondir);
-					sort ($cssfile);
-					foreach($cssfile AS $key => $fileinfo):
-						$filearray = file($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasediradd']."/".$wspvars['wspbasedir']."/media/layout/".$fileinfo);
-						$designfiles[$key]['file'] = str_replace(".css.php", "", $fileinfo);
-						for ($fa=1; $fa<count($filearray); $fa++):
-							if (substr(trim($filearray[$fa]),0,3)=="* @"):
-								if (substr(trim($filearray[$fa]),3,11)=="description"):
-									$designfiles[$key]['desc'] = trim(substr(trim($filearray[$fa]),14));
-								elseif (substr(trim($filearray[$fa]),3,4)=="type"):
-									$designfiles[$key]['type'] = trim(substr(trim($filearray[$fa]),7));
-								elseif (substr(trim($filearray[$fa]),3,7)=="version"):
-									$designfiles[$key]['vers'] = trim(substr(trim($filearray[$fa]),10));
-								endif;
+	<div class="card" id="fieldset_environment">
+		<div class="card-header card-header-sm"><?php echo returnIntLang('editorprefs environment'); ?> <?php echo cardOpenerCloser('environment'); ?></div>
+		<div class="card-body" id="environment">
+			<div class="row mb-1">
+				<div class="col-3"><?php echo returnIntLang('editorprefs devurl'); ?> <?php helpText(returnIntLang('editorprefs devurl help', false)); ?></div>
+				<div class="col-9"><input type="text" name="devurl" id="devurl" value="<?php echo $sitedata['devurl'] ?? ''; ?>" class="form-control" placeholder="<?php echo returnIntLang('editorprefs devurl without http://', false); ?>" /></div>
+			</div>
+			<div class="row mb-1">
+				<div class="col-3"><?php echo returnIntLang('editorprefs base template'); ?></div>
+				<div class="col-3"><select name="templates_id" class="form-control" size="1">
+					<?php
+					
+					$template_sql = "SELECT `id`, `name` FROM `templates` ORDER BY `name`";
+					$template_res = doSQL($template_sql);
+					if ($template_res['num']>0):
+						foreach ($template_res['set'] AS $rsk => $row):
+							if ($row['id']==$sitedata['templates_id']):
+								echo "<option value=\"".$row['id']."\" selected=\"selected\">".$row['name']."</option>\n";
+							else:
+								echo "<option value=\"".$row['id']."\">".$row['name']."</option>\n";
 							endif;
-							if ($fa>20 || substr(trim($filearray[$fa]),0,2)=="*/"):
-								$fa = count($filearray);
-							endif;
-						endfor;
-						if (!(key_exists('type', $designfiles[$key])) || (key_exists('type', $designfiles[$key]) && trim($designfiles[$key]['type'])=="")):
-							unset($designfiles[$key]);
-						endif;
-					endforeach;
-					if (count($designfiles)>0):
-						echo "<select name=\"wspstyle\" class=\"one full\">";
-						foreach ($designfiles AS $dkey => $dvalue):
-						echo "<option value=\"".$dvalue['file']."\" ";
-						if ($sitedata['wspstyle']==$dvalue['file']): echo " selected=\"selected\""; endif;
-						echo ">";
-						echo trim(trim($dvalue['desc'])." ".trim($dvalue['vers']));
-						echo "</option>";
 						endforeach;
-						echo "</select>";
-					else:
-						echo returnIntLang('editorprefs wspstyle not found', true);
 					endif;
-						
-					?></td>
-					<td class="tablecell two"><?php echo returnIntLang('editorprefs wspbaselang'); ?></td>
-					<td class="tablecell two"><select name="wspbaselang" class="one full">
-						<?php foreach($_SESSION['wspvars']['locallanguages'] AS $llkey => $llvalue): 
-							echo "<option value=\"".$llkey."\" ";
-							if (array_key_exists('wspbaselang', $sitedata) && $sitedata['wspbaselang']==$llkey): echo " selected=\"selected\" "; endif;
-							echo ">".$llvalue."</option>";
-						endforeach; ?>
-					</select></td>
-				</tr>
-				<tr>
-					<td class="tablecell two"><?php echo returnIntLang('editorprefs extendedmenu'); ?></td>
-					<td class="tablecell six"><input type="hidden" name="extendedmenu" value="0" /><input type="checkbox" name="extendedmenu" id="extendedmenu" <?php if(array_key_exists('extendedmenu', $sitedata) && intval($sitedata['extendedmenu'])==1) echo "checked=\"checked\""; ?> value="1" /></td>
-				</tr>
-			</table>
+					
+					?>
+				</select></div>
+				<div class="col-3"><?php echo returnIntLang('editorprefs menudisplay'); ?></div>
+				<div class="col-3"><select name="menustyle" class="form-control" size="1">
+					<option value="0" <?php if(intval($sitedata['menustyle'])==0) echo " selected=\"selected\" "; ?>><?php echo returnIntLang('editorprefs menustyle horizontal', false); ?></option>
+					<option value="1" <?php if(intval($sitedata['menustyle'])==1) echo " selected=\"selected\" "; ?>><?php echo returnIntLang('editorprefs menustyle vertical', false); ?></option>
+				</select></div>
+			</div>
+			<div class="row mb-1">
+				<div class="col-3"><?php echo returnIntLang('editorprefs wspstyle'); ?></div>
+				<div class="col-3"><?php
+					
+				/* read all files from /media/layout/ and find files with @type design */
+				$funcfolder = array();
+				$designfiles = array();
+				$functiondir = opendir ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasediradd']."/".$wspvars['wspbasedir']."/media/layout/");
+				while ($entry = readdir($functiondir)):
+					if (stristr($entry, ".css.php")):
+						$cssfile[] = $entry;
+					endif;
+				endwhile;
+				closedir ($functiondir);
+				sort ($cssfile);
+				foreach($cssfile AS $key => $fileinfo):
+					$filearray = file($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasediradd']."/".$wspvars['wspbasedir']."/media/layout/".$fileinfo);
+					$designfiles[$key]['file'] = str_replace(".css.php", "", $fileinfo);
+					for ($fa=1; $fa<count($filearray); $fa++):
+						if (substr(trim($filearray[$fa]),0,3)=="* @"):
+							if (substr(trim($filearray[$fa]),3,11)=="description"):
+								$designfiles[$key]['desc'] = trim(substr(trim($filearray[$fa]),14));
+							elseif (substr(trim($filearray[$fa]),3,4)=="type"):
+								$designfiles[$key]['type'] = trim(substr(trim($filearray[$fa]),7));
+							elseif (substr(trim($filearray[$fa]),3,7)=="version"):
+								$designfiles[$key]['vers'] = trim(substr(trim($filearray[$fa]),10));
+							endif;
+						endif;
+						if ($fa>20 || substr(trim($filearray[$fa]),0,2)=="*/"):
+							$fa = count($filearray);
+						endif;
+					endfor;
+					if (!(key_exists('type', $designfiles[$key])) || (key_exists('type', $designfiles[$key]) && trim($designfiles[$key]['type'])=="")):
+						unset($designfiles[$key]);
+					endif;
+				endforeach;
+				if (count($designfiles)>0):
+					echo "<select name=\"wspstyle\" class=\"form-control\" size='1'>";
+					foreach ($designfiles AS $dkey => $dvalue):
+					echo "<option value=\"".$dvalue['file']."\" ";
+					if ($sitedata['wspstyle']==$dvalue['file']): echo " selected=\"selected\""; endif;
+					echo ">";
+					echo trim(trim($dvalue['desc'])." ".trim($dvalue['vers']));
+					echo "</option>";
+					endforeach;
+					echo "</select>";
+				else:
+					echo returnIntLang('editorprefs wspstyle not found', true);
+				endif;
+					
+				?></div>
+				<div class="col-3"><?php echo returnIntLang('editorprefs wspbaselang'); ?></div>
+				<div class="col-3"><select name="wspbaselang" class="form-control" size="1">
+					<?php foreach($_SESSION['wspvars']['locallanguages'] AS $llkey => $llvalue): 
+						echo "<option value=\"".$llkey."\" ";
+						if (array_key_exists('wspbaselang', $sitedata) && $sitedata['wspbaselang']==$llkey): echo " selected=\"selected\" "; endif;
+						echo ">".$llvalue."</option>";
+					endforeach; ?>
+				</select></div>
+			</div>
+			<div class="row">
+				<div class="col-3"><?php echo returnIntLang('editorprefs extendedmenu'); ?></div>
+				<div class="col-9"><input type="hidden" name="extendedmenu" value="0" /><input type="checkbox" name="extendedmenu" id="extendedmenu" <?php if(($sitedata['extendedmenu'] ?? 0) == 1) echo "checked=\"checked\""; ?> value="1" /></div>
+			</div>
 		</div>
-	</fieldset>
+	</div>
 	<?php
 	$smtp_sql ="SELECT * FROM `wspaccess` WHERE `type`='smtp'";
 	if(intval(doSQL($smtp_sql)['num'])>0):
 		?>
-		<fieldset id="fieldset_mailsetting">
-			<legend><?php echo returnIntLang('editorprefs mailsetting'); ?> <?php echo legendOpenerCloser('mailsettings'); ?></legend>
-			<div id="mailsettings">
-				<table class="tablelist">
-					<tr>
-						<td class="tablecell two"><?php echo returnIntLang('editorprefs mailsetting method'); ?></td>
-						<td class="tablecell six"><select name="mailclass" class="three full">
-							<option value="0" <?php if($sitedata['mailclass']==0): echo "selected"; endif; ?>><?php echo returnIntLang('editorprefs standardmail'); ?></option>
-							<option value="1" <?php if($sitedata['mailclass']==1): echo "selected"; endif; ?>><?php echo returnIntLang('editorprefs smtpmail'); ?></option>
-						</select></td>
+		<div class="card" id="fieldset_mailsetting">
+			<div class="card-header card-header-sm"><?php echo returnIntLang('editorprefs mailsetting'); ?> <?php echo cardOpenerCloser('mailsettings'); ?></div>
+			<div class="card-body" id="mailsettings">
+				<div class="row">
+						<div class="col-3"><?php echo returnIntLang('editorprefs mailsetting method'); ?></div>
+						<div class="col-9"><select name="mailclass" class="form-control" size="1">
+							<option value="0" <?php if(($sitedata['mailclass'] ?? 0) == 0): echo "selected"; endif; ?>><?php echo returnIntLang('editorprefs standardmail'); ?></option>
+							<option value="1" <?php if(($sitedata['mailclass'] ?? 0) == 1): echo "selected"; endif; ?>><?php echo returnIntLang('editorprefs smtpmail'); ?></option>
+						</select></div>
 					</tr>
-				</table>
+				</div>
 			</div>
-		</fieldset>
+		</div>
 	<?php else: ?>
 		<input type="hidden" name="mailclass" value="0" style="width: 99%;">
 	<?php endif; ?>

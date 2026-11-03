@@ -59,11 +59,11 @@ if (!function_exists('returnIntLang')):
 endif;
 
 if (!function_exists('helpText')):
-	function helpText($helptext, $returnecho = true) {
+	function helpText(string $helptext, bool $returnecho = true) {
 		if ($returnecho):
-			echo "<accr onMouseover=\"ddrivetip('".addslashes($helptext)."');\" onMouseout=\"hideddrivetip();\"><span class=\"bubblemessage orange\">".returnIntLang('bubble info', false)."</span></accr>";
+			echo "<accr onMouseover=\"ddrivetip('".addslashes($helptext)."');\" onMouseout=\"hideddrivetip();\" class='text-info'><i class='fa-solid fa-circle-info'></i></accr>";
 		else:
-			return "<accr onMouseover=\"ddrivetip('".addslashes($helptext)."');\" onMouseout=\"hideddrivetip();\"><span class=\"bubblemessage orange\">".returnIntLang('bubble info', false)."</span></accr>";
+			return "<accr onMouseover=\"ddrivetip('".addslashes($helptext)."');\" onMouseout=\"hideddrivetip();\" class='text-info'><i class='fa-solid fa-circle-info'></accr>";
 		endif;
 		}
 endif;

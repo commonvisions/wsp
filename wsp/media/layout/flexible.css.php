@@ -89,6 +89,10 @@ legend {
 	margin-bottom: 0.5rem;
 }
 
+.card-header {
+	background-color: rgba(0, 151, 255, 0.25);
+}
+
 .card-header-sm {
 	padding: .45rem 1.25rem;
 }
@@ -98,6 +102,8 @@ legend {
 }
 
 .breadcrumb {
+	background-color: rgba(0, 151, 255, 1);
+	color: white;
 	h1 {
 		font-size: 0.9rem;
 		padding: 0;
