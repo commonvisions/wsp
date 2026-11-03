@@ -453,6 +453,56 @@ $plugin_sql = "SELECT * FROM `wspplugins` ORDER BY `pluginname`";
 $plugin_res = doSQL($plugin_sql);
 $plugin_num = $plugin_res['num'];
 
+// check interpreter directory for preinstalled files
+$interpreter_dir = scandir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir'].'/data/interpreter/');
+if (is_array($interpreter_dir)) {
+	$interpreter_dir = array_filter($interpreter_dir, fn($file) => !in_array($file, ['.', '..', 'index.php']));
+}
+if (!is_array($interpreter_dir)) $interpreter_dir = [];
+
+// install preinstalled interpreters
+if ($op == 'modfileinstall' && in_array(($_REQUEST['file'] ?? false), $interpreter_dir ?? [])) {
+	include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/interpreter/".$_REQUEST['file'];
+	$clsInterpreter = new $interpreterClass;
+	$InterpreterProps = get_object_vars($clsInterpreter);
+	if (method_exists($interpreterClass, 'init')) {
+		// preCheck existance (again)
+		$check_sql = 'SELECT `guid` FROM `interpreter` WHERE `module_guid` = "'.escapeSQL($InterpreterProps['guid']).'"';
+		$check_res = doResultSQL($check_sql);
+		if (!$check_res) {
+			$interpreter_sql = "INSERT INTO `interpreter` SET 
+				`name` = '" . escapeSQL($InterpreterProps['title']) . "',
+				`classname` = '" . escapeSQL($InterpreterProps['classname']) . "',
+				`htmlmode` = '" . escapeSQL($InterpreterProps['htmlmode']) . "',
+				`phpvars` = " . (int) boolval($InterpreterProps['phpvars'] ?? 0) . ",
+				`parsefile` = '" . escapeSQL($InterpreterProps['parsefile']) . "',
+				`maxfields` = " . intval($InterpreterProps['maxfields']) . ",
+				`version` = '" . escapeSQL($InterpreterProps['version']) . "',
+				`guid` = '" . escapeSQL($InterpreterProps['guid']) . "',
+				`module_guid` = '" . escapeSQL($InterpreterProps['guid']) . "',
+				`bodyfunc` = " . (int) boolval($InterpreterProps['bodyfunc'] ?? 0) . ",
+				`metascript` = " . (int) boolval($InterpreterProps['metascript'] ?? 0);
+			$interpreter_res = doSQL($interpreter_sql);
+			if ($interpreter_res['aff'] === 1) {
+				$module_sql = "INSERT INTO `modules` SET 
+					`name` = '" . escapeSQL($InterpreterProps['title']) . "',
+					`version` = '" . escapeSQL($InterpreterProps['version']) . "',
+					`guid` = '" . escapeSQL($InterpreterProps['guid']) . "',
+					`isparser` = true";
+				doSQL($module_sql);
+				addWSPMsg('resultmsg', 'Der Interpreter "' . $InterpreterProps['title'] . '" wurde erfolgreich installiert');
+				$parsermod_sql = "SELECT * FROM `modules` WHERE `isparser` = 1 && `iscmsmodul` != 1 ORDER BY `name`";
+				$parsermod_res = doSQL($parsermod_sql);
+				$parsermod_num = $parsermod_res['num'];
+			}
+		} else {
+			addWSPMsg('errormsg', 'Der Interpreter "' . $InterpreterProps['title'] . '" ist bereits installiert');
+		}
+	} else {
+		addWSPMsg('errormsg', 'Keine Installationsroutine gefunden.');
+	}
+}
+
 // head der datei
 
 include ("./data/include/header.inc.php");
@@ -482,58 +532,65 @@ include ("./data/include/wspmenu.inc.php");
 			?>
             <div id="includedmods"></div>
             <script type="text/javascript" language="javascript">
-    <!--
+			<!--
 
-    function openerModDetails(id) {
-        if (document.getElementById('moddetailsoff_' + id).style.display!='none') {
-            document.getElementById('moddetailsoff_' + id).style.display = 'none';
-            document.getElementById('moddetailson_' + id).style.display = 'block';
-            }
-        else {
-            document.getElementById('moddetailsoff_' + id).style.display = 'block';
-            document.getElementById('moddetailson_' + id).style.display = 'none';
-            }
-        }	// openerModDetailes()
+			function openerModDetails(id) {
+				if (document.getElementById('moddetailsoff_' + id).style.display!='none') {
+					document.getElementById('moddetailsoff_' + id).style.display = 'none';
+					document.getElementById('moddetailson_' + id).style.display = 'block';
+					}
+				else {
+					document.getElementById('moddetailsoff_' + id).style.display = 'block';
+					document.getElementById('moddetailson_' + id).style.display = 'none';
+					}
+				}	// openerModDetailes()
 
-    function openerUseDetails(id) {
-        alert (id);
-        }	// openerUseDetailes()
+			function openerUseDetails(id) {
+				alert (id);
+				}	// openerUseDetailes()
 
-    function highlightRow(id) {
-        if (document.getElementById(id).className=='trhighligt') {
-            document.getElementById(id).className = '';
-            }
-        else {
-            document.getElementById(id).className = 'trhighligt';
-            }// if
-        }	// hightlightRow()
+			function highlightRow(id) {
+				if (document.getElementById(id).className=='trhighligt') {
+					document.getElementById(id).className = '';
+					}
+				else {
+					document.getElementById(id).className = 'trhighligt';
+					}// if
+				}	// hightlightRow()
 
-    function modRename(sid) {
-        alert ('ID ' + sid);
-        }
+			function modRename(sid) {
+				alert ('ID ' + sid);
+				}
 
-    function showDetails(iID) {
-        $('.details-' + iID).toggle(0);
-        }
+			function showDetails(iID) {
+				$('.details-' + iID).toggle(0);
+				}
 
-    //-->
-    </script>
-            <?php 
-        
+			//-->
+			</script>
+			<?php 
+
+
+
             if ($parsermod_num>0) { ?>
                 <fieldset class="text" id="fieldset_parsermod">
 				<legend><?php echo $parsermod_num; ?> <?php echo returnIntLang('modules parsermod'); ?> <?php echo legendOpenerCloser('parsermod'); ?></legend>
 				<div id="parsermod">
-				<table class="tablelist">
-					<tr>
-						<td class="tablecell four head"><?php echo returnIntLang('str name'); ?></td>
-						<td class="tablecell two head"><?php echo returnIntLang('str usage'); ?></td>
-						<td class="tablecell two head"><?php echo returnIntLang('str action'); ?></td>
-					</tr>
+				<table class="table">
+					<thead>
+						<tr>
+							<th style="width: 20%;"><?php echo returnIntLang('str name'); ?></th>
+							<th style="width: 20%;"><?php echo returnIntLang('str interpreter'); ?></th>
+							<th style="width: 10%;"><?php echo returnIntLang('str version'); ?></th>
+							<th style="width: 40%;">Informationen</th>
+							<th style="width: 10%;"><?php echo returnIntLang('str action'); ?></th>
+						</tr>
+					</thead>
+					<tbody>
 					<?php
 					
                     $clang = doResultSQL("SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'languages'");
-                    if ($clang!==false) {
+                    if (!empty($clang)) {
                         $clang = unserializeBroken($clang);
                     } else {
                         $clang['shortcut'] = array('de');
@@ -562,66 +619,72 @@ include ("./data/include/wspmenu.inc.php");
                         $parseruse_res = doSQL($parseruse_sql);
                         
                         echo "<tr>";
+						echo "<td><a onclick='showDetails(".intval($presv["id"]).")' style='cursor: pointer;'>".trim($presv["name"])."</a></td>";
+						echo "<td></td>";
+						echo "<td><a onclick='showDetails(".intval($presv["id"]).")' style='cursor: pointer;'>".trim($presv["version"])."</a></td>";
+                            
                         if ($parseruse_res['num']>0) {
-                            echo "<td class='tablecell four'><a onclick='showDetails(".intval($presv["id"]).")' style='cursor: pointer;'>".trim($presv["name"])." ".trim($presv["version"])." <span class=\"bubblemessage orange\">".returnIntLang('bubble down', false)."</span></a></td>";
-                            echo "<td class='tablecell two'><a onclick='showDetails(".intval($presv["id"]).")' style='cursor: pointer;'>".$parseruse_res['num']." ".returnIntLang('modules pages', false)." <span class=\"bubblemessage orange\">".returnIntLang('bubble down', false)."</span></a></td>";
-                            echo "<td class='tablecell two'><span class=\"bubblemessage red disabled\">".returnIntLang('bubble delete', false)."</span></td>";
+                            echo "<td><a onclick='showDetails(".intval($presv["id"]).")' style='cursor: pointer;'>".$parseruse_res['num']." ".returnIntLang('modules usage' . ($parseruse_res['num'] != 1 ? 's' : ''), false)."</td>";
+                            echo "<td><a onclick='showDetails(".intval($presv["id"]).")' class='btn btn-info btn-square btn-xs'><i class='fas fa-info-circle'></i></a> <a class=\"btn btn-danger btn-square btn-xs disabled\"><i class='fas fa-trash'></i></a></td>";
                         }
                         else {
-                            echo "<td class='tablecell four'>".trim($presv["name"])." ".trim($presv["version"])."</td>";          
-                            echo "<td class='tablecell two'>-</td>";
-                            echo "<td class='tablecell two'><a href=\"".$_SERVER['PHP_SELF']."?op=modcheckuninstall&id=".intval($presv["id"])."\" onclick=\"return confirm(unescape('Soll das Modul %27".prepareTextField(setUTF8($presv["name"]))."%27 wirklich deinstalliert werden?'));\"><span class=\"bubblemessage red\">".returnIntLang('bubble delete', false)."</span></a></td>";
+                            echo "<td>-</td>";
+                            echo "<td><a onclick='showDetails(".intval($presv["id"]).")' class='btn btn-info btn-square btn-xs'><i class='fas fa-info-circle'></i></a> <a href=\"".$_SERVER['PHP_SELF']."?op=modcheckuninstall&id=".intval($presv["id"])."\" onclick=\"return confirm(unescape('Soll das Modul %27".prepareTextField(setUTF8($presv["name"]))."%27 wirklich deinstalliert werden?'));\" class='btn btn-danger btn-square btn-xs'><i class='fas fa-trash'></a></td>";
                         }
 						echo "</tr>";
-                               
-						if ($parseruse_res['num']>0):
-							$cell = array();
-							foreach($parseruse_res['set'] AS $pkey => $pvalue) {
-								$cell[] = "<a href=\"contentstructure.php?mjid=".$pvalue['cnt']."\">".$pvalue['description']."</a>";
-							}
-							for ($r=0; $r<(ceil(count($cell)/3)); $r++) {
-								echo "<tr id=\"\" class=\"details-".intval($presv["id"])."\" style=\"display: none;\">";
-								echo "<td class='tablecell two'>";
-								if ($r==0): echo "<em>".returnIntLang('modules pages', false)."</em>"; endif;
-								echo "</td>";
-								for ($c=0; $c<3; $c++):
-									echo "<td class='tablecell two'>";
-									if (isset($cell[(($r*3)+$c)])): echo $cell[(($r*3)+$c)]; endif;
-									echo "</td>";
-								endfor;
-								echo "</tr>";
-							}
-						endif;
-						
-						$details_sql = 'SELECT `name`, `version`, `sid` FROM `interpreter` WHERE `module_guid` = "'.trim($presv["guid"]).'" ORDER BY `name`';
+                        
+						$details_sql = 'SELECT `name`, `version`, `sid`, `parsefile` FROM `interpreter` WHERE `module_guid` = "'.trim($presv["guid"]).'" ORDER BY `name`';
 						$details_res = doSQL($details_sql);
 						$details_num = $details_res['num'];
+						$usage = [];
 
-						if ($details_num>0):
-                            for ($r=0; $r<(ceil($details_num/3)); $r++):
-								echo "<tr id=\"\" class=\"details-".intval($presv["id"])."\" style=\"display: none;\">";
-								echo "<td class='tablecell two'>";
-								if ($r==0): echo "<em>".returnIntLang('modules parser')."</em>"; endif;
-								echo "</td>";
-								for ($c=0; $c<3; $c++):
-									echo "<td class='tablecell two'>";
-									if ((($r*3)+$c)<$details_num): 
-										echo trim($details_res['set'][(($r*3)+$c)]["name"])." ".trim($details_res['set'][(($r*3)+$c)]["version"]);
-									endif;
-									echo "</td>";
-								endfor;
+						if ($parseruse_res['num']>0) {
+							foreach($parseruse_res['set'] AS $pkey => $pvalue) {
+								$usage[] = "<a href=\"contentstructure.php?mjid=".$pvalue['cnt']."\" style='color: inherit;'>".$pvalue['description']."</a>";
+							}
+							$usage = array_unique($usage);
+						}
+
+						if ($details_num>0) {
+                            for ($r=0; $r<$details_num; $r++) {
+								$isError = (!in_array($details_res['set'][$r]["parsefile"], $interpreter_dir));
+								echo "<tr class=\"details-".intval($presv["id"])." " . ($isError ? 'bg-danger text-white' : '') . "\" style='display: none;'>";
+								echo "<td>" . ($isError ? $details_res['set'][$r]["parsefile"] . ' fehlt' : '') . '</td>';
+								echo "<td>" . trim($details_res['set'][$r]["name"])."</td>";
+								echo "<td>" . trim($details_res['set'][$r]["version"]) . "</td>";
+								echo "<td>" . implode("; ", $usage) . "</td>";
+								echo "<td>" . ($isError ? "<a href=\"".$_SERVER['PHP_SELF']."?op=modforceuninstall&id=".intval($presv["id"])."\" onclick=\"return confirm(unescape('Soll das Modul %27".prepareTextField(setUTF8($presv["name"]))."%27 wirklich deinstalliert werden?'));\" class='btn btn-light text-danger btn-square btn-xs'><i class='fas fa-trash'></a>" : '') . "</td>";
 								echo "</tr>";
-							endfor;
-						endif;
-						
+								if (($key = array_search($details_res['set'][$r]["parsefile"], $interpreter_dir)) !== false) {
+									unset($interpreter_dir[$key]);
+								}
+							}
+						}
+
 					endforeach;
 					
+					foreach ($interpreter_dir AS $interpreter_file) {
+						include $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/interpreter/".$interpreter_file;
+						$clsInterpreter = new $interpreterClass;
+						$InterpreterProps = get_object_vars($clsInterpreter);
+						if (method_exists($interpreterClass, 'init')) {
+							echo '<tr>';
+							echo '<td></td>';
+							echo '<td>' . $InterpreterProps['title'] . '</td>';
+							echo '<td>' . $InterpreterProps['version'] . '</td>';
+							echo '<td></td>';
+							echo "<td><a href=\"".$_SERVER['PHP_SELF']."?op=modfileinstall&file=".$interpreter_file."\" onclick=\"return confirm(unescape('Soll der Interpreter %27".prepareTextField(setUTF8($InterpreterProps["title"]))."%27 installiert werden?'));\" class='btn btn-primary btn-square btn-xs'><i class='fa-solid fa-file-import'></i></td>";
+							echo '</tr>';
+						}
+					}
+
 					?>
+					</tbody>
 					</table>
 				</div>
 			</fieldset>
-        <?php } 
-        
+        <?php }
+
             if ($cmsmod_num>0) { ?>
 			<fieldset class="text" id="fieldset_cmsmod">
 				<legend><?php echo $cmsmod_num; ?> <?php echo returnIntLang('modules cmsmod'); ?> <?php echo legendOpenerCloser('cmsmod'); ?></legend>
@@ -728,9 +791,11 @@ include ("./data/include/wspmenu.inc.php");
 						$details_num = $details_res['num'];
 
 						echo trim($aresv['name'])." ".trim($aresv['version']);
-						if ($details_num > 0):
+						if ($details_num > 0) {
 							echo " <a href=\"\" title=\"Details\"><img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/expandm.gif\" border=\"0\" align=\"texttop\" style=\"cursor: pointer;\" /></a>";
-						endif;
+						} else {
+							echo " <a href=\"\" title=\"Details\"><img src=\"/".$_SESSION['wspvars']['wspbasedir']."/media/screen/expandm.gif\" border=\"0\" align=\"texttop\" style=\"cursor: pointer;\" /></a>";
+						}
 						
 						echo "</li>\n";
 						

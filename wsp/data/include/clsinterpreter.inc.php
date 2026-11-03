@@ -27,8 +27,8 @@ if (!class_exists("clsInterpreter")):
 		// get content title for preview
 		function getView($value, $mid, $cid) {
 			return NULL;
-			} // getView()
-	   
+		} // getView()
+	
         // holds session-based variables through all contents on page
         function getPage($value, $mid) {
             if (!(isset($_SESSION['getpage']))) { $_SESSION['getpage'] = array(); }
