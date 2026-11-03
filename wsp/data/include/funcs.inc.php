@@ -3474,6 +3474,26 @@ if (!(function_exists('legendOpenerCloser'))) {
 	} // legendOpenerCloser()
 }
 
+if (!(function_exists('cardOpenerCloser'))) {
+	function cardOpenerCloser(string $idtag, bool|int $stat = 1) {
+		$setstyle = 'none';
+		$status = (array_key_exists($idtag, $_SESSION['opentabs'] ?? [])) ? 
+			$_SESSION['opentabs'][$idtag] :
+			$status = 'display: none;';
+		$status = empty($stat) ? 'display: none;' : $status;
+		if ($status=='display: none;' || empty($status)) {
+			$_SESSION['opentabs'][$idtag] = 'display: none;';
+		} else {
+			$_SESSION['opentabs'][$idtag] = 'display: block;';
+			$setstyle = 'block';
+		}
+		$soc = "<div class=\"openCloseCard text-secondary card-opener\" style='float: right; cursor: pointer;' ";
+		$soc.= "rel=\"" . $idtag . "\"><i class='fa-regular fa-window-maximize'></i></div>\n";
+		$soc.= "<script> \$(document).ready(function() {\$('#".$idtag."').css('display', '".$setstyle."')}); </script>";
+		return $soc;
+	} // cardOpenerCloser()
+}
+
 if (!(function_exists('lengthQuality'))) {
 	function lengthQuality($string,$best,$max) {
         if (strlen($string)<=ceil($best/4)) {

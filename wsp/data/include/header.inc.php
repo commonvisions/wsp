@@ -57,6 +57,14 @@ if (!(isset($_POST['previewid']))):
 			?>
 			<script type="text/javascript">
 			
+			$(document).ready(function(){
+				$(".openCloseCard" ).click(function() {
+					let rel = $(this).attr("rel");
+					$('#' + rel).toggle('blind', {}, 300, returnSetOpenTab(rel));
+					return false;
+				});
+			});
+
 			$(window).load(function(){
 				$(".opencloseButton" ).click(function() {
 					var options = {};

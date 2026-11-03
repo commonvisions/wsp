@@ -85,6 +85,32 @@ legend {
 	width: auto;
 }
 
+.card {
+	margin-bottom: 0.5rem;
+}
+
+.card-header-sm {
+	padding: .45rem 1.25rem;
+}
+
+.card-body > :last-child {
+    margin-bottom: 0;
+}
+
+.breadcrumb {
+	h1 {
+		font-size: 0.9rem;
+		padding: 0;
+		margin: 0;
+		display: inline-block;
+		margin-right: 0.25rem;
+	}
+
+	h1::before {
+		content: '» ';
+	}
+}
+
 /* */
 
 #menuholder li.basic.level0.active {
