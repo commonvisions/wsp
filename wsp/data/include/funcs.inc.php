@@ -3670,6 +3670,9 @@ if (!(function_exists('cleanPath'))) {
 	function cleanPath(string $path = '/', string $filename = ''): string
 	{
 		if (empty($filename)) return '#';
+		if (preg_match('~^[a-z][a-z0-9+.-]*://~i', $filename)) return preg_replace('~(?<!:)//+~', '/', $filename);
+		$filename = preg_replace('~(?<!:)//+~', '/', '/' . $filename);
+		$path = preg_replace('~(?<!:)//+~', '/', '/' . $path . '/'); 
 		if (str_contains($filename, $path)) return preg_replace('~(?<!:)//+~', '/', $filename);
 		return preg_replace('~(?<!:)//+~', '/', $path . '/' . $filename);
 	}
