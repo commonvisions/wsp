@@ -48,7 +48,7 @@ if (!class_exists("imgbox")) {
                         <div class="col col-3">(Vorschau-)Bild</div>
                         <div class="col col-3"><select name="field[image]" id="field_image" class="form-control" size="1">
 							<option value="">Bitte ausw&auml;hlen</option>
-							<?php echo getImageFiles('/', array($value['image'] ?? '')); ?>
+							<?php echo imageSelect('', '', true, array($value['image'] ?? ''), hideLast: true); ?>
 						</select></div>
                         <div class="col col-3">Klick-Modus</div>
                         <div class="col col-3"><select name="field[clickmode]" id="field_clickmode" class="form-control" size="1">
@@ -204,7 +204,7 @@ if (!class_exists("imgbox")) {
 						$parsecontent.= " >";
 					endif;
 					// IMAGE
-					$parsecontent.= "<img src=\"".str_replace("//", "/", "/media/images/".$value['image'])."\" class=\"".$value['imgclass']."\" style=\"".$value['imgcss']."\" title=\"".$title."\" alt=\"".$title."\" />";
+					$parsecontent.= "<img src=\"".cleanPath("/media/images/", $value['image'] ?? '')."\" class=\"".$value['imgclass']."\" style=\"".$value['imgcss']."\" title=\"".$title."\" alt=\"".$title."\" />";
 					// close link, if clickmode requires links
 					if (intval($value['clickmode'])>0): $parsecontent.= "</a>"; endif;
 				endif;
