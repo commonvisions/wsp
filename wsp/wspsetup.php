@@ -627,24 +627,6 @@ body {
 	font-size: 12px;
 	}
 
-#topholderback {
-	position: fixed;
-	top: 0px;
-	left: 0px;
-	width: 100%;
-	height: 40px;
-	background: #D3DDE3;
-	border-bottom: 1px solid #fff;
-	-moz-box-shadow: 3px 0px 10px #000;
-	-webkit-box-shadow: 3px 0px 10px #000;
-	box-shadow: 3px 0px 10px #000;
-	/* For IE 8 */
-	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
-	/* For IE 5.5 - 7 */
-	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
-	z-index: 4;
-	}
-
 #topholder {
 	position: fixed;
 	top: 0px;
@@ -944,7 +926,6 @@ textarea.three.full {
 
 <body id="wspbody">
 
-<div id="topholderback"></div>
 <div id="topholder"></div>
 <script type="text/javascript"><!--//--><![CDATA[//><!--
 

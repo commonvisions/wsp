@@ -118,7 +118,6 @@ if (!(isset($_POST['previewid']))):
 			<script type="text/javascript">
 			
 			$(window).load(function(){
-				$("#topholderback" ).attr('class', 'vertical');
 				$("#topholder" ).attr('class', 'vertical');
 				$('#menuholder ul li').each(function(index) {
 					if (<?php if(key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin'])!=''): ?>$(this).hasClass('<?php echo $_SESSION['wspvars']['plugin']; ?>') || <?php else: ?>$(this).hasClass('basic') || <?php endif; ?>$(this).hasClass('select') || $(this).hasClass('cntdwn')) {
@@ -168,8 +167,6 @@ if (!(isset($_POST['previewid']))):
 	endif;
 endif;
 
-if (key_exists('userid', $_SESSION['wspvars']) && intval($_SESSION['wspvars']['userid'])>0): ?>
-<div id="topholderback"></div>
-<div id="topholder"></div>
-<?php endif; ?>
-<?php // EOF ?>
+if (intval($_SESSION['wspvars']['userid'] ?? 0)>0) { echo '<div id="topholder"></div>'; }
+
+// EOF

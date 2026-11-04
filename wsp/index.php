@@ -289,7 +289,7 @@ if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSI
 
 if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && $loginindex===true): ?>
 	<div id="contentholder">
-		<fieldset><h1><?php echo returnIntLang('home welcome'); ?></h1></fieldset>
+		<div class="breadcrumb"><h1><?php echo returnIntLang('home dashboard'); ?></h1></div>
 		<?php if ($_SESSION['wspvars']['usertype']==1):
 			$lastupdate_sql = "SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'lastversion'";
 			$sysrun = doResultSQL($lastupdate_sql);

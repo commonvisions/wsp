@@ -13,19 +13,6 @@ header("Content-Type: text/css");
 	margin-left: 220px;
 	}
 
-#topholderback {
-	position: fixed;
-	top: 0px;
-	left: 0px;
-	width: 200px;
-	height: 100%;
-	border-right: 1px solid #999;
-	-moz-box-shadow: none;
-	-webkit-box-shadow: none;
-	box-shadow: none;
-	z-index: 4;
-	}
-
 #topholder {
 	position: fixed;
 	top: 0px;

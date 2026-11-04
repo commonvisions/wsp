@@ -90,7 +90,7 @@ legend {
 }
 
 .card-header {
-	background-color: rgba(0, 151, 255, 0.25);
+	background-color: rgba(0, 153, 255, 0.25);
 }
 
 .card-header-sm {
@@ -102,7 +102,7 @@ legend {
 }
 
 .breadcrumb {
-	background-color: rgba(0, 151, 255, 1);
+	background-color: rgba(0, 153, 255, 1);
 	color: white;
 	h1 {
 		font-size: 0.9rem;
@@ -114,16 +114,6 @@ legend {
 
 	h1::before {
 		content: '» ';
-	}
-}
-
-/* */
-
-#menuholder li.basic.level0.active {
-	background: #354E65;
-	color: white;
-	> a {
-		color: white;
 	}
 }
 
@@ -311,9 +301,24 @@ legend span.bubblemessage {
 
 /* content divs and fieldsets by id */
 
-#topholderback	{ position: fixed; height: 17px; width: 100%; background: #B0BAC2; z-index: 15; }
-#topholder		{ position: fixed; height: 34px; width: 100%; background: #C5D1D9; z-index: 10; border-bottom: 1px solid #fff; -moz-box-shadow: 0px 0px 10px #000; -webkit-box-shadow: 0px 0px 10px #000; box-shadow: 0px 0px 10px #000; }
-#menuholder		{ position: fixed; height: 34px; width: 100%; z-index: 30; }
+#topholder {
+	position: fixed;
+	height: 3rem;
+	width: 100vw;
+	background: rgb(0,51,255);
+	background: linear-gradient(180deg,rgba(0, 51, 153, 1) 0%, rgba(0, 153, 255, 1) 100%);
+	z-index: 10; 
+	-moz-box-shadow: 0px 0px 10px #000; 
+	-webkit-box-shadow: 0px 0px 10px #000; 
+	box-shadow: 0px 0px 10px #000;
+}
+
+#menuholder {
+	position: fixed;
+	height: 3rem;
+	width: 100%;
+	z-index: 15;
+}
 
 #logincontent {
 	position: relative;
@@ -326,8 +331,8 @@ legend span.bubblemessage {
 	z-index: 3;
 	position: relative;
 	margin: 0px auto 10px auto;
-	width: 100%;
-	height: 3em;
+	width: 100vw;
+	height: 4rem;
 	}
 
 #contentholder, #infoholder {
@@ -699,47 +704,48 @@ table.contenttable input[type="checkbox"] {
 
 /* menu */
 
-#imenu { display: none; }
-
 #menuholder.horizontal {}
 
-#menuholder ul { list-style-type: none; }
-
-#menuholder li.select {
-	width: 180px;
-	line-height: 34px;
-	}
-	
-#menuholder li.select select {
-	margin: 7px 10px;
-	height: 1.8em;
-	line-height: 1.6em;
-	font-size: 1.0em;
-	width: 160px;
-	}
-
-#menuholder.horizontal li.level0 {
-	float: left;
-	position: relative;
-	line-height: 34px;
-	display: inline-flex;
+#menuholder #togglenav {
+	height: 3rem;
+	padding: 0 1rem;
+	line-height: 3rem;
+	font-size: 1.5rem;
+	align-content: center;
+	color: white; 
+	display: none;
 }
 
-#menuholder.vertical li.level0 {
-	clear: both;
+#menuholder ul { list-style-type: none; margin: 0; }
+
+#menuholder li.level0 {
+	float: left;
 	position: relative;
-	line-height: 34px;
+	line-height: 3rem;
+	display: inline-flex;
+	font-size: 1.1em;
+	color: white;
+	a {
+		padding: 0 0.5rem;
+		color: inherit;
+		text-decoration: none;
 	}
+}
 
-#menuholder.horizontal li.level0 a { padding: 0px 7px; }
+#menuholder li.level0:hover {
+	background: rgba(255,255,255,0.25);
+}
 
-#menuholder.vertical li.level0 a { padding: 0px 10px; }
+#menuholder li.basic.level0.active {
+	color: rgb(0,0,0);
+	background: rgba(255,255,255,0.5);
+}
 
 #menuholder li.level0:hover { cursor: pointer; }
 
 #menuholder li.level0 { }
 
-#menuholder.horizontal li.level0 ul.level1 {
+#menuholder li.level0 ul.level1 {
 	position: absolute;
 	background: #C5D1D9;
 	display: none;
@@ -747,14 +753,6 @@ table.contenttable input[type="checkbox"] {
 	left: 0;
 	margin-top: -1px;
 }
-	
-#menuholder.vertical li.level0 ul.level1 {
-	position: absolute;
-	top: -1px;
-	left: 200px;
-	background: #C5D1D9;
-	display: none;
-	}
 	
 #menuholder ul.level1 li {
 	white-space: nowrap;	
@@ -928,7 +926,7 @@ div.qq-upload-failed-text { position: relative; display: block; width: 100%; lin
 
 #menuholder li.select { width: 110px; }
 #menuholder li.select select { width: 90px; }
-#menuholder.horizontal li.level0 a { letter-spacing: -0.05em; }
+#menuholder li.level0 a { letter-spacing: -0.05em; }
 	
 	}
 
@@ -949,14 +947,6 @@ fieldset.halffield.left {
 	float: none;
 	clear: both;
 	margin: 0px;
-	}
-
-#topspacer {
-	height: 4em;
-	}
-
-#topholderback, #topholder {
-	display: none;
 	}
 
 #footer {
@@ -982,29 +972,36 @@ fieldset.halffield.left {
 	
 /* menu */
 
-#imenu {
-	display: block;
-	padding: 10px 2.5%;
-	position: fixed;
-	top: 0px;
-	left: 0px;
-	width: 95%;
-	background: #fff;
-	-moz-box-shadow: 3px 0px 10px #000;
-	-webkit-box-shadow: 3px 0px 10px #000;
-	box-shadow: 3px 0px 10px #000;
-	z-index: 2000;
+	#menuholder #togglenav {
+		display: block;
+		background: red;
 	}
 
-#imenu select {
-	width: 100%;
-	font-size: 1.3em;
+	#menuholder nav {
+		background: red;
+		position: absolute;
+		top: 3rem;
+		left: 0
 	}
 	
-#menuholder ul {
-	display: none;
+	#menuholder li.level0 {
+		float: none;
+		clear: both;
+		width: 100vw;
+		line-height: 2rem;
 	}
-	
+
+	#menuholder li.level0 ul.level1 {
+		position: absolute;
+		background: #C5D1D9;
+		display: none;
+		top: 0;
+		right: 0;
+		left: auto;
+		width: 50vw;
+		z-index: 20;
+	}
+
 	}
 	
 @media screen and (max-width: 480px) {

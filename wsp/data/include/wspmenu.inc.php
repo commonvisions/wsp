@@ -96,214 +96,10 @@ function mobileJump(jumpValue) {
 
 </script>
 <div id="menuholder" class="<?php if($_SESSION['wspvars']['menustyle']==1): echo "vertical"; else: echo "horizontal"; endif; ?>">
-	<div id="imenu">
-		<select onchange="mobileJump(this.value);">
-			<optgroup label="WSP Basic">
-				<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><?php echo returnIntLang('menu home cms', false); ?></option>
-				<optgroup label="<?php echo returnIntLang('menu user', false); ?>">
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usermanagement.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/usermanagement.php' || $_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/useredit.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu user manage', false); ?></option>
-					<?php if ($_SESSION['wspvars']['usertype']==1): ?>
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usershow.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/usershow.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu user login', false); ?></option>
-					<?php if ($isextended==1): ?>
-						<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/userhistory.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/userhistory.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu user logs', false); ?></option>
-					<?php endif; ?>
-					<?php endif; ?>
-				</optgroup>
-				<?php if ($_SESSION['wspvars']['rights']['siteprops']!=0): ?>
-				<optgroup label="<?php echo returnIntLang('menu siteprefs', false); ?>">
-					<?php if ($isextended==1): ?>
-						<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/headerprefs.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/headerprefs.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu siteprefs redirects', false); ?></option>
-					<?php endif; ?>
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/siteprefs.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/siteprefs.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu siteprefs generell', false); ?></option>
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/semanagement.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/semanagement.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu siteprefs seo', false); ?></option>
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/analytics.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/analytics.php'): echo " selected=\"selected\" "; endif; ?>><?php echo returnIntLang('menu siteprefs analytics', false); ?></option>
-					<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/privacy.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/privacy.php'): echo " selected=\"selected\" "; endif; ?>><?php echo returnIntLang('menu siteprefs privacy', false); ?></option>
-				</optgroup>
-				<?php endif; ?>
-				<?php if ($standardtemp>0): /* allow structure/contents only with defined standard template */ ?>
-					<?php if (!($_SESSION['wspvars']['rights']['sitestructure']==0 && $_SESSION['wspvars']['rights']['contents']==0)): ?>
-						<optgroup label="<?php echo returnIntLang('menu content', false); ?>">
-							<?php if ($_SESSION['wspvars']['rights']['sitestructure']!=0): ?>
-								<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/menuedit.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/menuedit.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu content structure', false); ?></option>
-							<?php endif; ?>
-							<?php if ($_SESSION['wspvars']['rights']['contents']!=0): ?>
-								<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/contentstructure.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/contentstructure.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu content contents', false); ?></option>
-							<?php endif; ?>
-							<?php $worklang = unserialize($_SESSION['wspvars']['sitelanguages']); if ($_SESSION['wspvars']['usertype']==1): ?>
-								<!-- <option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/languagetools.php"><?php echo returnIntLang('menu content localize'); ?></option> -->
-							<?php endif; ?>
-							<?php if ($_SESSION['wspvars']['rights']['contents']==1) { ?>
-								<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/globalcontent.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/globalcontent.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu content global'); ?></option>
-							<?php } ?>
-						</optgroup>
-					<?php endif; ?>
-				<?php endif; ?>
-				
-				<?php if ($_SESSION['wspvars']['rights']['imagesfolder']!="0" || $_SESSION['wspvars']['rights']['downloadfolder']!="0" || $_SESSION['wspvars']['rights']['flashfolder']!="0"): ?>
-					<!-- <optgroup label="<?php echo returnIntLang('menu files', false); ?>">
-						
-					</optgroup> -->
-				<?php endif; ?>
-				
-				<?php if ($standardtemp>0): /* allow preview/publisher only with defined standard template */
-					
-					$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
-					$queue_res = doSQL($queue_sql);
-					$queue_num = $queue_res['num'];
-					
-					?>
-					<optgroup label="<?php echo returnIntLang('menu changed', false); ?>">
-						<?php if ($_SESSION['wspvars']['rights']['publisher']!=0 || $_SESSION['wspvars']['rights']['contents']!=0): ?>
-							<?php if ($_SESSION['wspvars']['rights']['publisher']!=0): ?>
-								<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/publisher.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu changed publisher', false);  ?></option>
-								<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publishqueue.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/publishqueue.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu changed queue', false); ?></option>
-							<?php endif; ?>	
-						<?php endif; ?>
-					</optgroup>
-				<?php endif; ?>
-				
-				<?php if ($_SESSION['wspvars']['usertype']==1): ?>
-					<optgroup label="<?php echo returnIntLang('menu manage', false); ?>">
-						<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/editorprefs.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/editorprefs.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu manage editor', false); ?></option>
-						<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/cleanup.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/cleanup.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu manage cleanup', false); ?></option>
-						<!-- <option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/editcon.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/editcon.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu manage connections', false); ?></option> -->
-						<!-- <option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/modules.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/modules.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu manage modules', false); ?></option> -->
-						<?php if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/system.php")): ?>
-							<!-- <option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/system.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/system.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu manage system', false); ?></option> -->
-						<?php endif; ?>
-					</optgroup>
-				<?php endif; ?>
-
-				<optgroup label="<?php echo returnIntLang('menu modmenu', false); ?>">
-					<?php
-					
-					$_SESSION['wspvars']['wspmodmenu'] = array();
-					$_SESSION['wspvars']['wspmodmenucount'] = 0;
-					if (array_key_exists('rights', $_SESSION['wspvars'])):
-						buildWSPMenu (0, 0, $_SESSION['wspvars']['rights']);
-					endif;
-		
-					$mrun = 0;
-					foreach ($_SESSION['wspvars']['wspmodmenu'] AS $key => $value):
-						$showmodmenu[$mrun]['guid'] = $key;
-						$showmodmenu[$mrun]['level'] = $value[0];
-						$showmodmenu[$mrun]['id'] = $value[1];
-						$showmodmenu[$mrun]['parent_id'] = $value[2];
-						$showmodmenu[$mrun]['title'] = $value[3];
-						$showmodmenu[$mrun]['link'] = $value[4];
-						$mrun++;
-					endforeach;
-					
-					if ($_SESSION['wspvars']['wspmodmenucount']>0):
-						$wmstart = 0;
-						for ($wmrun=$wmstart; $wmrun<$mrun; $wmrun++):
-							$buf = "";
-							if ($showmodmenu[$wmrun]['level']==0):
-								if ($wmstart==0 && key_exists(($wmrun+1), $showmodmenu) && $showmodmenu[($wmrun+1)]['level']>0):
-									$buf.= "<option value=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\"";
-									if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/modinterpreter.php' && intval($_SESSION['modid'])==intval($showmodmenu[$wmrun]['id'])) $buf.= " selected=\"selected\" ";
-									$buf.= ">";
-									$buf.= $showmodmenu[$wmrun]['title'];
-									$buf.= "</option>\n";
-									while (isset($showmodmenu[intval($wmrun+1)]['level']) && $showmodmenu[intval($wmrun+1)]['level']>0):
-										$wmrun++;
-										$buf.= "<option value=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\"";
-										if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/modinterpreter.php' && intval($_SESSION['modid'])==intval($showmodmenu[$wmrun]['id'])) $buf.= " selected=\"selected\" ";
-										$buf.= ">&nbsp;&nbsp;└&nbsp;&nbsp;";
-										$buf.= $showmodmenu[$wmrun]['title'];
-										$buf.= "</option>\n";
-									endwhile;
-								else:
-									$buf.= "<option value=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" ";
-									if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/modinterpreter.php' && intval($_SESSION['modid'])==intval($showmodmenu[$wmrun]['id'])) $buf.= " selected=\"selected\" ";
-									$buf.= ">";
-									if ($showmodmenu[$wmrun]['title']!=''):
-										$buf.= $showmodmenu[$wmrun]['title'];
-									else:
-										$buf.= $showmodmenu[$wmrun]['link'];
-									endif;
-									$buf.= "</option>\n";
-								endif;
-							elseif ($wmstart==1 && $showmodmenu[$wmrun]['level']>0):
-								$buf.= "<option value=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\">";
-								if ($showmodmenu[$wmrun]['title']!=''):
-									$buf.= $showmodmenu[$wmrun]['title'];
-								else:
-									$buf.= $showmodmenu[$wmrun]['link'];
-								endif;
-								$buf.= "</option>\n";
-							endif;
-							echo $buf;
-						endfor;
-					endif;
-					?>
-				</optgroup>
-
-			</optgroup>
-			<?php if (is_array($_SESSION['wspvars']['locallanguages']) && count($_SESSION['wspvars']['locallanguages'])>1): ?>
-				<optgroup label="<?php echo returnIntLang('menu manage language', false); ?>">
-					<?php ksort($_SESSION['wspvars']['locallanguages'], SORT_STRING);
-					foreach($_SESSION['wspvars']['locallanguages'] AS $llkey => $llvalue): ?>
-						<option value="<?php echo $_SERVER['PHP_SELF']; ?>?setlang=<?php echo $llkey; ?>"><?php echo $llvalue; ?></option>
-					<?php endforeach; ?>
-				</optgroup>
-			<?php endif; ?>
-			<optgroup label="Logout">
-				<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/logout.php"><?php echo returnIntLang('menu logout str'); ?></option>
-			</optgroup>
-		</select>
-	</div>
-	<ul>
-		<li class="level0 select">
-			<select id="site_jumper" onchange="jumpTo(this.value);">
-				<option value="basic"><?php echo returnIntLang('menu wsp basic'); ?></option>
-				<?php
-				
-				$siteinfo_sql = "SELECT * FROM `wspproperties` WHERE `varname` LIKE 'sites_%'";
-				$siteinfo_res = doSQL($siteinfo_sql);
-				$sitesdata = array();
-				if ($siteinfo_res['num']>0):
-					foreach ($siteinfo_res['set'] AS $sresk => $sresv):
-						$siteinfo = explode("_", trim($sresv['varname']));
-						if (count($siteinfo)==2):
-							$sitesdata[($siteinfo[0])][($siteinfo[1])]['name'] = $sresv['varvalue'];
-						elseif (count($siteinfo)==3):
-							$sitesdata[($siteinfo[0])][($siteinfo[1])][($siteinfo[2])] = $sresv['varvalue'];
-						endif;
-					endforeach;
-				endif;
-				if (isset($sitesdata['sites']) && is_array($sitesdata['sites'])):
-					echo "<option value='site_0'>";
-					if (!(isset($_SESSION['wspvars']['site'])) || (isset($_SESSION['wspvars']['site']) && intval($_SESSION['wspvars']['site'])==0)): echo "•"; else: echo "&nbsp;&nbsp;"; endif;
-					echo "&nbsp;".returnIntLang('menu no site')."</option>";
-				
-					foreach ($sitesdata['sites'] AS $sk => $sv):
-						echo "<option value='site_".$sk."' ";
-						if (isset($_SESSION['wspvars']['site']) && intval($_SESSION['wspvars']['site'])==intval($sk)): echo " selected='selected' "; endif;
-						echo ">";
-						if (isset($_SESSION['wspvars']['site']) && intval($_SESSION['wspvars']['site'])==intval($sk)): echo "•"; else: echo "&nbsp;&nbsp;"; endif;
-						echo "&nbsp;".returnIntLang('menu site str')." \"".$sv['name']."\"</option>";
-					endforeach;
-				endif;
-				
-				$plugin_sql = "SELECT * FROM `wspplugins`";
-				$plugin_res = doSQL($plugin_sql);
-				if ($plugin_res['num']>0) {
-					foreach ($plugin_res['set'] AS $presk => $presv):
-						$pluginident = $presv["guid"];
-						if ((array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists($pluginident, $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights'][$pluginident]==1) || $_SESSION['wspvars']['usertype']==1):
-							echo "<option value=\"".$pluginident."\" ";
-							if(key_exists('plugin', $_SESSION['wspvars']) && $_SESSION['wspvars']['plugin']==$pluginident): echo "selected=\"selected\""; endif;
-							echo ">".trim($presv["pluginname"])."</option>";
-						endif;
-					endforeach;
-                }
-
-				?>
-				<option value="logout"><?php echo returnIntLang('menu logout str'); ?></option>
-			</select>
-		</li>
-		
+	<div id="togglenav">
+		<i class="fa-solid fa-bars"></i>
+	</div> 
+	<nav><ul>
 		<?php
 		
 		if ($plugin_res['num']>0):
@@ -324,7 +120,7 @@ function mobileJump(jumpValue) {
 		$mp = 1;
 		
 		?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><?php echo returnIntLang('menu home'); ?></a> <ul class="basic level1">
+		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><i class="fa-solid fa-house"></i> <?php echo returnIntLang('menu home'); ?></a> <ul class="basic level1">
 			<li><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><?php echo returnIntLang('menu home cms'); ?></a></li>
 			<?php if ($_SESSION['wspvars']['liveurl']==$_SESSION['wspvars']['workspaceurl']): ?>
 				<li><a href="http://<?php echo $_SESSION['wspvars']['liveurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>"><?php echo returnIntLang('menu home'); ?> <?php echo returnIntLang('menu home website'); ?></a></li>
@@ -334,7 +130,7 @@ function mobileJump(jumpValue) {
 			<?php endif; ?>
 		</ul></li>
 	<?php $mp = 2; if (array_key_exists('wspvars', $_SESSION) && array_key_exists('usertype', $_SESSION['wspvars']) && $_SESSION['wspvars']['usertype']==1): ?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu user'); ?></a>
+		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><i class="fa-solid fa-users"></i> <?php echo returnIntLang('menu user'); ?></a>
 		<ul class="basic level1">
 			<li class="level1" id="m_<?php echo $mp; ?>_0">
 				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usermanagement.php"><?php echo returnIntLang('menu user manage'); ?></a>
@@ -699,7 +495,7 @@ function mobileJump(jumpValue) {
 		</script>
 		</li>
 		<?php // endif; ?>
-	</ul>
+	</ul></nav>
 </div>
 <?php
 

@@ -52,7 +52,7 @@ p {
 	margin-bottom: 4px;
 	}
 
-#topholderback, #topholder, #menuholder, #dhtmltooltip, #topspacer, #msgbar, #infoholder {
+#topholder, #menuholder, #dhtmltooltip, #topspacer, #msgbar, #infoholder {
 	display: none;
 	}
 
