@@ -3666,6 +3666,18 @@ function mediaLoc() {
 }
 endif;
 
+if (!(function_exists('cleanPath'))) {
+	function cleanPath(string $path = '/', string $filename = ''): string
+	{
+		if (empty($filename)) return '#';
+		if (preg_match('~^[a-z][a-z0-9+.-]*://~i', $filename)) return preg_replace('~(?<!:)//+~', '/', $filename);
+		$filename = preg_replace('~(?<!:)//+~', '/', '/' . $filename);
+		$path = preg_replace('~(?<!:)//+~', '/', '/' . $path . '/'); 
+		if (str_contains($filename, $path)) return preg_replace('~(?<!:)//+~', '/', $filename);
+		return preg_replace('~(?<!:)//+~', '/', $path . '/' . $filename);
+	}
+}
+
 /**
  * ermittelt alle Bild-Dateien und gibt sie fuer ein select aufbereitet zurueck
  * new since 2015-03-17
@@ -4703,4 +4715,15 @@ if (!(function_exists('closeModDB'))) {
     }
 }
 
-// EOF ?>
+if (!function_exists('boolconversion')) {
+	function boolconversion(mixed $checkVal) {
+		if (is_bool($checkVal)) return $checkVal;
+		if (is_int($checkVal)) return ($checkVal === 1) ? true : false;
+		if (is_string($checkVal)) {
+			$checkVal = strtolower($checkVal);
+			if ($checkVal === 'true' || $checkVal === '1') return true;
+			if ($checkVal === 'false' || $checkVal === '0') return false;
+		}
+		return false;
+	}
+}

@@ -28,6 +28,7 @@ if (!(isset($_POST['previewid']))):
 		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/bootstrap.min.css">
 		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/bootstrap-theme.min.css">
 		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/dataTables.dataTables.min.css">
+		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/select2.min.css">
 		<link rel="stylesheet" id="assets-fontawesome" href="/<?php echo $wspDir; ?>/assets/css/all.min.css">
 		<script src="/<?php echo $wspDir; ?>/assets/js/jquery.min.js"></script>
 		<script src="/<?php echo $wspDir; ?>/assets/js/jquery-migrate.min.js"></script>
@@ -35,6 +36,7 @@ if (!(isset($_POST['previewid']))):
 		<script src="/<?php echo $wspDir; ?>/assets/js/bootstrap.min.js"></script>
 		<script src="/<?php echo $wspDir; ?>/assets/js/dataTables.min.js"></script>
 		<script src="/<?php echo $wspDir; ?>/assets/js/dataTables.dataTables.min.js"></script>
+		<script src="/<?php echo $wspDir; ?>/assets/js/select2.min.js"></script>
 		<!-- base desktop stylesheet -->
 		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/media/layout/flexible.css.php" media="screen" type="text/css">
 		<!-- icons -->
