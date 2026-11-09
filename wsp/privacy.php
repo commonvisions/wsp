@@ -81,7 +81,7 @@ if (!isset($sitedata['privacy_text']) || empty($sitedata['privacy_text'])!='') {
 						<td class="tablecell two"><input type="text" name="privacy_linktext" id="privacy_linktext" value="<?php echo prepareTextField($sitedata['privacy_linktext']); ?>" placeholder="z. B. Datenschutzbestimmungen" class="full" /></td>
 						<td class="tablecell two">Verlinkte Seite DSE (optional)</td>
 						<td class="tablecell two"><select name="privacy_link" id="privacy_link">
-							<?php echo getMenuLevel('', '', 4, array($sitedata['privacy_link']), ''); ?>
+							<?php echo getMenuLevel(0, 0, 4, array($sitedata['privacy_link']), ''); ?>
 						</select></td>
 					</tr>
 					<tr>
