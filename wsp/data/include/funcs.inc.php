@@ -24,6 +24,10 @@
  * 
  */
 
+/* require classes --------------------------- */
+require_once __DIR__ . '/../classes/base.inc.php';
+require_once __DIR__ . '/../classes/dosql.inc.php';
+
 // OLD MYSQL functions
 if (!(function_exists('mysql_query'))) {
     define('MYSQL_ASSOC', true);
@@ -156,7 +160,7 @@ if (!(function_exists('mysqli_result'))) {
         return $datarow[$field]; 
     }
 }
-require_once __DIR__ . '/../classes/dosql.inc.php';
+
 // escape strings to sql
 if (!(function_exists('escapeSQL'))) {
     function escapeSQL($string) {
