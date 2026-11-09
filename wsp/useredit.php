@@ -418,7 +418,7 @@ include ("./data/include/wspmenu.inc.php");
 						<td class="tablecell two"><?php echo returnIntLang('rights please select'); ?></td>
 						<td id="change_<?php echo $key; ?>_cell" class="tablecell six"><select name="change_<?php echo $key; ?>_ids[]" size="<?php echo ceil(count($wspvars['rightabilityarray'])*1.3); ?>" multiple style="width: 100%; height: <?php echo ceil(count($wspvars['rightabilityarray'])*1.3); ?>em;" onBlur="check('<?php echo $key; ?>');"><?php
 						$requestsaved = "saved_".$key."_ids";
-						getMenuLevel(0, '', 4, array($requestsaved));
+						getMenuLevel(0, 0, 4, array($requestsaved));
 						?></select></td>
 					</tr>
 					</table>
@@ -433,7 +433,7 @@ include ("./data/include/wspmenu.inc.php");
 							$requestsaved = "saved_".$key."_ids";
 							$singlerequest = $$requestsaved;
 							$singlerequest = intval($singlerequest[0]);
-							getMenuLevel(0, '', 4, array($singlerequest));
+							getMenuLevel(0, 0, 4, array($singlerequest));
 							?></select></td>
 						</tr>
 					</table>
