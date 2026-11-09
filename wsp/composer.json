@@ -3,6 +3,7 @@
         "rector/rector": "2.8.4"
     },
     "require": {
+        "php": "^8.0",
         "twbs/bootstrap": "^4.0",
         "datatables.net/datatables.net-dt": "^3.0",
         "fortawesome/font-awesome": "^7.3",
