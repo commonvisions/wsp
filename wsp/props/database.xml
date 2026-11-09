@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database>
+    <table name="restrictions" />
+    <table name="security">
+        <columns>
+            <column name="sid"
+                    type="int"
+                    attributes="unsigned"
+                    null="NO"
+                    default="none"
+                    extra="auto_increment"
+                    key="PRI" />
+            <column name="usevar"
+                    type="varchar(64)"
+                    null="NO"
+                    default="none" />
+        </columns>
+    </table>
+    <table name="wspproperties" />
+    <table name="wspqueue" />
+    <table name="wspqueue" />
+</database>
