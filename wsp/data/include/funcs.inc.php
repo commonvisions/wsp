@@ -156,11 +156,13 @@ if (!(function_exists('mysqli_result'))) {
         return $datarow[$field]; 
     }
 }
+require_once __DIR__ . '/../classes/dosql.inc.php';
 // escape strings to sql
 if (!(function_exists('escapeSQL'))) {
     function escapeSQL($string) {
         if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {
-            return mysqli_real_escape_string($_SESSION['wspvars']['db'], $string);
+            $sql = new doSQL($_SESSION['wspvars']['db']);
+            return $sql->escape($string);
         } else {
             return $string;
         }
@@ -184,6 +186,10 @@ function groupbyval( $groupby , $table ) {
 if (!(function_exists('doSQL'))) {
     function doSQL($statement) {
 		$set = array('res'=>false,'aff'=>0,'num'=>0,'set'=>array(),'sql'=>$statement,'inf'=>'','err'=>'','mysqli'=>false);
+        if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db'] instanceof mysqli) {
+            $sql = new doSQL($_SESSION['wspvars']['db']);
+            return $sql->query($statement);
+        }
         if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {			
 			/*
 			if (mysqli_get_server_info($_SESSION['wspvars']['db'])>=8) {
