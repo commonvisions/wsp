@@ -13,7 +13,7 @@ require ("./data/include/usestat.inc.php");
 require ("./data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
 require ("./data/include/wsplang.inc.php");
-require ("./data/include/dbaccess.inc.php");
+if (file_exists("./data/include/dbaccess.inc.php")) require ("./data/include/dbaccess.inc.php");
 if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 
@@ -95,7 +95,7 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
 
 	$login_sql = "SELECT * FROM `restrictions` WHERE `user` = '".escapeSQL($_POST['loginuser'])."' AND `pass` = '".md5($_POST['loginpassword'])."' AND `usertype` != '0'";
 	$login_res = doSQL($login_sql);
-	
+
 	if ($login_res['num']==1) {
 		$_SESSION['wspvars']['usevar'] = md5($login_res['set'][0]['rid'].$_SERVER['REMOTE_ADDR'].time().$_SERVER['HTTP_USER_AGENT']);
 		$sql = "INSERT INTO `security` SET 
@@ -114,9 +114,7 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
 				$ftpt++;
 			}
 		}
-
 		if ($ftp) {
-
             mkdir($_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/'.$_SESSION['wspvars']['usevar'], 0777);
 			chmod($_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/'.$_SESSION['wspvars']['usevar'], 0777);
 			copySkel($_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/media/skel', $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/'.$_SESSION['wspvars']['usevar']);
@@ -167,9 +165,9 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
 		} else {
 
 			$sql = "INSERT INTO `securitylog` SET `uid` = ".intval($login_res['set'][0]['rid']).", `lastposition` = '/".$_SESSION['wspvars']['wspbasedir']."/index.php', `lastaction` = 'login', `lastchange` = '".time()."'";
-			doSQL($sql);
-
+			$log = doSQL($sql);
 			$_SESSION['wspvars']['directwriting'] = false;
+			@mkdir($_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/', 0777);
 			$mdstat = @mkdir($_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/'.$_SESSION['wspvars']['usevar'], 0777);
 			if ($mdstat===true) {
 				$mfstat = fopen($_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/'.$_SESSION['wspvars']['usevar'].'/test.txt', 'w');
@@ -178,7 +176,8 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
 					fclose($mfstat);
 				}
 			}
-            if (isset($_POST['ignoreftp']) && $_POST['ignoreftp']=='1') {
+			
+			if (isset($_POST['ignoreftp']) && $_POST['ignoreftp']=='1') {
                 addWSPMsg('noticemsg', returnIntLang('try to handle login without ftp', false));
                 $loginindex = true;
 			} 
@@ -190,18 +189,18 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
 				$loginindex = true;
 			}
 			else {
-                addWSPMsg('errormsg', returnIntLang('login without ftp1', false).$ftpt.returnIntLang('login without ftp2', false));
+                addWSPMsg('errormsg', returnIntLang('wsp could not connect to filesystem', false));
                 $loginindex = false;
                 $_SESSION['wspvars']['usevar'] = false;
                 doSQL("DELETE FROM `security` WHERE `userid` = '".intval($login_res['set'][0]['rid'])."'");
             }
 		}
-		require ("./data/include/checkuser.inc.php");
+		if ($loginindex) {
+			require ("./data/include/checkuser.inc.php");
+		}
 	}
 	else {
-
 		$_SESSION['wspvars']['fails']++;
-
 		if ($_SESSION['wspvars']['fails']>=4) {
 
 			doSQL("UPDATE `restrictions` SET `usertype` = 0 WHERE `usertype` != 1 AND `user` = '".escapeSQL($_POST['loginuser'])."'");
@@ -407,8 +406,18 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 			<fieldset id="errormsg" style="display: none;"></fieldset>
 			<fieldset id="resultmsg" style="display: none;"></fieldset>
 			<fieldset><h1><?php echo returnIntLang('home welcome'); ?></h1></fieldset>
-			<fieldset><p><?php 
+			<?php
 			
+			if (!empty($_SESSION['wspvars']['errormsg'])) {
+				echo '<fieldset id="errormsg" style="display: block;"><p>';
+				echo setUTF8($_SESSION['wspvars']['errormsg']);
+				unset($_SESSION['wspvars']['errormsg']);
+				echo '</p></fieldset>';
+			}
+			
+			?>
+			<fieldset><p><?php 
+
 			if (array_key_exists('cookiecheck', $_SESSION) && $_SESSION['cookiecheck']=="requested"): 
 				echo returnIntLang('login please log in')." ";
 				echo returnIntLang('login pass requested', true); 
