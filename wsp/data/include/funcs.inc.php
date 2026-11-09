@@ -4715,4 +4715,15 @@ if (!(function_exists('closeModDB'))) {
     }
 }
 
-// EOF ?>
+if (!function_exists('boolconversion')) {
+	function boolconversion(mixed $checkVal) {
+		if (is_bool($checkVal)) return $checkVal;
+		if (is_int($checkVal)) return ($checkVal === 1) ? true : false;
+		if (is_string($checkVal)) {
+			$checkVal = strtolower($checkVal);
+			if ($checkVal === 'true' || $checkVal === '1') return true;
+			if ($checkVal === 'false' || $checkVal === '0') return false;
+		}
+		return false;
+	}
+}
