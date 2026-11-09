@@ -4,6 +4,7 @@
     },
     "require": {
         "php": "^8.0",
+        "ext-mysqli": "*",
         "twbs/bootstrap": "^4.0",
         "datatables.net/datatables.net-dt": "^3.0",
         "fortawesome/font-awesome": "^7.3",

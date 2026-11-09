@@ -185,89 +185,20 @@ function groupbyval( $groupby , $table ) {
 // doSQL returns array with resultset and complete information
 if (!(function_exists('doSQL'))) {
     function doSQL($statement) {
-		$set = array('res'=>false,'aff'=>0,'num'=>0,'set'=>array(),'sql'=>$statement,'inf'=>'','err'=>'','mysqli'=>false);
+        $set = array('res'=>false,'aff'=>0,'num'=>0,'set'=>array(),'sql'=>$statement,'inf'=>'','err'=>'','mysqli'=>false);
         if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db'] instanceof mysqli) {
             $sql = new doSQL($_SESSION['wspvars']['db']);
             return $sql->query($statement);
         }
-        if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {			
-			/*
-			if (mysqli_get_server_info($_SESSION['wspvars']['db'])>=8) {
-				// grep the group by part 
-				$grp = '/(GROUP BY \`[a-zA-Z_\-0-9]*\`)/i';
-				$grpfnd = preg_match($grp, $statement, $grpmatches, PREG_OFFSET_CAPTURE, 0);
-				if ($grpfnd>0) {
-					// get info about the WHERE statement
-					$whr = '/(WHERE \`[a-zA-Z_\-0-9]*\`)/i';
-					$whrfnd = preg_match($grp, $statement);
-					// get info about FROM
-					$frm = '/(FROM \`[a-zA-Z_\-0-9]*\` )(?!,)/i';
-					$frmfnd = preg_match($frm, $statement, $frmmatches, PREG_OFFSET_CAPTURE, 0);
-					// get the table
-					preg_match('/`[a-zA-Z_\-0-9]*`/i', $frmmatches[0][0], $frmval, PREG_OFFSET_CAPTURE, 0);
-					// get the groupfield
-					preg_match('/`[a-zA-Z_\-0-9]*`/i', $grpmatches[0][0], $grpfld, PREG_OFFSET_CAPTURE, 0);
-					$grpreplace = groupbyval( str_replace('`', '', $grpfld[0][0]) , str_replace('`', '', $frmval[0][0] ));
-					if ($whrfnd>0) {
-						$statement = str_replace($grpmatches[0][0], ' AND ('.$grpreplace.') ', $statement);
-					} else {
-						$statement = str_replace($grpmatches[0][0], ' WHERE ('.$grpreplace.') ', $statement);
-					}
-				}
-			}
-			*/
-			try {
-				$res = $_SESSION['wspvars']['db']->query($statement);
-			}
-			catch (Exception $e) {
-				$set['err'] = $e;
-				addWSPMsg('errormsg', '<p>' . nl2br($statement) . '</p>');
-				addWSPMsg('errormsg', '<p>' . nl2br($e) . '</p>');
-			}
-		    if (isset($res) && $res===true) {
-                $set['res'] = true;
-                $set['aff'] = $_SESSION['wspvars']['db']->affected_rows;
-            } else if (isset($res)) {
-                $set['res'] = true;
-                $set['aff'] = $_SESSION['wspvars']['db']->affected_rows;
-                $set['num'] = $res->num_rows;
-            } else if (!isset($set['err'])) {
-                $set['err'] = $_SESSION['wspvars']['db']->error_list;
-            }
-            if ($set['res']) {
-                $set['inf'] = $_SESSION['wspvars']['db']->insert_id;
-            }
-            if ($set['num'] && $set['num']>0) {
-                for($n=0; $n<$set['num']; $n++) {
-                    $set['set'][$n] = mysqli_fetch_assoc($res);
-                }
-                mysqli_free_result($res);
-            }
-            $set['mysqli'] = mysqli_get_server_info($_SESSION['wspvars']['db']);
-        } else if (function_exists('mysql_get_client_info') && mysql_get_client_info()!==false) {
-            $result = mysql_query($statement);
-			if ($result) {
-                $set['res'] = true;
-                $set['num'] = (($result===false || $result===true)?0:mysql_num_rows($result)); 
-                $set['aff'] = mysql_affected_rows();
-                $set['inf'] = (mysql_insert_id()>0)?mysql_insert_id():'';
-            }
-            if ($set['num']>0) {
-                for ($r=0; $r<$set['num']; $r++) {
-                    $set['set'][$r] = mysql_fetch_assoc($result);
-                }
-            }
-            if (mysql_error()) {
-                $set['err'] = array (
-                    'error' => mysql_error()
-                );
-            }
-            $set['mysqli'] = false;
+
+        $set['err'] = 'Keine aktive mysqli-Datenbankverbindung.';
+        if (function_exists('addWSPMsg')) {
+            addWSPMsg('errormsg', $set['err']);
         }
         return $set;
-	}
+    }
 }
-// doResultSQL returns ONE result with a given statement that SHOULD return ONE result 
+// doResultSQL returns ONE result with a given statement that SHOULD return ONE result
 if (!(function_exists('doResultSQL'))) {
 function doResultSQL($statement) {
 	$tmp = doSQL($statement);
