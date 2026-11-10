@@ -8,6 +8,8 @@
 if (!class_exists('wspBase')) {
     class wspBase {
 
+        public const VERSION = '6.26.11';
+
         public string $lockstat = '';
         public int $mgroup = 0;
         public string $fpos = '';
