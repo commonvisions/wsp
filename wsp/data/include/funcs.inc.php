@@ -2236,8 +2236,10 @@ if (!(function_exists('getPublisherStructure'))) {
  * create the ftp connect
  */
 function doFTP() {
-	$ftp = false;
-	$ftp = (($_SESSION['wspvars']['ftpssl'] ?? false)===true) ? 
+    if (!function_exists(('ftp_ssl_connect')) || !function_exists('ftp_connect')) {
+        return null;
+    }
+	$ftp = (($_SESSION['wspvars']['ftpssl'] ?? false)===true) ?
 		ftp_ssl_connect(
 			($_SESSION['wspvars']['ftphost'] ?? 'localhost'), 
 			intval($_SESSION['wspvars']['ftpport'] ?? 22)) : 
