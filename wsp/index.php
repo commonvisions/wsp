@@ -96,13 +96,13 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
 	$login_sql = "SELECT * FROM `restrictions` WHERE `user` = '".escapeSQL($_POST['loginuser'])."' AND `pass` = '".md5($_POST['loginpassword'])."' AND `usertype` != '0'";
 	$login_res = doSQL($login_sql);
 
-	if ($login_res['num']==1) {
+	if ($login_res['num'] === 1) {
 		$_SESSION['wspvars']['usevar'] = md5($login_res['set'][0]['rid'].$_SERVER['REMOTE_ADDR'].time().$_SERVER['HTTP_USER_AGENT']);
 		$sql = "INSERT INTO `security` SET 
 			`referrer` = '".substr($_SERVER['REMOTE_ADDR'],0,12)."',
 			`userid` = '".intval($login_res['set'][0]['rid'])."',
 			`timevar` = '".time()."',
-			`usevar` = '".$_SESSION['wspvars']['usevar']."',
+			`usevar` = '" . escapeSQL($_SESSION['wspvars']['usevar']) . "',
 			`logintime` = '".time()."',
 			`position` = 'loginattempt',
 			`useragent` = '".$_SERVER['HTTP_USER_AGENT']."'"; //'
@@ -195,8 +195,8 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
                 doSQL("DELETE FROM `security` WHERE `userid` = '".intval($login_res['set'][0]['rid'])."'");
             }
 		}
-		if ($loginindex) {
-			require ("./data/include/checkuser.inc.php");
+		if (isset($loginindex)) {
+            require ("./data/include/checkuser.inc.php");
 		}
 	}
 	else {

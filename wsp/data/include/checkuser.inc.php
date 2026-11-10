@@ -20,42 +20,42 @@ if ($inactive_res['num']>0) {
 
 // login-status der aktuellen usevar pruefen
 $secure_num = 0;
-if (array_key_exists('usevar', $_SESSION['wspvars'])) {
-	$secure_sql = "SELECT * FROM `security` WHERE `usevar` = '".$_SESSION['wspvars']['usevar']."'"; //'
+if (!empty($_SESSION['wspvars']['usevar'] ?? null)) {
+	$secure_sql = "SELECT * FROM `security` WHERE `usevar` = '" . escapeSQL($_SESSION['wspvars']['usevar']) . "'";
 	$secure_res = doSQL($secure_sql);
 	$secure_num = intval($secure_res['num']);
 }
 
-if ($secure_num!=0):
+if ($secure_num != 0) {
 	/* found sessionvar => user is logged in */
 	$_SESSION['wspvars']['actusersid'] = $secure_res['set'][0]['sid'];
 	$_SESSION['wspvars']['userid'] = $secure_res['set'][0]['userid'];
 	$_SESSION['wspvars']['logintime'] = $secure_res['set'][0]['logintime'];
 	// erklaerung !!!	
-	if (array_key_exists('fposcheck', $_SESSION['wspvars']) && $_SESSION['wspvars']['fposcheck'] && array_key_exists('fpos', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['fpos'])!=''):
+	if (array_key_exists('fposcheck', $_SESSION['wspvars']) && $_SESSION['wspvars']['fposcheck'] && array_key_exists('fpos', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['fpos'])!='') {
 		$fposition_num = 0;
 		$fposition_sql = "SELECT * FROM `security` WHERE `position` = '".escapeSQL($_SESSION['wspvars']['fpos'])."' AND `usevar` != '".escapeSQL($_SESSION['wspvars']['usevar'])."'";
 		$fposition_res = doSQL($fposition_sql);
-		if ($fposition_res['num']>0):
+		if ($fposition_res['num']>0) {
 			$fileusage_userid = $fposition_res['set'][0]['userid'];
 			$fileusage_usevar = $fposition_res['set'][0]['usevar'];
-		endif;
-	endif;
+        }
+    }
 	$indexlogin = true;
-else:
+} else {
 	// if user visits a page except login page without beeing logged in -> return him to logout page
-	if ($_SERVER['SCRIPT_NAME']!=str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['wspbasedir']."/index.php"))):
-		header("location: ".str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['wspbasedir']."/logout.php")));
+	if ($_SERVER['SCRIPT_NAME'] != cleanPath(filename: "/".$_SESSION['wspvars']['wspbasedir']."/index.php")) {
+		header("location: " . cleanPath(filename: "/".$_SESSION['wspvars']['wspbasedir']."/logout.php"));
 		die();
-	endif;
-endif;
+    }
+}
 
 $rights_num = 0;
-if (array_key_exists('userid', $_SESSION['wspvars'])):
-	$rights_sql = "SELECT * FROM `restrictions` WHERE `rid` = ".$_SESSION['wspvars']['userid'];
+if (array_key_exists('userid', $_SESSION['wspvars'])) {
+	$rights_sql = "SELECT * FROM `restrictions` WHERE `rid` = " . intval($_SESSION['wspvars']['userid']);
 	$rights_res = doSQL($rights_sql);
 	$rights_num = intval($rights_res['num']);
-endif;
+}
 
 if ($rights_num==1) {
 	$_SESSION['wspvars']['usertype'] = @$rights_res['set'][0]['usertype']; // replaces $usertype
@@ -126,8 +126,8 @@ if ($rights_num==1) {
     }
 }
 else {
-	if ($_SERVER['SCRIPT_NAME']!=str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['wspbasedir']."/index.php"))) {
-        header("location: ".str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['wspbasedir']."/logout.php")));
+	if ($_SERVER['SCRIPT_NAME'] != cleanPath(filename: "/".$_SESSION['wspvars']['wspbasedir']."/index.php")) {
+        header("location: " . cleanPath(filename: "/".$_SESSION['wspvars']['wspbasedir']."/logout.php"));
         die();
 	}
 }
