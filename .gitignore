@@ -16,6 +16,7 @@
 !wsp/composer.json
 !wsp/data/
 !wsp/data/classes/
+!wsp/data/classes/**
 !wsp/data/interpreter/
 !wsp/data/interpreter/gallery.php
 !wsp/data/interpreter/imgbox.php
