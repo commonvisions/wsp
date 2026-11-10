@@ -21,7 +21,6 @@ global $loginindex;
 global $styleinclude;
 
 /* wsp infovars */
-$_SESSION['wspvars'] = [];
 $_SESSION['wspvars']['sitetitle'] = "WSP 6.26.1";
 // check for installed directory
 $tmpbase = basename(dirname(dirname(__DIR__)));
@@ -123,10 +122,9 @@ $_SESSION['wspvars']['tables']=array(
 	);
 
 // define usevar
-$usevar = '';
 foreach ([$_SESSION, $_COOKIE, $_POST, $_REQUEST] as $Source) {
-    if (($Value = trim($Source['usevar'] ?? '')) !== '') {
-        $usevar = $Value;
+    if (($Value = trim($Source['usevar'] ?? '')) !== '' && empty(trim((string) $_SESSION['wspvars']['usevar']))) {
+        $_SESSION['wspvars']['usevar'] = $Value;
         break;
     }
 }
