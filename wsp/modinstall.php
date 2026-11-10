@@ -25,6 +25,8 @@ require ("./data/include/dbaccess.inc.php");
 if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 require ("./data/include/filesystemfuncs.inc.php");
+/* classes ----------------------------------- */
+require_once './data/classes/base.inc.php';
 /* checkParamVar ----------------------------- */
 
 /* define actual system position ------------- */
@@ -313,7 +315,8 @@ function regSelfVars($aSelfVars, $modguid) {
  * WSP updaten
  */
 function modUpdate($data) {
-	$fh = fopen($_SESSION['wspvars']['updateuri'].'/updater.php?key='.$_SESSION['wspvars']['updatekey'].'&file='.$data, 'r');
+	$fh = fopen((new wspBase())->getUpdater('updateuri') . '/updater.php?key=' . 
+		(new wspBase())->getUpdater('updatekey') . '&file='.$data, 'r');
 	$fileupdate = '';
 	while (!feof($fh)) {
 		$fileupdate .= fgets($fh, 4096);
@@ -379,7 +382,8 @@ if (isset($_POST) && array_key_exists('op', $_POST) && $_POST['op']=='modcheckin
 		$fileupdate = '';
         if (_isCurl()) {
             $defaults = array( 
-                CURLOPT_URL => trim($_SESSION['wspvars']['updateuri'].'/updater.php?file='.$serverfile), 
+                CURLOPT_URL => trim((new wspBase())->getUpdater('updateuri') . 
+					'/updater.php?file='.$serverfile), 
                 CURLOPT_HEADER => 0, 
                 CURLOPT_RETURNTRANSFER => TRUE, 
                 CURLOPT_TIMEOUT => 4 
@@ -390,7 +394,8 @@ if (isset($_POST) && array_key_exists('op', $_POST) && $_POST['op']=='modcheckin
             curl_close($ch);
         } 
         else {
-            $fh = fopen(trim($_SESSION['wspvars']['updateuri'].'/updater.php?file='.$serverfile), 'r');
+            $fh = fopen(trim((new wspBase())->getUpdater('updateuri') . 
+				'/updater.php?file='.$serverfile), 'r');
             $fileupdate = '';
             if (intval($fh)!=0):
                 while (!feof($fh)):
@@ -448,14 +453,14 @@ if (isset($_POST) && array_key_exists('op', $_POST) && $_POST['op']=='modcheckin
 			$file = '';
 			for ($i=0; $i<sizeof($aDirFiles); $i++):
 				$isintemp=false;
-				for($j=0; $j<sizeof($_SESSION['wspvars']['allowdir']); $j++):
-					if(strstr($aDirFiles[$i], str_replace("[wsp]",'/'.$_SESSION['wspvars']['wspbasedir'],$_SESSION['wspvars']['allowdir'][$j]))):
+				for($j=0; $j<count((new wspBase())->getAllowdir()); $j++):
+					if(strstr($aDirFiles[$i], str_replace("[wsp]",'/'.$_SESSION['wspvars']['wspbasedir'],(new wspBase())->getAllowdir()[$j]))):
 						$isintemp=true;
 						$file.="<br />".$aDirFiles[$i];
 						break;
 					endif;
 				endfor;
-				if ((!$isintemp) && ($j>count($_SESSION['wspvars']['allowdir']))):
+				if ((!$isintemp) && ($j>count((new wspBase())->getAllowdir()))):
 					$isin=false;
 				endif;
 			endfor;
@@ -472,7 +477,7 @@ if (isset($_POST) && array_key_exists('op', $_POST) && $_POST['op']=='modcheckin
 			$aTable = array();
 			$aTable = $modsetup->getSQLDescribe();
 			for ($i=0; $i<sizeof($aTable); $i++):
-				if (in_array($aTable[$i]['tablename'],$_SESSION['wspvars']['forbiddentables'])):
+				if (in_array($aTable[$i]['tablename'],(new wspBase())->getForbiddenTables())):
 					addWSPMsg('errormsg', returnIntLang('modinstall sql table is not allowed'));
 					$install = false;
 				endif;
@@ -865,13 +870,6 @@ include ("./data/include/wspmenu.inc.php");
 						endif;
 					endforeach;
 				endif;
-				
-				/*
-                var_export($modsetup->minWSP());
-                var_export($modsetup->maxWSP());
-                var_export(floatval($_SESSION['wspvars']['wspversion']));
-                */
-
                 if ($parserfailure):
 					echo "<p>Das aufgerufene Modul kann nicht installiert werden, da es Interpreterdateien anderer Module &uuml;berschreiben w&uuml;rde.</p>\n";
 					$breakinstall = true;
@@ -882,14 +880,14 @@ include ("./data/include/wspmenu.inc.php");
 					echo "<p>".returnIntLang('modinstall noinstall newer version')."</p>\n";
 					$breakinstall = true;
 				elseif (($modsetup->minWSP()!==false || $modsetup->maxWSP()!==false) && $unsafemodinstall==0):
-                    if (version_compare($_SESSION['wspvars']['wspversion'], $modsetup->minWSP())!=1):
+                    if (version_compare(WSPVERSION, $modsetup->minWSP())!=1):
                         echo "<p>".returnIntLang('modinstall module cant be installed to wsp version')."</p>\n";
-                        echo "<p>".returnIntLang('modinstall minimum wsp version1')." ".floatval($_SESSION['wspvars']['wspversion'])." ".returnIntLang('modinstall minimum wsp version2')."</p>\n";
+                        echo "<p>".returnIntLang('modinstall minimum wsp version1')." ".floatval(WSPVERSION)." ".returnIntLang('modinstall minimum wsp version2')."</p>\n";
                         $breakinstall = true;
 					endif;
-					if (version_compare($modsetup->maxWSP(), $_SESSION['wspvars']['wspversion'])!=1):
+					if (version_compare($modsetup->maxWSP(), WSPVERSION)!=1):
                         echo "<p>".returnIntLang('modinstall module should not be installed to wsp version')."</p>\n";
-                        echo "<p>".returnIntLang('modinstall maximum wsp version1')." ".floatval($_SESSION['wspvars']['wspversion'])." ".returnIntLang('modinstall maximum wsp version2')."</p>\n";
+                        echo "<p>".returnIntLang('modinstall maximum wsp version1')." ".floatval(WSPVERSION)." ".returnIntLang('modinstall maximum wsp version2')."</p>\n";
                     endif;
                 else:
 					echo "<legend>".returnIntLang('modinstall modupdate')."</legend>\n";
@@ -1152,7 +1150,8 @@ include ("./data/include/wspmenu.inc.php");
     
         if (_isCurl()) {
             $defaults = array( 
-                CURLOPT_URL => $_SESSION['wspvars']['updateuri'].'/versionsmodules.php', 
+                CURLOPT_URL => (new wspBase())->getUpdater('updateuri') . 
+					'/versionsmodules.php', 
                 CURLOPT_HEADER => 0, 
                 CURLOPT_RETURNTRANSFER => TRUE, 
                 CURLOPT_TIMEOUT => 4 
@@ -1165,10 +1164,11 @@ include ("./data/include/wspmenu.inc.php");
             xml_parse_into_struct($xml, $xmldata, $values, $index);
         } 
         else {
-            $fh = fopen($_SESSION['wspvars']['updateuri'].'/versionsmodules.php', 'r');
+            $fh = fopen((new wspBase())->getUpdater('updateuri') . '/versionsmodules.php', 'r');
             $xmlversion = '';
             if (intval($fh)==0) {
-                addWSPMsg('errormsg', "error reading file \"".$_SESSION['wspvars']['updateuri']."/versionsmodules.php\" from update server<br />");
+                addWSPMsg('errormsg', "error reading file \"" . (new wspBase())->getUpdater('updateuri') . 
+					"/versionsmodules.php\" from update server<br />");
                 }
             else {
                 while (!feof($fh)) {

@@ -21,20 +21,16 @@ global $loginindex;
 global $styleinclude;
 
 /* wsp infovars */
-$_SESSION['wspvars'] = [];
-$_SESSION['wspvars']['sitetitle'] = "WSP 6.26.1";
-// check for installed directory
+if (!defined('WSPVERSION')) define('WSPVERSION', '6.26.11');
+if (!defined('WSPLONGNAME')) define('WSPLONGNAME', 'WebSitePreview ' . WSPVERSION);
+if (!defined('WSPSHORTNAME')) define('WSPSHORTNAME', 'WSP ' . WSPVERSION);
+
+/* check for installed directory and define basedir */
 $tmpbase = basename(dirname(dirname(__DIR__)));
-$_SESSION['wspvars']['wspbasedir'] = ($tmpbase!='wsp') ? $tmpbase : 'wsp';
-$_SESSION['wspvars']['wspversion'] = "6.26.1#1";
-$_SESSION['wspvars']['wsplongname'] = "WebSitePreview 6.26.1";
-$_SESSION['wspvars']['wspshortname'] = "WSP 6.26.1";
+if (!defined('WSPBASEDIR')) define('WSPBASEDIR', ($tmpbase!='wsp') ? $tmpbase : 'wsp');
+$_SESSION['wspvars']['wspbasedir'] = WSPBASEDIR;
+
 $_SESSION['wspvars']['wspurl'] = "https://www.wsp3.de";
-$_SESSION['wspvars']['updatekey'] = 'ahfsa9r278rtSNDKJaou387zrfsdfchizqrw';
-$_SESSION['wspvars']['updateuri'] = 'https://update.wsp-server.info/wsp';
-$_SESSION['wspvars']['updatefiles'] = 'https://update.wsp-server.info/wsp';
-$_SESSION['wspvars']['updatedatabase'] = 'https://update.wsp-server.info/updater';
-$_SESSION['wspvars']['reportingmail'] = 'cmserror@covi.de';
 //
 // moegliche rechtebereiche, die verwaltet werden koennen
 //
@@ -52,12 +48,6 @@ $_SESSION['wspvars']['rightabilities'] = array(
 	"videofolder",
 	"fontsfolder",
 );
-//
-// rechtemoeglichkeiten, die die rechtebereiche annehmen koennen
-// yes|no|auswahl, mit yes = 1, no = 0 und auswahl = 2
-//
-$_SESSION['wspvars']['rightpossibilities'] = array(1, 1, 2, 1, 2, 1, 2);
-//
 // possible modes: 
 // 1 = yes/no create and edit
 // 2 = choose from structure and create and edit
@@ -77,52 +67,8 @@ $_SESSION['wspvars']['rightabilityarray'] = array(
 	'flashfolder' => array( 'mode' => 6, 'basefolder' => '/media/flash/' , 'desc' => 'rights filesystem swf'),
 	'videofolder' => array( 'mode' => 6, 'basefolder' => '/media/video/' , 'desc' => 'rights filesystem video'),
 	'fontsfolder' => array( 'mode' => 6, 'basefolder' => '/media/fonts/' , 'desc' => 'rights filesystem fonts')
-	);
-// directories to accept writing while installing modules
-$_SESSION['wspvars']['allowdir'] = array("data/menu","data/modules","media/fonts","media/video","media/images","media/screen","media/layout","media/download","[wsp]/data/interpreter","[wsp]/data/lang","[wsp]/data/modsetup","[wsp]/data/modules","[wsp]/media/javascript","[wsp]/media/screen");
+);
 
-$_SESSION['wspvars']['forbiddentables'] = array("reference");
-
-$_SESSION['wspvars']['tables']=array(
-	'content',
-	'content_backup',
-	'content_parsefile',
-	'globalcontent',
-	'interpreter',
-	'javascript',
-	'mediadesc',
-	'menu',
-	'modules',
-	'options',
-	'pageproperties',
-	'restrictions',
-	'rssdata',
-	'rssentries',
-	'r_temp_jscript',
-	'r_temp_rss',
-	'r_temp_styles',
-	'security',
-	'securitylog',
-	'selfvars',
-	'siteproperties',
-	'site_tracking',
-	'stylesheets',
-	'templates',
-	'templates_menu',
-	'tracking_files',
-	'tracking_info',
-	'usercontrol',
-	'wspaccess',
-	'wspmedia',
-	'wspmenu',
-	'wspmsg',
-	'wspplugins',
-	'wspproperties',
-	'wspqueue',
-	'wsprights'
-	);
-
-// define usevar
 $usevar = '';
 foreach ([$_SESSION, $_COOKIE, $_POST, $_REQUEST] as $Source) {
     if (($Value = trim($Source['usevar'] ?? '')) !== '') {

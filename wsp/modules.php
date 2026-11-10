@@ -23,6 +23,8 @@ require ("./data/include/dbaccess.inc.php");
 if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
 require ("./data/include/funcs.inc.php");
 require ("./data/include/filesystemfuncs.inc.php");
+/* classes ----------------------------------- */
+require_once './data/classes/base.inc.php';
 /* checkParamVar ----------------------------- */
 /* define actual system position ------------- */
 $_SESSION['wspvars']['lockstat'] = 'modules';
@@ -357,7 +359,9 @@ function pluginRights() {
 
 // update module
 function modUpdate($data) {
-	$fh = fopen($_SESSION['wspvars']['updateuri'].'/updater.php?key='.$_SESSION['wspvars']['updatekey'].'&file='.$data, 'r');
+	$fh = fopen((new wspBase())->getUpdater('updateuri') . 
+		'/updater.php?key=' . (new wspBase())->getUpdater('updatekey') . 
+		'&file=' . $data, 'r');
 	$fileupdate = '';
 	while (!feof($fh)) {
 		$fileupdate .= fgets($fh, 4096);

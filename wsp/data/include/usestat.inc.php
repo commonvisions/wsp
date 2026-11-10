@@ -13,6 +13,4 @@ $_SESSION['wspvars']['devcontent'] = false; // true | false
 $_SESSION['wspvars']['xajaxdebug'] = false; // true | false
 $_SESSION['wspvars']['debugcontent'] = false; // true | false
 $_SESSION['wspvars']['showsql'] = false; // true | false
-$_SESSION['wspvars']['displaystyle'] = "text" // iconized | text
-
-// EOF ?>
+$_SESSION['wspvars']['displaystyle'] = "text"; // iconized | text

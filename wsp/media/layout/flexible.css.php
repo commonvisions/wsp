@@ -117,6 +117,12 @@ legend {
 	}
 }
 
+.striped > .row:nth-of-type(odd) {
+  background-color: rgba(0,0,0,0.05);
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
 /* fieldsets */
 	
 fieldset { padding: 0.5%; margin: 5px 0px; border: 1px solid #D3DDE3; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; }

@@ -51,7 +51,7 @@ else:
 ?>");
 		fclose($fh);
 		// copy file to structure
-		ftp_put($ftp, $_SESSION['wspvars']['ftpbasedir'].'/'.$_SESSION['wspvars']['wspbasedir'].'/data/include/rootphrase.inc.php', $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/rootphrase.inc.php', FTP_BINARY);
+		ftp_put($ftp, $_SESSION['wspvars']['ftpbasedir'].'/'.$_SESSION['wspvars']['wspbasedir'].'/data/include/rootphrase.inc.php', $_SERVER['DOCUMENT_ROOT'].'/'.$_SESSION['wspvars']['wspbasedir'].'/tmp/rootphrase.inc.php', FTP_BINARY);
 		@ftp_close($ftpcon);
 	endif;
 	if (file_exists("data/include/rootphrase.inc.php")):
