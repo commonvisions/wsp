@@ -171,7 +171,7 @@ require $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".
 					</select> &nbsp;</li>
 					<li class="tablecell four"><select name="linkbycms" id="linkbycms<?php echo $rssek; ?>" <?php if (trim($rssev["econtype"])=="url"): echo "style=\"display: none;\""; endif; ?>>
 						<option value="0">Bitte ausw&auml;hlen</option>
-						<?php getMenuLevel(0, '-1', 4, array(intval($rssev["econ"]))) ?>
+						<?php getMenuLevel(0, -1, 4, array(intval($rssev["econ"]))) ?>
 					</select> <input type="text" name="linkbyurl" id="linkbyurl<?php echo $rssek; ?>" size="40" maxlength="150" value="<?php echo $_SESSION['wspvars']['workspaceurl']; ?>" <?php if (trim($rssev["econtype"])=="mid"): echo "style=\"display: none;\""; endif; ?> /></li>
 				</ul>
 				<input name="eauthor" id="eauthor" type="hidden" value="<?php echo $_SESSION['wspvars']['realname']; ?>" />
