@@ -116,7 +116,7 @@ flush();flush();flush();
 				</tr>
 				<tr>
 					<td class="tablecell two"><?php echo returnIntLang('system wsp version'); ?></td>
-					<td class="tablecell two"><?php echo $wspvars['wspversion']; ?></td>
+					<td class="tablecell two"><?php echo $_SESSION['wspvars']['wspversion']; ?></td>
 					<td class="tablecell two"><?php echo returnIntLang('system free space'); ?></td>
 					<td class="tablecell two"><?php
 				
