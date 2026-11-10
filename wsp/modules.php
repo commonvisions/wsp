@@ -859,7 +859,7 @@ include ("./data/include/wspmenu.inc.php");
     
         ?>
         <fieldset class="options">
-            <p><a href="/<?php echo $wspvars['wspbasedir'] ?>/modinstall.php" class="greenfield"><?php echo returnIntLang('modules modinstall', false); ?></a></p>
+            <p><a href="/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/modinstall.php" class="greenfield"><?php echo returnIntLang('modules modinstall', false); ?></a></p>
         </fieldset>
     <?php endif; ?>
 </div>

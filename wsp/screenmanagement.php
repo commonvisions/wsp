@@ -47,6 +47,5 @@ $_SESSION['wspvars']['rights']['screenfolder'] = 1;
 // define required folders to handle that page
 $requiredstructure = array("/media","/media/screen","/media/screen/thumbs");
 
-include ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/filemanagement.php");
+include ($_SERVER['DOCUMENT_ROOT'] . "/" . $_SESSION['wspvars']['wspbasedir'] . "/filemanagement.php");
 
-// EOF ?>

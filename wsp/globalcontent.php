@@ -221,7 +221,8 @@ include ("data/include/wspmenu.inc.php");
 						echo "<ul id=\"usage_".$gcresk."\" class=\"tablelist ".$class."\" style=\"display: none;\">";
 						foreach ($gcusage_res['set'] AS $gcuresk => $gcuresv) {
 							// sgc = show global content
-							echo "<li class=\"tablecell eight\"><table class=\"contenttable noborder\"><tr class=\"".$class." nextbordered bottom\"><td><a href=\"/".$wspvars['wspbasedir']."/contentstructure.php?sgc=".intval($gcuresv["mid"])."\">".trim($gcuresv["menudesc"])."</a></td></tr></table></li>";
+							echo "<li class=\"tablecell eight\"><table class=\"contenttable noborder\"><tr class=\"".$class." nextbordered bottom\"><td><a href=\"/" . 
+								$_SESSION['wspvars']['wspbasedir'] . "/contentstructure.php?sgc=" . intval($gcuresv["mid"]) . "\">".trim($gcuresv["menudesc"])."</a></td></tr></table></li>";
                         }
 						echo "</ul>";
                     }
