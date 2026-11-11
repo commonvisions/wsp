@@ -157,18 +157,23 @@ if (!class_exists('dbTools')) {
                 $errors[] = "Tabelle {$table}: ungültige Felddefinition für '{$name}'.";
                 return null;
             }
-            if ($size !== '' && (!ctype_digit($size) || (int)$size < 1)) {
+            $precisionTypes = ['decimal', 'float', 'double'];
+            $validSize = $size === ''
+                || (in_array($type, $precisionTypes, true)
+                    ? preg_match('/^\d+(?:,\d+)?$/', $size) === 1
+                    : ctype_digit($size));
+            if (!$validSize || ($size !== '' && (int)strtok($size, ',') < 1)) {
                 $errors[] = "Tabelle {$table}, Feld {$name}: ungültige Größe '{$size}'.";
                 return null;
             }
-            $needsSize = in_array($type, ['int','tinyint','smallint','mediumint','bigint','varchar','char','decimal'], true);
+            $needsSize = in_array($type, ['varchar','char','decimal'], true);
             if ($needsSize && $size === '') {
                 $errors[] = "Tabelle {$table}, Feld {$name}: Größe fehlt für {$type}.";
                 return null;
             }
-            $notNull = $this->boolAttr($field, 'not_null', false);
             $auto = $this->boolAttr($field, 'auto_increment', false);
             $primary = $this->boolAttr($field, 'primary_key', false);
+            $notNull = $this->boolAttr($field, 'not_null', $auto || $primary);
             if ($auto && (!$notNull || !in_array($type, ['int','tinyint','smallint','mediumint','bigint'], true))) {
                 $errors[] = "Tabelle {$table}, Feld {$name}: AUTO_INCREMENT erfordert einen ganzzahligen NOT NULL-Typ.";
                 return null;
@@ -179,7 +184,8 @@ if (!class_exists('dbTools')) {
                 return null;
             }
             $sqlType = $type . ($size !== '' ? '(' . $size . ')' : '') . ($unsigned ? ' unsigned' : '');
-            $defaultProvided = array_key_exists('default', $field->attributes()->asArray());
+            $attributes = $field->attributes();
+            $defaultProvided = isset($attributes['default']);
             $default = $defaultProvided ? (string)$field['default'] : null;
             return compact('name', 'type', 'size', 'sqlType', 'notNull', 'auto', 'primary', 'defaultProvided', 'default');
         }
@@ -221,8 +227,48 @@ if (!class_exists('dbTools')) {
             }
             $result->free();
 
+            $expectedPrimary = [];
+            foreach ($fields as $field) if ($field['primary']) $expectedPrimary[] = $field['name'];
+            sort($expectedPrimary);
+            sort($currentPrimary);
+
+            // AUTO_INCREMENT must be indexed. If the expected single primary
+            // key column is missing, add it and its key in one ALTER statement.
+            if ($expectedPrimary && !$currentPrimary) {
+                $missingPrimary = array_values(array_filter($expectedPrimary, function ($fieldName) use ($current) {
+                    return !isset($current[$fieldName]);
+                }));
+                if (count($expectedPrimary) === 1 && count($missingPrimary) === 1) {
+                    $primaryName = $missingPrimary[0];
+                    $primaryField = $fields[$primaryName];
+                    $primarySql = 'ALTER TABLE ' . $tableSql . ' ADD ' . $this->columnSql($primaryField) . ' PRIMARY KEY';
+                    if ($this->run($primarySql, $table, $report)) {
+                        $currentPrimary = $expectedPrimary;
+                        $current[$primaryName] = [
+                            'Field' => $primaryName,
+                            'Type' => $primaryField['sqlType'],
+                            'Null' => $primaryField['notNull'] ? 'NO' : 'YES',
+                            'Default' => $primaryField['defaultProvided'] ? $primaryField['default'] : null,
+                            'Extra' => $primaryField['auto'] ? 'auto_increment' : '',
+                            'Key' => 'PRI',
+                        ];
+                        $report['actions'][] = "Tabelle {$table}: fehlendes Primärschlüsselfeld {$primaryName} ergänzt.";
+                    }
+                } elseif (!$missingPrimary) {
+                    $primarySql = 'ALTER TABLE ' . $tableSql . ' ADD PRIMARY KEY (' . implode(', ', array_map([$this, 'quote'], $expectedPrimary)) . ')';
+                    if ($this->run($primarySql, $table, $report)) {
+                        $currentPrimary = $expectedPrimary;
+                    }
+                }
+            }
+            $primaryMatches = $expectedPrimary === $currentPrimary;
+            if (!$primaryMatches) {
+                $report['errors'][] = "Tabelle {$table}: Primärschlüssel weicht ab (vorhanden: " . ($currentPrimary ? implode(', ', $currentPrimary) : 'keiner') . '; erwartet: ' . ($expectedPrimary ? implode(', ', $expectedPrimary) : 'keiner') . '). Die Schlüsseldefinition kann nicht automatisch abgeglichen werden.';
+            }
+
             foreach ($fields as $name => $field) {
                 if (!isset($current[$name])) {
+                    if (!$primaryMatches && ($field['primary'] || $field['auto'])) continue;
                     if ($this->run('ALTER TABLE ' . $tableSql . ' ADD ' . $this->columnSql($field), $table, $report)) {
                         $report['actions'][] = "Tabelle {$table}: Feld {$name} ergänzt.";
                     }
@@ -230,25 +276,21 @@ if (!class_exists('dbTools')) {
                 }
                 $differences = $this->differences($current[$name], $field);
                 if (!$differences) continue;
-                if ($this->run('ALTER TABLE ' . $tableSql . ' MODIFY ' . $this->columnSql($field), $table, $report)) {
-                    $report['actions'][] = "Tabelle {$table}: Feld {$name} angepasst (" . implode(', ', $differences) . ').";
+                if (!$primaryMatches && $field['auto'] && !$current[$name]['Extra']) {
+                    $report['errors'][] = "Tabelle {$table}, Feld {$name}: AUTO_INCREMENT wurde wegen des abweichenden Primärschlüssels nicht geändert.";
+                    continue;
                 }
-            }
-
-            $expectedPrimary = [];
-            foreach ($fields as $field) if ($field['primary']) $expectedPrimary[] = $field['name'];
-            sort($expectedPrimary);
-            sort($currentPrimary);
-            if ($expectedPrimary !== $currentPrimary) {
-                $report['errors'][] = "Tabelle {$table}: Primärschlüssel weicht ab (vorhanden: " . ($currentPrimary ? implode(', ', $currentPrimary) : 'keiner') . '; erwartet: ' . ($expectedPrimary ? implode(', ', $expectedPrimary) : 'keiner') . '). Die Schlüsseldefinition wird nicht automatisch geändert.';
+                if ($this->run('ALTER TABLE ' . $tableSql . ' MODIFY ' . $this->columnSql($field), $table, $report)) {
+                    $report['actions'][] = 'Tabelle ' . $table . ': Feld ' . $name . ' angepasst (' . implode(', ', $differences) . ').';
+                }
             }
         }
 
         private function differences(array $actual, array $expected): array
         {
             $differences = [];
-            $actualType = strtolower(preg_replace('/\s+/', '', $actual['Type']));
-            $expectedType = strtolower($expected['sqlType']);
+            $actualType = $this->normalizeType($actual['Type']);
+            $expectedType = $this->normalizeType($expected['sqlType']);
             if ($actualType !== $expectedType) $differences[] = 'Typ';
             if (($actual['Null'] === 'NO') !== $expected['notNull']) $differences[] = 'NULL-Eigenschaft';
             if ((strtoupper((string)$actual['Extra']) === 'AUTO_INCREMENT') !== $expected['auto']) $differences[] = 'AUTO_INCREMENT';
@@ -258,6 +300,15 @@ if (!class_exists('dbTools')) {
                 if ((string)$actualDefault !== (string)$expectedDefault || (($actualDefault === null) !== ($expectedDefault === null))) $differences[] = 'DEFAULT';
             }
             return $differences;
+        }
+
+        private function normalizeType(string $type): string
+        {
+            $type = strtolower(preg_replace('/\s+/', '', $type));
+            if (preg_match('/^(tinyint|smallint|mediumint|int|integer|bigint)\(\d+\)(unsigned)?$/', $type, $matches)) {
+                return $matches[1] . ($matches[2] ?? '');
+            }
+            return $type;
         }
 
         private function columnSql(array $field): string
@@ -272,8 +323,13 @@ if (!class_exists('dbTools')) {
 
         private function run(string $sql, string $table, array &$report): bool
         {
-            if ($this->connection->query($sql) === true) return true;
-            $report['errors'][] = "Tabelle {$table}: SQL konnte nicht ausgeführt werden: " . $this->connection->error . " [{$sql}]";
+            try {
+                if ($this->connection->query($sql) === true) return true;
+                $error = $this->connection->error;
+            } catch (mysqli_sql_exception $exception) {
+                $error = $exception->getMessage();
+            }
+            $report['errors'][] = "Tabelle {$table}: SQL konnte nicht ausgeführt werden: {$error} [{$sql}]";
             return false;
         }
 
