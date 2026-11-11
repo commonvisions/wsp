@@ -20,11 +20,13 @@ if (!preg_match('/^[A-Za-z0-9_-]+$/', $moduleName)) {
 }
 
 $wspRoot = dirname(__DIR__);
+$workspaceRoot = dirname($wspRoot);
 $moduleRoot = __DIR__ . DIRECTORY_SEPARATOR . $moduleName;
 $dataModuleRoot = $wspRoot . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . $moduleName;
-if (!is_dir($moduleRoot) || !is_dir($dataModuleRoot)) {
+$publicDataRoot = $workspaceRoot . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . $moduleName;
+if (!is_dir($moduleRoot) || !is_dir($dataModuleRoot) || !is_dir($publicDataRoot)) {
     http_response_code(404);
-    exit("Modulverzeichnis oder data/modules/{$moduleName} wurde nicht gefunden.\n");
+    exit("Modulverzeichnis oder eine der Datenquellen für {$moduleName} wurde nicht gefunden.\n");
 }
 
 $copyTree = function (string $source, string $target) use (&$copyTree): int {
@@ -51,7 +53,7 @@ $copyTree = function (string $source, string $target) use (&$copyTree): int {
 try {
     // Copy without comparing timestamps or contents; existing files are overwritten.
     $moduleCount = $copyTree($dataModuleRoot, $moduleRoot . DIRECTORY_SEPARATOR . 'modules');
-    $publicCount = $copyTree($dataModuleRoot, $moduleRoot . DIRECTORY_SEPARATOR . 'public');
+    $publicCount = $copyTree($publicDataRoot, $moduleRoot . DIRECTORY_SEPARATOR . 'public');
 
     $interpreterTarget = $moduleRoot . DIRECTORY_SEPARATOR . 'interpreter';
     if (!is_dir($interpreterTarget)) throw new RuntimeException("Modul-Interpreterverzeichnis fehlt: {$interpreterTarget}");
