@@ -97,7 +97,7 @@ if ($rights_num==1) {
 				endif;
 			endfor;
 		endif;
-		foreach (unserializeBroken($rights_res['set'][0]["rights"]) as $key => $value):
+		foreach ((unserializeBroken($rights_res['set'][0]["rights"]) ?: []) as $key => $value):
 			if (strlen($key)!=36):
 				$_SESSION['wspvars']['rights'][$key] = $value;
 				if ($value>1):

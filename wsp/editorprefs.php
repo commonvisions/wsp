@@ -111,9 +111,9 @@ endif;
 // setup some siteinfo facts
 $sitedata['devurl'] = trim(str_replace("http://", "", $sitedata['devurl']));
 if (trim(str_replace("http://", "", $sitedata['devurl']))==""): $sitedata['devurl'] = trim(str_replace("http://", "", $sitedata['siteurl']));	endif;
-if (intval($sitedata['backupsteps'])<3): $sitedata['backupsteps'] = 3; endif;
-if (intval($sitedata['autologout'])<15): $sitedata['autologout'] = 15; endif;
-if (intval($sitedata['loginfails'])<3): $sitedata['loginfails'] = 3; endif;
+if (intval($sitedata['backupsteps'] ?? 0)<3): $sitedata['backupsteps'] = 3; endif;
+if (intval($sitedata['autologout'] ?? 0)<15): $sitedata['autologout'] = 15; endif;
+if (intval($sitedata['loginfails'] ?? 0)<3): $sitedata['loginfails'] = 3; endif;
 if (!(isset($sitedata['cookiedays'])) || (isset($sitedata['cookiedays']) && intval($sitedata['cookiedays']))<1): $sitedata['cookiedays'] = 1; endif;
 
 // create rotots.txt if needed
@@ -193,7 +193,9 @@ endif;
 					/* read all files from /media/layout/ and find files with @type design */
 					$funcfolder = array();
 					$designfiles = array();
-					$functiondir = opendir ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasediradd']."/".$wspvars['wspbasedir']."/media/layout/");
+                    $functiondir = opendir($_SERVER['DOCUMENT_ROOT'] . "/" .
+                        $_SESSION['wspvars']['wspbasediradd'] . "/" .
+                        $_SESSION['wspvars']['wspbasedir'] . "/media/layout/");
 				    while ($entry = readdir($functiondir)):
 						if (stristr($entry, ".css.php")):
 							$cssfile[] = $entry;
@@ -202,7 +204,9 @@ endif;
 				    closedir ($functiondir);
 					sort ($cssfile);
 					foreach($cssfile AS $key => $fileinfo):
-						$filearray = file($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasediradd']."/".$wspvars['wspbasedir']."/media/layout/".$fileinfo);
+						$filearray = file($_SERVER['DOCUMENT_ROOT'] . "/" .
+                            $_SESSION['wspvars']['wspbasediradd'] . "/" .
+                            $_SESSION['wspvars']['wspbasedir']."/media/layout/".$fileinfo);
 						$designfiles[$key]['file'] = str_replace(".css.php", "", $fileinfo);
 						for ($fa=1; $fa<count($filearray); $fa++):
 							if (substr(trim($filearray[$fa]),0,3)=="* @"):

@@ -1479,6 +1479,7 @@ if (!(function_exists('getjMenuStructure'))) {
 	function getjMenuStructure($parent = 0, $aSelectIDs = array(), $op = '', $showmidpath = array(), $outputtype = 'structure', $showlang = 'de') {
 		// define empty output var
 		$getList = '';
+        $tmplid = 0;
 		/* get all menu information to parent connector */
 		$gms_sql = "SELECT * FROM `menu` WHERE `trash` = 0 AND `connected` = ".intval($parent)." ORDER BY `position`";
 		$gms_res = doSQL($gms_sql);
@@ -1833,7 +1834,7 @@ if (!(function_exists('getjMenuStructure'))) {
 							$getList.= "<li class=\"tablecell col-2 alignright\">";
 							foreach ($tplopt_res['set'] AS $tplok => $tplov) {
 								$getList.= "<div class='chstpl mid".intval($gmsv["mid"])." tpl".intval($tplov['id'])."' ";
-								if (intval($tmplid)!=intval($tplov['id'])): $getList.= " style='display: none;' "; endif;
+								if (intval($tmplid ?? 0)!=intval($tplov['id'])): $getList.= " style='display: none;' "; endif;
 								$getList.= "><a href=\"showpreview.php?previewid=".intval($gmsv["mid"])."&previewlang=".$_SESSION['wspvars']['workspacelang']."&previewtpl=".intval($tplov['id'])."\" target=\"_blank\"><span class=\"bubblemessage green\">".returnIntLang('structure bubble preview', false)."</span></a>&nbsp;</div>";
 							}			
 							$getList.= "</li>";

@@ -88,7 +88,8 @@ if (isset($_POST['freelang']) && trim($_POST['freelang'])!="de"):
 	if (trim($_POST['adminpass'])==""):
 		addWSPMsg("errormsg", "<p>".returnIntLang('localisation confirm with admin pass', true)."</p>");
 	else:
-		$admincheck_sql = "SELECT `rid` FROM `restrictions` WHERE `rid` = ".$wspvars['userid']." AND `usertype` = '1' AND `pass` = '".md5(trim($_POST['adminpass']))."'";
+		$admincheck_sql = "SELECT `rid` FROM `restrictions` WHERE `rid` = " . (int) $_SESSION['wspvars']['userid'] .
+            " AND `usertype` = '1' AND `pass` = '" . escapeSQL(md5(trim($_POST['adminpass']))) . "'";
 		$admincheck_res = doSQL($admincheck_sql);
         if ($admincheck_res['num']==1):
 			$sql = "DELETE FROM `content` WHERE `content_lang` = '".$_POST['freelang']."'";
@@ -118,7 +119,7 @@ include ("data/include/wspmenu.inc.php");
 	<?php if (count($worklang['languages']['shortcut'])>1): ?>
 	<fieldset id="fieldset_1">
 		<legend><?php echo returnIntLang('localisation usecontent', true); ?> <span class="opencloseButton bubblemessage" rel="contenttranslate">↕</span></legend>
-		<div id="contenttranslate" style="<?php echo $_SESSION['opentabs']['contenttranslate']; ?>">
+		<div id="contenttranslate" style="<?php echo ($_SESSION['opentabs']['contenttranslate'] ?? ''); ?>">
 			<script language="JavaScript1.2" type="text/javascript">
 			<!--
 			
@@ -237,7 +238,7 @@ include ("data/include/wspmenu.inc.php");
 					<li class="tablecell two"><?php echo returnIntLang('str password', true); ?> <?php helpText(returnIntLang('localisation password freelang helptext', false)); ?>
 					<li class="tablecell two"><input name="adminpass" id="free_adminpass" type="password" value=""></li>
 					<li class="tablecell eight"><?php echo returnIntLang('localisation freelangdesc', true); ?></li>
-				</li>
+				</ul>
 				<fieldset class="options innerfieldset"><p><a href="#" onclick="freelang();" class="greenfield"><?php echo returnIntLang('str doaction', false); ?></a></p></fieldset>
 				</form>
 			</div>

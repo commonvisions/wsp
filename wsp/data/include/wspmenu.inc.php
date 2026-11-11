@@ -353,7 +353,7 @@ function mobileJump(jumpValue) {
 		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu user'); ?></a> <?php
 			
 			if (array_key_exists('wspvars', $_SESSION) && array_key_exists('messages', $_SESSION['wspvars'])):
-				$allmessage = unserialize($_SESSION['wspvars']['messages']);
+				$allmessage = unserializeBroken($_SESSION['wspvars']['messages']) ?: [];
 				$i = 0;
 				if (count($allmessage)>0 && strlen(trim($_SESSION['wspvars']['messages']))>4):
 					foreach ($allmessage AS $key => $value):
