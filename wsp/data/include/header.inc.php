@@ -26,14 +26,14 @@ if (!(isset($_POST['previewid']))):
 		<meta name="viewport" content="width=device-width, user-scalable=no">
 		<!-- WSP 6.27 ASSETS integration -->
 		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/bootstrap.min.css">
-		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/bootstrap-theme.min.css">
 		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/dataTables.dataTables.min.css">
 		<link rel="stylesheet" href="/<?php echo $wspDir; ?>/assets/css/select2.min.css">
-		<link rel="stylesheet" id="assets-fontawesome" href="/<?php echo $wspDir; ?>/assets/css/all.min.css">
+		<link rel="stylesheet" id="assets-fontawesome" href="/<?php echo $wspDir; ?>/assets/css/fontawesome.min.css">
 		<script src="/<?php echo $wspDir; ?>/assets/js/jquery.min.js"></script>
 		<script src="/<?php echo $wspDir; ?>/assets/js/jquery-migrate.min.js"></script>
 		<script src="/<?php echo $wspDir; ?>/assets/js/jquery-ui.min.js"></script>
 		<script src="/<?php echo $wspDir; ?>/assets/js/bootstrap.min.js"></script>
+		<script src="/<?php echo $wspDir; ?>/assets/js/bootstrap.bundle.min.js"></script>
 		<script src="/<?php echo $wspDir; ?>/assets/js/dataTables.min.js"></script>
 		<script src="/<?php echo $wspDir; ?>/assets/js/dataTables.dataTables.min.js"></script>
 		<script src="/<?php echo $wspDir; ?>/assets/js/select2.min.js"></script>

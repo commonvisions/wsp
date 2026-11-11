@@ -138,30 +138,30 @@ function mobileJump(jumpValue) {
 						</optgroup>
 					<?php endif; ?>
 				<?php endif; ?>
-				
+
 				<?php if ($_SESSION['wspvars']['rights']['imagesfolder']!="0" || $_SESSION['wspvars']['rights']['downloadfolder']!="0" || $_SESSION['wspvars']['rights']['flashfolder']!="0"): ?>
 					<!-- <optgroup label="<?php echo returnIntLang('menu files', false); ?>">
-						
+
 					</optgroup> -->
 				<?php endif; ?>
-				
+
 				<?php if ($standardtemp>0): /* allow preview/publisher only with defined standard template */
-					
+
 					$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
 					$queue_res = doSQL($queue_sql);
 					$queue_num = $queue_res['num'];
-					
+
 					?>
 					<optgroup label="<?php echo returnIntLang('menu changed', false); ?>">
 						<?php if ($_SESSION['wspvars']['rights']['publisher']!=0 || $_SESSION['wspvars']['rights']['contents']!=0): ?>
 							<?php if ($_SESSION['wspvars']['rights']['publisher']!=0): ?>
 								<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/publisher.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu changed publisher', false);  ?></option>
 								<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publishqueue.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/publishqueue.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu changed queue', false); ?></option>
-							<?php endif; ?>	
+							<?php endif; ?>
 						<?php endif; ?>
 					</optgroup>
 				<?php endif; ?>
-				
+
 				<?php if ($_SESSION['wspvars']['usertype']==1): ?>
 					<optgroup label="<?php echo returnIntLang('menu manage', false); ?>">
 						<option value="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/editorprefs.php" <?php if($_SERVER['PHP_SELF']=='/'.$_SESSION['wspvars']['wspbasedir'].'/editorprefs.php') echo " selected=\"selected\" "; ?>><?php echo returnIntLang('menu manage editor', false); ?></option>
@@ -176,13 +176,13 @@ function mobileJump(jumpValue) {
 
 				<optgroup label="<?php echo returnIntLang('menu modmenu', false); ?>">
 					<?php
-					
+
 					$_SESSION['wspvars']['wspmodmenu'] = array();
 					$_SESSION['wspvars']['wspmodmenucount'] = 0;
 					if (array_key_exists('rights', $_SESSION['wspvars'])):
 						buildWSPMenu (0, 0, $_SESSION['wspvars']['rights']);
 					endif;
-		
+
 					$mrun = 0;
 					foreach ($_SESSION['wspvars']['wspmodmenu'] AS $key => $value):
 						$showmodmenu[$mrun]['guid'] = $key;
@@ -193,7 +193,7 @@ function mobileJump(jumpValue) {
 						$showmodmenu[$mrun]['link'] = $value[4];
 						$mrun++;
 					endforeach;
-					
+
 					if ($_SESSION['wspvars']['wspmodmenucount']>0):
 						$wmstart = 0;
 						for ($wmrun=$wmstart; $wmrun<$mrun; $wmrun++):
@@ -253,77 +253,8 @@ function mobileJump(jumpValue) {
 			</optgroup>
 		</select>
 	</div>
-	<ul>
-		<li class="level0 select">
-			<select id="site_jumper" onchange="jumpTo(this.value);">
-				<option value="basic"><?php echo returnIntLang('menu wsp basic'); ?></option>
-				<?php
-				
-				$siteinfo_sql = "SELECT * FROM `wspproperties` WHERE `varname` LIKE 'sites_%'";
-				$siteinfo_res = doSQL($siteinfo_sql);
-				$sitesdata = array();
-				if ($siteinfo_res['num']>0):
-					foreach ($siteinfo_res['set'] AS $sresk => $sresv):
-						$siteinfo = explode("_", trim($sresv['varname']));
-						if (count($siteinfo)==2):
-							$sitesdata[($siteinfo[0])][($siteinfo[1])]['name'] = $sresv['varvalue'];
-						elseif (count($siteinfo)==3):
-							$sitesdata[($siteinfo[0])][($siteinfo[1])][($siteinfo[2])] = $sresv['varvalue'];
-						endif;
-					endforeach;
-				endif;
-				if (isset($sitesdata['sites']) && is_array($sitesdata['sites'])):
-					echo "<option value='site_0'>";
-					if (!(isset($_SESSION['wspvars']['site'])) || (isset($_SESSION['wspvars']['site']) && intval($_SESSION['wspvars']['site'])==0)): echo "•"; else: echo "&nbsp;&nbsp;"; endif;
-					echo "&nbsp;".returnIntLang('menu no site')."</option>";
-				
-					foreach ($sitesdata['sites'] AS $sk => $sv):
-						echo "<option value='site_".$sk."' ";
-						if (isset($_SESSION['wspvars']['site']) && intval($_SESSION['wspvars']['site'])==intval($sk)): echo " selected='selected' "; endif;
-						echo ">";
-						if (isset($_SESSION['wspvars']['site']) && intval($_SESSION['wspvars']['site'])==intval($sk)): echo "•"; else: echo "&nbsp;&nbsp;"; endif;
-						echo "&nbsp;".returnIntLang('menu site str')." \"".$sv['name']."\"</option>";
-					endforeach;
-				endif;
-				
-				$plugin_sql = "SELECT * FROM `wspplugins`";
-				$plugin_res = doSQL($plugin_sql);
-				if ($plugin_res['num']>0) {
-					foreach ($plugin_res['set'] AS $presk => $presv):
-						$pluginident = $presv["guid"];
-						if ((array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists($pluginident, $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights'][$pluginident]==1) || $_SESSION['wspvars']['usertype']==1):
-							echo "<option value=\"".$pluginident."\" ";
-							if(key_exists('plugin', $_SESSION['wspvars']) && $_SESSION['wspvars']['plugin']==$pluginident): echo "selected=\"selected\""; endif;
-							echo ">".trim($presv["pluginname"])."</option>";
-						endif;
-					endforeach;
-                }
-
-				?>
-				<option value="logout"><?php echo returnIntLang('menu logout str'); ?></option>
-			</select>
-		</li>
-		
-		<?php
-		
-		if ($plugin_res['num']>0):
-			foreach ($plugin_res['set'] AS $presk => $presv):
-        		$pluginident = $presv["guid"];
-				if ((isset($_SESSION['wspvars']) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists($pluginident, $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights'][$pluginident]==1) || (array_key_exists('wspvars', $_SESSION) && array_key_exists('usertype', $_SESSION['wspvars']) && $_SESSION['wspvars']['usertype']==1)):
-					$pluginfolder = $presv["pluginfolder"];
-					if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/data/include/wsplang.inc.php")):
-						@require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/data/include/wsplang.inc.php");
-					endif;
-					if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/data/include/wspmenu.inc.php")):
-						@require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/data/include/wspmenu.inc.php");
-					endif;
-				endif;
-			endforeach;
-		endif;
-		
-		$mp = 1;
-		
-		?>
+	<ul style="float: left;">
+		<?php $mp = 1; ?>
 		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><?php echo returnIntLang('menu home'); ?></a> <ul class="basic level1">
 			<li><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><?php echo returnIntLang('menu home cms'); ?></a></li>
 			<?php if ($_SESSION['wspvars']['liveurl']==$_SESSION['wspvars']['workspaceurl']): ?>
@@ -376,7 +307,7 @@ function mobileJump(jumpValue) {
 		</li>
 	<?php endif; ?>
 		
-	<?php $mp = 3; if ($_SESSION['wspvars']['rights']['siteprops']!=0): ?>
+	<?php $mp = 3; if (($_SESSION['wspvars']['rights']['siteprops'] ?? 0)!=0): ?>
 		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu siteprefs'); ?></a>
 		<ul class="basic level1">
 			<?php if ($isextended==1): ?>
@@ -644,62 +575,67 @@ function mobileJump(jumpValue) {
 			echo "</ul></li>";
 		endif;
 			
-//		if (key_exists('wspautologin', $_SESSION) && intval($_SESSION['wspautologin'])!=1): 
 		?>
-		<li class="basic level0 cntdwn">
-		<script>
-		<!-- 
-		
-		TargetDate = "<?php echo date("m/d/Y h:i:s A", time()+(60*intval($_SESSION['wspvars']['autologout']))-1); ?>";
-		CountActive = true;
-		CountStepper = -1;
-		LeadingZero = true;
-		DisplayFormat = "%%H%%:%%M%%:%%S%%";
-		
-		function calcage(secs, num1, num2) {
-		  s = ((Math.floor(secs/num1))%num2).toString();
-		  if (LeadingZero && s.length < 2)
-		    s = "0" + s;
-		  return "<b>" + s + "</b>";
-		}
-		
-		function CountBack(secs) {
-		  if (secs < 0) {
-			window.location.href = '/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/logout.php';
-			return;
-			}
-		  DisplayStr = DisplayFormat.replace(/%%D%%/g, calcage(secs,86400,100000));
-		  DisplayStr = DisplayStr.replace(/%%H%%/g, calcage(secs,3600,24));
-		  DisplayStr = DisplayStr.replace(/%%M%%/g, calcage(secs,60,60));
-		  DisplayStr = DisplayStr.replace(/%%S%%/g, calcage(secs,1,60));
-		
-		  document.getElementById("cntdwn").innerHTML = DisplayStr;
-		  setTimeout("CountBack(" + (secs+CountStepper) + ")", SetTimeOutPeriod);
-		}
-		
-		function putspan() {
-		 document.write("<span id='cntdwn'></span>");
-		}
-		
-		CountStepper = Math.ceil(CountStepper);
-		if (CountStepper == 0)
-		  CountActive = false;
-		var SetTimeOutPeriod = (Math.abs(CountStepper)-1)*1000 + 990;
-		putspan();
-		var dthen = new Date(TargetDate);
-		var dnow = new Date();
-		if(CountStepper>0)
-		  ddiff = new Date(dnow-dthen);
-		else
-		  ddiff = new Date(dthen-dnow);
-		gsecs = Math.floor(ddiff.valueOf()/1000);
-		CountBack(gsecs);
-		
-		-->
-		</script>
-		</li>
-		<?php // endif; ?>
 	</ul>
+    <ul style="float: right;">
+        <li class="basic level0 cntdwn">
+            <script>
+                <!--
+
+                TargetDate = "<?php echo date("m/d/Y h:i:s A", time()+(60*intval($_SESSION['wspvars']['autologout']))-1); ?>";
+                CountActive = true;
+                CountStepper = -1;
+                LeadingZero = true;
+                DisplayFormat = "%%H%%:%%M%%:%%S%%";
+
+                function calcage(secs, num1, num2) {
+                    s = ((Math.floor(secs/num1))%num2).toString();
+                    if (LeadingZero && s.length < 2)
+                        s = "0" + s;
+                    return "<b>" + s + "</b>";
+                }
+
+                function CountBack(secs) {
+                    if (secs < 0) {
+                        window.location.href = '/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/logout.php';
+                        return;
+                    }
+                    DisplayStr = DisplayFormat.replace(/%%D%%/g, calcage(secs,86400,100000));
+                    DisplayStr = DisplayStr.replace(/%%H%%/g, calcage(secs,3600,24));
+                    DisplayStr = DisplayStr.replace(/%%M%%/g, calcage(secs,60,60));
+                    DisplayStr = DisplayStr.replace(/%%S%%/g, calcage(secs,1,60));
+
+                    document.getElementById("cntdwn").innerHTML = DisplayStr;
+                    setTimeout("CountBack(" + (secs+CountStepper) + ")", SetTimeOutPeriod);
+                }
+
+                function putspan() {
+                    document.write("<span id='cntdwn'></span>");
+                }
+
+                CountStepper = Math.ceil(CountStepper);
+                if (CountStepper == 0)
+                    CountActive = false;
+                var SetTimeOutPeriod = (Math.abs(CountStepper)-1)*1000 + 990;
+                putspan();
+                var dthen = new Date(TargetDate);
+                var dnow = new Date();
+                if(CountStepper>0)
+                    ddiff = new Date(dnow-dthen);
+                else
+                    ddiff = new Date(dthen-dnow);
+                gsecs = Math.floor(ddiff.valueOf()/1000);
+                CountBack(gsecs);
+
+                -->
+            </script>
+        </li>
+        <li class="basic level0 px-2" style="display: initial">
+            <a href="./logout.php">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+        </li>
+    </ul>
 </div>
 <?php
 
