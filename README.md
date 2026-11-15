@@ -1,6 +1,23 @@
 # WSP
 WebSitePreview
 
+## 6.26.11
+
+- added composer supported assets to backend
+    - bootstrap
+    - jquery
+    - datatables
+
+## 6.26.2
+
+- templates
+    - fixed wrong "library" output on JS and CSS
+    - fixed undefined variables name
+    - fixed inserting a new template bug on viewport data
+    - removed RSS finally
+- scriptedit
+    - fixed wrong closing HTML
+
 ## 6.26.1
 
 - frontend
