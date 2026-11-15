@@ -7,6 +7,13 @@ WebSitePreview
     - bootstrap
     - jquery
     - datatables
+- bugfixes on contentstructure
+    - bugfix on cloning contents
+    - bugfix on drag&drop
+    - changed contentshow functionality
+- changed sql-connect-method
+- added backend props for better sync
+- prepared new module system on installing modules from external sources
 
 ## 6.26.2
 
