@@ -60,6 +60,28 @@ endwhile;
 $op = checkParamVar('op', '');
 $id = checkParamVar('id', '');
 
+$structureReport = null;
+$structurePreview = null;
+$structurePreviewHash = '';
+$structureFile = __DIR__ . DIRECTORY_SEPARATOR . 'structure.xml';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && in_array(($_POST['op'] ?? ''), ['previewstructure', 'applystructure'], true)) {
+	if (!is_file($structureFile) || !is_readable($structureFile)) {
+		$structureReport = ['success' => false, 'actions' => [], 'errors' => ['Die Datei wsp/structure.xml wurde nicht gefunden oder kann nicht gelesen werden.']];
+	} else {
+		require_once __DIR__ . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'classes' . DIRECTORY_SEPARATOR . 'dbtools.inc.php';
+		$dbTools = new dbTools($_SESSION['wspvars']['db'] ?? null);
+		$structureXml = file_get_contents($structureFile);
+		if ($_POST['op'] === 'previewstructure') {
+			$structurePreview = $dbTools->previewStructure($structureXml);
+			if ($structurePreview['success']) $structurePreviewHash = hash('sha256', $structureXml);
+		} elseif (isset($_POST['structure_hash']) && hash_equals((string)$_POST['structure_hash'], hash('sha256', $structureXml))) {
+			$structureReport = $dbTools->applyStructure($structureXml);
+		} else {
+			$structureReport = ['success' => false, 'actions' => [], 'errors' => ['Die Vorschau fehlt oder wsp/structure.xml wurde seit der Vorschau geändert. Bitte erneut prüfen.']];
+		}
+	}
+}
+
 include ("data/include/header.inc.php");
 include ("data/include/wspmenu.inc.php");
 
@@ -153,14 +175,45 @@ flush();flush();flush();
 			</table>
 		</div>
 	</fieldset>
+	<fieldset class="text">
+		<legend>Datenbankintegrität prüfen</legend>
+		<p>Die Datei <code>structure.xml</code> wird mit den Tabellen der aktuellen WSP-Installation abgeglichen. Fehlende Tabellen und Felder können angelegt, abweichende Felddefinitionen angepasst werden. Vorhandene Tabellen oder Felder, die nicht in der Struktur definiert sind, werden dabei nicht gelöscht.</p>
+		<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>" method="post">
+			<input type="hidden" name="op" value="previewstructure" />
+			<p><button type="submit" class="btn btn-success">Datenbankvergleich anzeigen</button></p>
+		</form>
+		<?php if (is_array($structurePreview) && $structurePreview['success']) { ?>
+			<h5>Vorschau des Abgleichs</h5>
+			<table class="tablelist"><thead><tr><th>Tabelle</th><th>Feld</th><th>Aktion</th><th>Details</th></tr></thead><tbody>
+			<?php foreach ($structurePreview['tables'] as $tableName) {
+				$tableChanges = array_values(array_filter($structurePreview['changes'], function ($change) use ($tableName) { return $change['table'] === $tableName; }));
+				if (!$tableChanges) { ?>
+					<tr><td><?php echo htmlspecialchars($tableName, ENT_QUOTES, 'UTF-8'); ?></td><td colspan="3">Keine Änderungen erforderlich.</td></tr>
+				<?php } else { foreach ($tableChanges as $change) { ?>
+					<tr><td><?php echo htmlspecialchars($tableName, ENT_QUOTES, 'UTF-8'); ?></td><td><?php echo htmlspecialchars($change['field'], ENT_QUOTES, 'UTF-8'); ?></td><td><?php echo htmlspecialchars($change['operation'], ENT_QUOTES, 'UTF-8'); ?></td><td><?php echo htmlspecialchars($change['details'], ENT_QUOTES, 'UTF-8'); ?></td></tr>
+				<?php } }
+			} ?>
+			</tbody></table>
+			<?php if (!empty($structurePreview['changes'])) { ?>
+				<p>Der bestehende Abgleich löscht keine Tabellen oder Felder.</p>
+				<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>" method="post" style="display:inline"><input type="hidden" name="op" value="applystructure" /><input type="hidden" name="structure_hash" value="<?php echo htmlspecialchars($structurePreviewHash, ENT_QUOTES, 'UTF-8'); ?>" /><button type="submit" class="greenfield">Angezeigte Änderungen bestätigen und ausführen</button></form>
+				<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF'], ENT_QUOTES, 'UTF-8'); ?>" method="post" style="display:inline"><input type="hidden" name="op" value="cancelstructure" /><button type="submit" class="orangefield">Abbrechen</button></form>
+			<?php } ?>
+		<?php } elseif (is_array($structurePreview)) { ?><ul class="errormsg"><?php foreach ($structurePreview['errors'] as $error) { ?><li><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></li><?php } ?></ul><?php } ?>
+		<?php if (is_array($structureReport)) { ?>
+			<h3><?php echo $structureReport['success'] ? 'Abgleich erfolgreich.' : 'Abgleich mit Fehlern abgeschlossen.'; ?></h3>
+			<?php if (!empty($structureReport['actions'])) { ?><ul><?php foreach ($structureReport['actions'] as $action) { ?><li><?php echo htmlspecialchars($action, ENT_QUOTES, 'UTF-8'); ?></li><?php } ?></ul><?php } else { ?><p>Keine Änderungen erforderlich.</p><?php } ?>
+			<?php if (!empty($structureReport['errors'])) { ?><ul class="errormsg"><?php foreach ($structureReport['errors'] as $error) { ?><li><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></li><?php } ?></ul><?php } ?>
+		<?php } ?>
+	</fieldset>
 	<?php if ($GIT ?? false) { ?>
 	<fieldset class="text">
-		<legend><?php echo returnIntLang('Information about GIT support', false); ?></legend>
+		<legend><?php echo returnIntLang('Systemintegrität prüfen', false); ?></legend>
 		<p><?php echo sprintf(returnIntLang('Our self-hosted update service ended. You can download the latest version from <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> or use the github.com repository as your git source. Latest release version is <strong>%2$s</strong> from <strong>%3$s</strong>.', false), $GIT['url'], $GIT['version'], $GIT['update']); ?></p>
 	</fieldset>
 	<?php } else { ?>
 		<fieldset class="text">
-			<legend><?php echo returnIntLang('Information about GIT support', false); ?></legend>
+			<legend><?php echo returnIntLang('Systemintegrität prüfen', false); ?></legend>
 			<p><?php echo sprintf(returnIntLang('Our self-hosted update service ended. You can download the latest version from <strong><a href="%1$s" target="_blank">github.com [↗]</a></strong> or use the github.com repository as your git source.', false), 'https://github.com/commonvisions/wsp/'); ?></p>
 		</fieldset>
 	<?php } ?>

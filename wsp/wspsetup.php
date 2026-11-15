@@ -1747,7 +1747,7 @@ function updateStat(field, width, text) {
 		`referrer` varchar(20) NOT NULL,
 		`userid` int(11) NOT NULL,
 		`timevar` int(11) NOT NULL,
-		`viewer_mode` enum('no','yes') NOT NULL default 'no',
+		`viewer_mode` int(1) NOT NULL default 0,
 		`usevar` varchar(100) NOT NULL,
 		`logintime` int(11) NOT NULL,
 		`position` varchar(200) NOT NULL,

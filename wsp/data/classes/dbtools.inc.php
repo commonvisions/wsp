@@ -76,6 +76,76 @@ if (!class_exists('dbTools')) {
             return $report;
         }
 
+        /** Inspect the XML against the current schema without changing it. */
+        public function previewStructure($xml): array
+        {
+            $report = ['success' => false, 'tables' => [], 'changes' => [], 'errors' => []];
+            if (!$this->connection instanceof mysqli) {
+                $report['errors'][] = 'Keine aktive mysqli-Verbindung.';
+                return $report;
+            }
+            libxml_use_internal_errors(true);
+            $root = $xml instanceof SimpleXMLElement ? $xml : simplexml_load_string((string)$xml);
+            if ($root === false) {
+                foreach (libxml_get_errors() as $error) $report['errors'][] = 'Ungültiges XML: ' . trim($error->message);
+                libxml_clear_errors();
+                return $report;
+            }
+            // Preserve repeated <table> siblings; their default SimpleXML keys
+            // are identical, so iterator_to_array() must use numeric keys.
+            $tables = $root->getName() === 'table' ? [$root] : iterator_to_array($root->table, false);
+            if (!$tables) {
+                $report['errors'][] = 'Das XML enthält keine <table>-Elemente.';
+                return $report;
+            }
+            foreach ($tables as $tableNode) {
+                $table = (string)$tableNode['name'];
+                if (!$this->validIdentifier($table)) {
+                    $report['errors'][] = "Ungültiger Tabellenname: {$table}";
+                    continue;
+                }
+                $fields = [];
+                foreach ($tableNode->field as $fieldNode) {
+                    $definition = $this->parseField($fieldNode, $table, $report['errors']);
+                    if ($definition !== null) $fields[$definition['name']] = $definition;
+                }
+                if (!$fields) {
+                    $report['errors'][] = "Tabelle {$table}: keine gültigen Felder definiert.";
+                    continue;
+                }
+                $report['tables'][] = $table;
+                $exists = $this->connection->query("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = " . $this->sqlString($table));
+                if (!$exists) {
+                    $report['errors'][] = "Tabelle {$table}: Prüfung fehlgeschlagen: " . $this->connection->error;
+                    continue;
+                }
+                $tableExists = $exists->num_rows > 0;
+                $exists->free();
+                if (!$tableExists) {
+                    $report['changes'][] = ['table' => $table, 'field' => '*', 'operation' => 'Tabelle hinzufügen', 'details' => implode(', ', array_keys($fields))];
+                    continue;
+                }
+                $columns = $this->connection->query('SHOW FULL COLUMNS FROM ' . $this->quote($table));
+                if (!$columns) {
+                    $report['errors'][] = "Tabelle {$table}: Spalten konnten nicht gelesen werden: " . $this->connection->error;
+                    continue;
+                }
+                $actual = [];
+                while ($column = $columns->fetch_assoc()) $actual[$column['Field']] = $column;
+                $columns->free();
+                foreach ($fields as $name => $field) {
+                    if (!isset($actual[$name])) {
+                        $report['changes'][] = ['table' => $table, 'field' => $name, 'operation' => 'Feld hinzufügen', 'details' => $field['sqlType'] . ($field['notNull'] ? ' NOT NULL' : ' NULL')];
+                    } else {
+                        $differences = $this->differences($actual[$name], $field);
+                        if ($differences) $report['changes'][] = ['table' => $table, 'field' => $name, 'operation' => 'Feld ändern', 'details' => implode(', ', $differences) . ' → ' . $field['sqlType']];
+                    }
+                }
+            }
+            $report['success'] = count($report['errors']) === 0;
+            return $report;
+        }
+
         /** Alias for callers that prefer a shorter function name. */
         public function sync($xml): array
         {
@@ -152,21 +222,23 @@ if (!class_exists('dbTools')) {
             $name = (string)$field['name'];
             $type = strtolower((string)$field['type']);
             $size = (string)$field['size'];
-            $allowed = ['int', 'tinyint', 'smallint', 'mediumint', 'bigint', 'varchar', 'char', 'text', 'mediumtext', 'longtext', 'date', 'datetime', 'timestamp', 'float', 'double', 'decimal', 'blob', 'mediumblob', 'longblob'];
+            $allowed = ['int', 'tinyint', 'smallint', 'mediumint', 'bigint', 'varchar', 'char', 'text', 'tinytext', 'mediumtext', 'longtext', 'date', 'datetime', 'timestamp', 'float', 'double', 'decimal', 'enum', 'blob', 'mediumblob', 'longblob'];
             if (!$this->validIdentifier($name) || !in_array($type, $allowed, true)) {
                 $errors[] = "Tabelle {$table}: ungültige Felddefinition für '{$name}'.";
                 return null;
             }
             $precisionTypes = ['decimal', 'float', 'double'];
             $validSize = $size === ''
-                || (in_array($type, $precisionTypes, true)
-                    ? preg_match('/^\d+(?:,\d+)?$/', $size) === 1
-                    : ctype_digit($size));
-            if (!$validSize || ($size !== '' && (int)strtok($size, ',') < 1)) {
+                || ($type === 'enum'
+                    ? preg_match("/^'(?:[^'\\\\]|\\\\.)*'(?:\\s*,\\s*'(?:[^'\\\\]|\\\\.)*')*$/", $size) === 1
+                    : (in_array($type, $precisionTypes, true)
+                        ? preg_match('/^\d+(?:,\d+)?$/', $size) === 1
+                        : ctype_digit($size)));
+            if (!$validSize || ($size !== '' && $type !== 'enum' && (int)strtok($size, ',') < 1)) {
                 $errors[] = "Tabelle {$table}, Feld {$name}: ungültige Größe '{$size}'.";
                 return null;
             }
-            $needsSize = in_array($type, ['varchar','char','decimal'], true);
+            $needsSize = in_array($type, ['varchar','char','decimal','enum'], true);
             if ($needsSize && $size === '') {
                 $errors[] = "Tabelle {$table}, Feld {$name}: Größe fehlt für {$type}.";
                 return null;
