@@ -22,8 +22,8 @@
         <field name="trash" type="int" not_null="true" default="0"/>
         <field name="containeranchor" type="varchar" size="255" not_null="false"/>
         <field name="displayclass" type="int" not_null="true" default="0"/>
-        <field name="login" type="int" not_null="true"/>
-        <field name="logincontrol" type="text" not_null="false"/>
+        <field name="login" type="int" not_null="false" default="null" />
+        <field name="logincontrol" type="text" not_null="false" default="null" />
         <field name="uid" type="int" unsigned="true" not_null="true" default="0"/>
         <field name="description" type="text" not_null="false"/>
     </table>

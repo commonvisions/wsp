@@ -115,7 +115,7 @@ flush();flush();flush();
 		$GIT = [
 			'url' => $gitData['html_url'] ?? 'https://github.com/commonvisions/wsp/',
 			'update' => date(returnIntLang('format date'), strtotime($gitData['published_at'] ?? date('Y-m-d H:i:s'))),
-			'version' => $gitData['tag_name'],
+			'version' => $gitData['tag_name'] ?? ('#6.' . date('y'))
 		];
 	}
 

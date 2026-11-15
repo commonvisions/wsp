@@ -398,10 +398,6 @@ $addmod_sql = "SELECT * FROM `modules` WHERE `ismenu` != 1 && `isparser` != 1 &&
 $addmod_res = doSQL($addmod_sql);
 $addmod_num = $addmod_res['num'];
 
-$plugin_sql = "SELECT * FROM `wspplugins` ORDER BY `pluginname`";
-$plugin_res = doSQL($plugin_sql);
-$plugin_num = $plugin_res['num'];
-
 // check interpreter directory for preinstalled files
 $interpreter_dir = scandir($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir'].'/data/interpreter/');
 if (is_array($interpreter_dir)) {
