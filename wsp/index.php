@@ -304,20 +304,6 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 		<p><?php echo returnIntLang('home logouthint'); ?></p></fieldset>
         <?php 
 
-		$plugin_sql = "SELECT * FROM `wspplugins`";
-		$plugin_res = doSQL($plugin_sql);
-		if ($plugin_res['num']>0) {
-			foreach ($plugin_res['set'] AS $prk => $prv) {
-				$pluginident = $prv["guid"];
-				if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists($pluginident, $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights'][$pluginident]==1) {
-					$pluginfolder = $prv["pluginfolder"];
-					if (is_file(DOCUMENT_ROOT."/".$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/cmindex.php")) {
-						include (DOCUMENT_ROOT."/".$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/cmindex.php");
-					}
-				}
-			}
-		}
-		
 		if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('contents', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['contents']!=0): ?>
 		<fieldset class="text two first">
 			<legend><?php echo returnIntLang('home edited'); ?> <?php echo legendOpenerCloser('index_lasteditinfo_fieldset'); ?></legend>

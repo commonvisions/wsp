@@ -255,7 +255,7 @@ function mobileJump(jumpValue) {
 	</div>
 	<ul style="float: left;">
 		<?php $mp = 1; ?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><?php echo returnIntLang('menu home'); ?></a> <ul class="basic level1">
+		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><?php echo returnIntLang('menu home'); ?></a> <ul class="basic level1">
 			<li><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><?php echo returnIntLang('menu home cms'); ?></a></li>
 			<?php if ($_SESSION['wspvars']['liveurl']==$_SESSION['wspvars']['workspaceurl']): ?>
 				<li><a href="http://<?php echo $_SESSION['wspvars']['liveurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>"><?php echo returnIntLang('menu home'); ?> <?php echo returnIntLang('menu home website'); ?></a></li>
@@ -265,7 +265,7 @@ function mobileJump(jumpValue) {
 			<?php endif; ?>
 		</ul></li>
 	<?php $mp = 2; if (array_key_exists('wspvars', $_SESSION) && array_key_exists('usertype', $_SESSION['wspvars']) && $_SESSION['wspvars']['usertype']==1): ?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu user'); ?></a>
+		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu user'); ?></a>
 		<ul class="basic level1">
 			<li class="level1" id="m_<?php echo $mp; ?>_0">
 				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usermanagement.php"><?php echo returnIntLang('menu user manage'); ?></a>
@@ -281,7 +281,7 @@ function mobileJump(jumpValue) {
 		</ul>
 		</li>
 	<?php else: ?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu user'); ?></a> <?php
+		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu user'); ?></a> <?php
 			
 			if (array_key_exists('wspvars', $_SESSION) && array_key_exists('messages', $_SESSION['wspvars'])):
 				$allmessage = unserializeBroken($_SESSION['wspvars']['messages']) ?: [];
@@ -308,7 +308,7 @@ function mobileJump(jumpValue) {
 	<?php endif; ?>
 		
 	<?php $mp = 3; if (($_SESSION['wspvars']['rights']['siteprops'] ?? 0)!=0): ?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu siteprefs'); ?></a>
+		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu siteprefs'); ?></a>
 		<ul class="basic level1">
 			<?php if ($isextended==1): ?>
 				<li class="level1" id="m_<?php echo $mp; ?>_2">
@@ -335,7 +335,7 @@ function mobileJump(jumpValue) {
 		<?php endif; ?>
 		
 		<?php $mp = 4; if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('design', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['design']!=0): ?>
-			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu design'); ?></a> <ul class="basic level1">
+			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu design'); ?></a> <ul class="basic level1">
 			<?php if ($fsaccess) { ?><li class="level1" id="m_<?php echo $mp; ?>_0">
 				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/screenmanagement.php"><?php echo returnIntLang('menu design media'); ?></a>
 			</li>
@@ -370,7 +370,7 @@ function mobileJump(jumpValue) {
 		
 		if ($fsaccess) {
 			?>
-			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_6" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu files'); ?></a>
+			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_6"><a><?php echo returnIntLang('menu files'); ?></a>
 			<ul id="m_6s" class="basic level1">
 				<?php if (($_SESSION['wspvars']['rights']['imagesfolder'] ?? 0)!="0") { ?>
 				<li class="level1" id="m_6_1">
@@ -395,7 +395,7 @@ function mobileJump(jumpValue) {
 		
 		if ($standardtemp>0): /* allow structure/contents only with defined standard template */ ?>
 			<?php $mp = 5; if ((array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('sitestructure', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['sitestructure']!="0") || (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('contents', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['contents']!="0")): ?>
-				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu content'); ?></a>
+				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu content'); ?></a>
 				<ul class="basic level1">
 					<?php if ($_SESSION['wspvars']['rights']['sitestructure']!=0): ?>
 						<li class="level1" id="m_<?php echo $mp; ?>_0">
@@ -435,7 +435,7 @@ function mobileJump(jumpValue) {
 				// show publisher and queue link as submenupoints
 				if ($fsaccess) {
 				?>
-				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed publisher'); ?> <?php if($queue_num>0): echo "&nbsp;<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; endif; ?></a> <ul class="basic level1">
+				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed publisher'); ?> <?php if($queue_num>0): echo "&nbsp;<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; endif; ?></a> <ul class="basic level1">
 					<li class="level1" id="m_<?php echo $mp; ?>_0">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed'); ?></a>
 					</li>
@@ -450,17 +450,17 @@ function mobileJump(jumpValue) {
 					if ($fsaccess) {
 					// show only publisher as main menupoint
 					?>
-					<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed'); ?></a></li>
+					<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed'); ?></a></li>
 					<?php 
 					}
 				} ?>
 		<?php endif; ?>
 		<?php elseif ($_SESSION['wspvars']['rights']['contents']!=0): ?>
-			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed preview'); ?></a></li>
+			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed preview'); ?></a></li>
 		<?php endif; ?>
 		
 		<?php $mp = 10; if (array_key_exists('wspvars', $_SESSION) && array_key_exists('usertype', $_SESSION['wspvars']) && $_SESSION['wspvars']['usertype']==1): ?>
-			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu manage'); ?><?php if (isset($_SESSION['wspvars']['updatesystem']) && $_SESSION['wspvars']['updatesystem']===true): echo " &nbsp;<span class='bubblemessage orange'>!</span>"; endif; ?></a>
+			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu manage'); ?><?php if (isset($_SESSION['wspvars']['updatesystem']) && $_SESSION['wspvars']['updatesystem']===true): echo " &nbsp;<span class='bubblemessage orange'>!</span>"; endif; ?></a>
 			<ul id="m_10s" class="basic level1">
 				<?php if (is_array($_SESSION['wspvars']['locallanguages']) && count($_SESSION['wspvars']['locallanguages'])>1): 
 					
@@ -507,7 +507,7 @@ function mobileJump(jumpValue) {
 			ksort($_SESSION['wspvars']['locallanguages'], SORT_STRING);
 			
 			?>
-			<li class="basic level0" <?php if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\""; ?>><a><?php echo returnIntLang('menu manage language'); ?></a> <ul class="basic level1" id="m_lang">
+			<li class="basic level0"><a><?php echo returnIntLang('menu manage language'); ?></a> <ul class="basic level1" id="m_lang">
 				<?php foreach($_SESSION['wspvars']['locallanguages'] AS $llkey => $llvalue): 
 					echo "<li><a href=\"".$_SERVER['PHP_SELF']."?setlang=".$llkey."\">".$llvalue."</a></li>";
 				endforeach; ?>
@@ -539,7 +539,6 @@ function mobileJump(jumpValue) {
 			$wmstart = 1;
 		elseif ($_SESSION['wspvars']['wspmodmenucount']>1):
 			echo "<li class=\"basic level0\" ";
-			if($plugin_res['num']>0 && (key_exists('plugin', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['plugin']!=""))) echo "style=\"display: none;\"";
 			echo "><a>".returnIntLang('menu modmenu')."</a> ";
 			echo "<ul class=\"basic level1\">";
 			$wmstart = 0;

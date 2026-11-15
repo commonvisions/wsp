@@ -115,7 +115,6 @@ $_SESSION['wspvars']['tables']=array(
 	'wspmedia',
 	'wspmenu',
 	'wspmsg',
-	'wspplugins',
 	'wspproperties',
 	'wspqueue',
 	'wsprights'

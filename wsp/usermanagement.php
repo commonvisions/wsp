@@ -285,22 +285,6 @@ include ("data/include/wspmenu.inc.php");
 							if ($value!=0):
 								$userprops .= "<span class=\"bubblemessage\">".strtoupper($key)."</span> ";
 							endif;
-						else:
-							if ($value==0):
-								$plgdesc_num = 0;
-								$plgdesc_sql = "SELECT `pluginname` FROM `wspplugins` WHERE `guid` = '".$key."'";
-								$plgdesc_res = doSQL($plgdesc_sql);
-								if ($plgdesc_res['num']>0):
-									$userprops .= "<span class=\"bubblemessage orange\">".strtoupper($plgdesc_res['set'][0]['pluginname'])."</span> ";
-								else:
-									$moddesc_num = 0;
-									$moddesc_sql = "SELECT `right` FROM `wsprights` WHERE `guid` = '".$key."'";
-									$moddesc_res = doSQL($moddesc_sql);
-									if ($moddesc_res['num']>0):
-										$userprops .= "<span class=\"bubblemessage\">".strtoupper($moddesc_res['set'][0]['right'])."</span> ";
-									endif;
-								endif;
-							endif;
 						endif;
 					endforeach;
 				endif;

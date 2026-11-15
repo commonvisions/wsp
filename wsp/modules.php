@@ -301,59 +301,8 @@ function modRights() {
 	}	// modRights()
 	
 function pluginRights() {
-	global $usevar, $id, $wspvars;
-	
-	$mod_sql = "SELECT * FROM `wspplugins` WHERE `guid` = '".$_POST['module_guid']."'";
-	$mod_res = doSQL($mod_sql);
-	
-	if ($mod_res['num']>0):
-		$modguid = trim($mod_res['set'][0]['guid']);
-		?>
-		<fieldset><h2><?php echo returnIntLang('modrights rights for plugin'); ?> "<?php echo trim($mod_res['set'][0]['pluginname']); ?>"</h2></fieldset>
-		<fieldset>
-			<legend><?php echo returnIntLang('str legend'); ?></legend>
-			<p><?php echo returnIntLang('modrights rights for plugin info'); ?></p>	
-		</fieldset>
-		<fieldset>
-			<legend><?php echo returnIntLang('modrights activate modrights'); ?></legend>
-			<form name="setrightsform" id="setrightsform" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-			<table border="0" cellspacing="0" cellpadding="3" width="100%">
-				<?php 
-				
-				foreach ($mod_res['set'] AS $mresk => $mresv):
-					
-					$rights_sql = "SELECT * FROM `wsprights` WHERE `guid` = '".escapeSQL(trim($mresv['guid']))."'";
-					$rights_res = doSQL($rights_sql);
-					
-					?>
-					<tr>
-						<td width="25%"><?php echo trim($mresv['pluginname']); ?></td>
-						<td width="75%"><input type="checkbox" name="setrights[<?php echo trim($mresv['guid']); ?>]" id="setrights_<?php echo intval($mresv['id']); ?>" value="1" <?php if ($rights_res['num']>0): echo "checked=\"checked\""; endif; ?> /><input type="hidden" name="guid[<?php echo trim($mresv['guid']); ?>]" value="<?php echo trim($mresv['guid']); ?>"> <?php echo returnIntLang('str description'); ?> <input type="text" name="modname[<?php echo trim($mresv['guid']); ?>]" value="<?php echo trim($mresv['pluginname']); ?>"></td>
-					</tr>
-					<?php
-				
-				endforeach;
-				
-				?>
-			</table>
-			<input type="hidden" name="op" value="setrights">
-			</form>
-		</fieldset>
-		<fieldset class="options">
-			<p><a style="cursor: pointer;" onclick="document.getElementById('setrightsform').submit();" class="greenfield"><?php echo returnIntLang('modrights save changes', false); ?></a> <a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="orangefield"><?php echo returnIntLang('str back', false); ?></a></p>	
-		</fieldset>
-		<?php
-	else:
-		?>
-		<fieldset class="text">
-			<p>Diesem Plugin k&ouml;nnen keine Rechte zugewiesen werden.</p>	
-		</fieldset>
-		<fieldset class="options">
-			<p><a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="orangefield"><?php echo returnIntLang('str back', false); ?></a></p>	
-		</fieldset>
-		<?php
-	endif;
-	}	// pluginRights()
+	// removed
+}
 
 // update module
 function modUpdate($data) {
@@ -516,8 +465,6 @@ include ("./data/include/wspmenu.inc.php");
     
     if ($op == 'modrights'):
         modRights();
-    elseif ($op == 'pluginrights'):
-        pluginRights();
     elseif ($op == 'modsetup'):
         modSetup();
     else:
@@ -806,44 +753,6 @@ include ("./data/include/wspmenu.inc.php");
 						echo "<a href=\"".$_SERVER['PHP_SELF']."?op=modcheckuninstall&id=".intval($aresv['id'])."\" onclick=\"return confirm(unescape('Soll das Modul %27".prepareTextField(setUTF8($aresv["name"]))."%27 wirklich deinstalliert werden?'));\" class=\"red\"><span class=\"bubblemessage red\">".returnIntLang('bubble delete', false)."</span></a>";
 						echo "</li>\n";
                     }
-					
-					?>
-				</ul>
-				</div>
-			</fieldset>
-        <?php }
-    
-            if ($plugin_num>0) { ?>
-			<fieldset class="text" id="fieldset_plugin">
-				<legend><?php echo $plugin_num; ?> <?php echo returnIntLang('modules plugins'); ?> <?php echo legendOpenerCloser('plugin'); ?></legend>
-				<div id="plugin">
-				<ul class="tablelist">
-					<li class="tablecell six head"><?php echo returnIntLang('str name'); ?></li>
-					<li class="tablecell two head"><?php echo returnIntLang('str action'); ?></li>
-					<?php
-					
-					for($pres=0; $pres<$plugin_num; $pres++): 
-						echo "<li id=\"trmod_".intval($plugin_res['set'][$pres]["id"])."\" class=\"tablecell six\">".trim($plugin_res['set'][$pres]["pluginname"])."</li>";
-						
-						$adduse_sql = 'SELECT COUNT(c.`cid`) AS `cnt` FROM `content` c, `interpreter` i, `modules` m WHERE c.`interpreter_guid`=i.`guid` && i.`module_guid`=m.`guid` && m.`guid`="'.trim($plugin_res['set'][$pres]["guid"]).'"';
-						$adduse_res = doSQL($adduse_sql);
-						
-						echo "<li class=\"tablecell two\">";
-						echo "<a href=\"".$_SERVER['PHP_SELF']."?op=plugincheckuninstall&id=".intval($plugin_res['set'][$pres]["id"])."\" onclick=\"return confirm(unescape('Soll das Plugin %27".trim($plugin_res['set'][$pres]["pluginname"])."%27 wirklich deinstalliert werden? Durch das Installieren werden alle Datenbankeintraege, Dateien und Interpreter geloescht, die dem Plugin zugeordnet sind.'));\" title=\"Modul '".trim($plugin_res['set'][$pres]["pluginname"])."' deinstallieren\"><span class=\"bubblemessage red\">".returnIntLang('bubble delete', false)."</span></a> ";
-						
-						$modplugin_sql = "SELECT * FROM `wspplugins` WHERE `guid` = '".trim($plugin_res['set'][$pres]["guid"])."'";
-						$modplugin_res = doSQL($modplugin_sql);
-						
-						if ($modplugin_res['num']>0):
-							echo "<a style=\"cursor: pointer;\" title=\"Rechteverwaltung f&uuml;r Plugin '".trim($plugin_res['set'][$pres]["pluginname"])."' bearbeiten\" onclick=\"document.getElementById('setrights_".intval($plugin_res['set'][$pres]["id"])."').submit();\"><span class=\"bubblemessage orange\">".returnIntLang('bubble rights', false)."</span></a>";
-							echo "<form action=\"".$_SERVER['PHP_SELF']."\" name=\"setrights_".intval($plugin_res['set'][$pres]["id"])."\" id=\"setrights_".intval($plugin_res['set'][$pres]["id"])."\" method=\"post\">";
-							echo "<input type=\"hidden\" name=\"module_guid\" value=\"".trim($plugin_res['set'][$pres]["guid"])."\">";
-							echo "<input type=\"hidden\" name=\"op\" value=\"pluginrights\">";
-							echo "</form>";
-						endif;
-						
-						echo "</li>\n";
-					endfor;
 					
 					?>
 				</ul>

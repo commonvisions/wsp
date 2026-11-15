@@ -14,6 +14,7 @@ WebSitePreview
 - changed sql-connect-method
 - added backend props for better sync
 - prepared new module system on installing modules from external sources
+- removal of deprecated plugin function 
 
 ## 6.26.2
 
