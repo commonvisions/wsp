@@ -1627,21 +1627,25 @@ if (!(function_exists('getjMenuStructure'))) {
 				// start output
 				if ($mpfacts['act']) {
 					$getList.= "<li id=\"li_".intval($gmsv["mid"])."\" class=\"moveable\">\n";
-					$getList.= "<ul id=\"conttab_".intval($gmsv["mid"])."\" class=\"tablelist ";
-					if ($outputtype=="structure") {
-						$getList.= " structure ";
-						if (intval($gmsv["visibility"])==0) {
-							$getList.= " hiddenstructure ";
-                        } else {
-							if (is_array($dlarray) && in_array($showlang, $dlarray)) {
+					if ($outputtype=="contents") {
+						$getList.= "<div id=\"conttab_".intval($gmsv["mid"])."\" class=\"row py-1 mx-1 level-".$mpfacts['lvl']."\" style='border-bottom: 1px solid lightgrey; background: #efefef;'>";
+					} else {
+						$getList.= "<ul id=\"conttab_".intval($gmsv["mid"])."\" class=\"tablelist ";
+						if ($outputtype=="structure") {
+							$getList.= " structure ";
+							if (intval($gmsv["visibility"])==0) {
 								$getList.= " hiddenstructure ";
-                            } else {
-								$getList.= " shownstructure ";
-                            }
-                        }
+							} else {
+								if (is_array($dlarray) && in_array($showlang, $dlarray)) {
+									$getList.= " hiddenstructure ";
+								} else {
+									$getList.= " shownstructure ";
+								}
+							}
+						}
+						$getList.= " level-".$mpfacts['lvl']." ";
+						$getList.= "\">";
 					}
-					$getList.= " level-".$mpfacts['lvl']." ";
-					$getList.= "\">";
 					
 					if ($outputtype=="structure") {
                         // avaiable options
@@ -1856,7 +1860,7 @@ if (!(function_exists('getjMenuStructure'))) {
 						if (!($mpfacts['ext'] && !($mpfacts['sub'])) && !($mpfacts['forw'] && !($mpfacts['sub'])) && !($mpfacts['int'] && !($mpfacts['sub']))) {
                             // show only lines not forwarding and NO subs
                             // start output
-							$getList.= "<li class=\"tablecell two\">";
+							$getList.= "<div class='col-3'>";
 							// show sublist
 							if ($mpfacts['sub']) {
 								$getList.= "<a style=\"cursor: pointer;\" onclick=\"showSub(".intval($gmsv["mid"]).", ".intval($gmsv["level"]).");\">";
@@ -1917,18 +1921,18 @@ if (!(function_exists('getjMenuStructure'))) {
 							}
 							// preview content
 							$getList.= " <a href=\"showpreview.php?previewid=".intval($gmsv["mid"])."&previewlang=".$_SESSION['wspvars']['workspacelang']."\" target=\"_blank\"><span class=\"bubblemessage green\">".returnIntLang('publisher bubble preview', false)."</span></a>";
-							$getList.= "</li>";
+							$getList.= "</div>";
 						
 							// output page name
-							$getList.= "<li class=\"tablecell four\" id=\"contenthead_".intval($gmsv["mid"])."\">";
+							$getList.= "<div class=\"col-6\" id=\"contenthead_".intval($gmsv["mid"])."\">";
 							$getList.= $mpfacts['sd'];
 							// development
 							if (isset($_SESSION['wspvars']['devcontent']) && $_SESSION['wspvars']['devcontent']) {
 								$getList.= " [mid".intval($gmsv["mid"])."]";
 							}
-							$getList.= "</li>\n";
+							$getList.= "</div>\n";
 							if ($mpfacts['con'] && !($mpfacts['int']) && $mpfacts['edit']) {
-								$getList.= "<li class=\"tablecell two\">";
+								$getList.= "<div class=\"col-3\">";
 								$getList.= "[".intval($contents)." ";
 								if ($contents!=1):
 									$getList.= returnIntLang('str contents', true)." ";
@@ -1942,13 +1946,14 @@ if (!(function_exists('getjMenuStructure'))) {
 								else:
 									$getList.= returnIntLang('str contentarea', true);
 								endif;
-								$getList.= "]</li>\n";
+								$getList.= "]</div>\n";
 							} else {
-								$getList.= "<li class=\"tablecell two\">&nbsp;</li>";
+								$getList.= "<div class='col-3'></li>";
 							}
                         } // end show only lines not forwarding and NO subs
                     }
-					$getList.= "</ul>";
+
+					$getList.= ($outputtype=="contents") ? "</div>" : "</ul>";
 					
 					if ($outputtype=="contents") {
 						$getList.= "<ul id=\"ulc_".intval($gmsv["mid"])."\" class=\"tablelist sub sortable\" style=\"margin: 0px; width: 100%; padding: 0px; display: none;\"></ul>";
