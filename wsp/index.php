@@ -247,34 +247,6 @@ if (array_key_exists('actusersid', $_SESSION['wspvars']) && intval($_SESSION['ws
 	$loginindex = true;
 }
 
-// check for system update
-if (_isCurl()) {
-    $lastupdate_sql = "SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'lastupdate'";
-    $lastupdate_res = doResultSQL($lastupdate_sql);
-    if ($lastupdate_res!==false) {
-        $_SESSION['wspvars']['updatesystem'] = false;
-        $defaults = array( 
-            CURLOPT_URL => trim($_SESSION['wspvars']['updateuri']."/updatenote.txt?sys=".$_SESSION['wspvars']['wspversion']), 
-            CURLOPT_HEADER => 0, 
-            CURLOPT_RETURNTRANSFER => TRUE, 
-            CURLOPT_TIMEOUT => 4 
-        );
-        $ch = curl_init();
-        curl_setopt_array($ch, $defaults);    
-        if( ! $fileupdate = curl_exec($ch)) { trigger_error(curl_error($ch)); } 
-        curl_close($ch);
-        if ($fileupdate>intval($lastupdate_res)) {
-            $_SESSION['wspvars']['updatesystem'] = true;
-        }
-    }
-    else {
-        $sql = "INSERT INTO `wspproperties` SET `varname` = 'lastupdate', `varvalue` = '".time()."'";
-        doSQL($sql);
-    }
-} else {
-    addWSPMsg('errormsg', 'CURL not supported.');
-}
-
 /* include head ------------------------------ */
 require ("./data/include/header.inc.php");
 
