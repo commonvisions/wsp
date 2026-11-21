@@ -34,9 +34,9 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
         
         foreach ($templatevars['contentareas'] AS $tk => $tv) {
             echo "<li class='m-0 p-0'>";
-            echo "<div class='row mx-1 py-1 bg-info'>";
+            echo "<div class='row mx-1 py-1 bg-info text-white'>";
             echo "<div class='col-3 nodrag'>";
-            echo "<span class=\"bubblemessage hidden\">".returnIntLang('bubble addcontent', false)."</span> <span class=\"bubblemessage hidden\">".returnIntLang('bubble addcontent', false)."</span> <a onclick=\"addContent(".$_POST['mid'].", ".$tv.");\"><span class=\"bubblemessage orange\">".returnIntLang('bubble addcontent', false)."</span></a>";
+            echo "<a role='button' style='font-size: 1.2em; margin-left: 2.7em;' onclick=\"addContent(".$_POST['mid'].", ".$tv.");\"><i class='fa-solid fa-square-plus'></i></a>";
             echo "</div>";
             echo "<div class='col-9 nodrag'>";
             if (isset($contentvardesc) && is_array($contentvardesc)) {

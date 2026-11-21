@@ -35,7 +35,7 @@ require ("./data/include/checkuser.inc.php");
 require ("./data/include/errorhandler.inc.php");
 require ("./data/include/siteinfo.inc.php");
 /* define page specific vars ----------------- */
-$worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
+$worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages'] ?? 'de');
 $openpath = 0;
 // jump from modules ..
 if (isset($_REQUEST['mjid']) && intval($_REQUEST['mjid'])>0):
@@ -48,9 +48,9 @@ endif;
 /* page specific includes */
 require ("./data/include/clsinterpreter.inc.php");
 /* page specific funcs and actions */
-if (!($_SESSION['wspvars']['rights']['contents']==2 || $_SESSION['wspvars']['rights']['contents']==4 || $_SESSION['wspvars']['rights']['contents']==5 || $_SESSION['wspvars']['rights']['contents']==7 || $_SESSION['wspvars']['rights']['contents']==15)):
-	$_SESSION['wspvars']['rights']['contents_array'] = array();
-endif;
+if (!in_array(($_SESSION['wspvars']['rights']['contents'] ?? 0), [2, 4, 5, 7, 15], true)) {
+    $_SESSION['wspvars']['rights']['contents_array'] = [];
+}
 
 if ((isset($_POST['op']) && $_POST['op']=='add') && isset($_POST['sid']) && isset($_POST['gcid']) && isset($_POST['mid']) && intval($_POST['mid'])>0):
 	// find contents in same content area
@@ -314,7 +314,7 @@ require ("./data/include/wspmenu.inc.php");
 		<div id="searchcontentarea"></div>
 	</fieldset>
 	<fieldset>
-		<?php if ($_SESSION['wspvars']['rights']['contents']==1): ?>
+		<?php if (($_SESSION['wspvars']['rights']['contents'] ?? 0 === 1) || ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)): ?>
 			<legend><?php echo returnIntLang('structure actualstructure', true); ?></legend>
 		<?php else: ?>
 			<legend><?php echo returnIntLang('structure restrictedstructure', true); ?></legend>
@@ -330,7 +330,7 @@ require ("./data/include/wspmenu.inc.php");
                 $openpath = $midpath[1];
                 $_SESSION['opencontent'] = intval($_REQUEST['sgc']);
 			endif;
-		elseif (isset($_SESSION['opencontent']) && intval($_SESSION['opencontent'])>0):
+		elseif (intval($_SESSION['opencontent'] ?? 0) > 0):
 			$oc_sql = "SELECT `mid` FROM `content` WHERE `cid` = ".$_SESSION['opencontent'];
 			$oc_res = doResultSQL($oc_sql);
 			if ($oc_res!==false):
@@ -346,7 +346,7 @@ require ("./data/include/wspmenu.inc.php");
 		
 		$topmid = 0;
 		$contentallowed = array();
-		if ($_SESSION['wspvars']['rights']['contents']==2 || $_SESSION['wspvars']['rights']['contents']==4):
+		if (($_SESSION['wspvars']['rights']['contents'] ?? 0) ==2 || ($_SESSION['wspvars']['rights']['contents'] ?? 0)==4):
 			if (count($_SESSION['wspvars']['rights']['contents_array'])>0):
 				$menuallowed = $_SESSION['wspvars']['rights']['contents_array'];
 				$contentallowed = $_SESSION['wspvars']['rights']['contents_array'];
@@ -354,14 +354,14 @@ require ("./data/include/wspmenu.inc.php");
 			if (!(in_array($openpath, $menuallowed))):
 				$openpath = 0;
 			endif;
-		elseif ($_SESSION['wspvars']['rights']['contents']==7):
+		elseif (($_SESSION['wspvars']['rights']['contents'] ?? 0)==7):
 			if (count($_SESSION['wspvars']['rights']['contents_array'])>0):
 				$GLOBALS['midlist'] = array($_SESSION['wspvars']['rights']['contents_array'][0]);
 				subMID($_SESSION['wspvars']['rights']['contents_array'][0]);
 				$menuallowed = $GLOBALS['midlist'];
 				$contentallowed = $GLOBALS['midlist'];
 			endif;
-		elseif ($_SESSION['wspvars']['rights']['contents']==15):
+		elseif (($_SESSION['wspvars']['rights']['contents'] ?? 0)==15):
 			$topm_sql = "SELECT `connected` FROM `menu` WHERE `mid` = ".intval($_SESSION['structuremidlist'][0]);
 			$topm_res = doResultSQL($topm_sql);
 			if ($topm_res!==false): $topmid = intval($topm_res); endif;
@@ -384,7 +384,7 @@ require ("./data/include/wspmenu.inc.php");
 			$menuallowed = array();
 		endif;
 		
-		if ($_SESSION['wspvars']['rights']['contents']==7 && is_array($contentallowed)):
+		if ((($_SESSION['wspvars']['rights']['contents'] ?? 0) == 7) && is_array($contentallowed)):
 			if (!(in_array($openpath, $contentallowed))):
 				$openpath = 0;
 			endif;
@@ -395,7 +395,6 @@ require ("./data/include/wspmenu.inc.php");
 		array_pop($openlist);
 		
 		/* 
-		
 		getjMenuStructure(
 			ausgehend von hier wird der baum dargestellt
 			array mit mid's, deren eigenschaften bearbeitet werden dürfen

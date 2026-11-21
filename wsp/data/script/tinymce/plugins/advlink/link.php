@@ -61,7 +61,7 @@ getMenuLevel(0, '', gmlSelect);
 							<td>
 								<select id="lang" name="lang" style="width: 100%;">
 									<?php
-									$langchoice = unserialize($wspvars['sitelanguages']);
+									$langchoice = unserializeBroken($wspvars['sitelanguages']);
 									if (is_array($langchoice['languages']['shortcut'])):
 										foreach($langchoice['languages']['shortcut'] AS $langkey => $langvalue):
 											echo "<option value=\"".$langvalue."\">".$langchoice['languages']['longname'][$langkey]."</option>";

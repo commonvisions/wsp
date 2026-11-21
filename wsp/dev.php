@@ -73,7 +73,7 @@ if (isset($_POST['sqlquery'])) {
     // make sql statements
     $sqlresult = '';
     $sqlquery = '';
-    if ($_SESSION['wspvars']['usertype']==1 || $_SESSION['wspvars']['usertype']=='admin') {
+    if ($_SESSION['wspvars']['usertype'] === 1 || $_SESSION['wspvars']['usertype']=='admin') {
         if (isset($_POST['sqlquery']) && trim($_POST['sqlquery'])!='') {
             $sqlquery = trim($_POST['sqlquery']);
             $sqltest_sql = $sqlquery;

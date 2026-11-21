@@ -50,14 +50,13 @@ if ($secure_num != 0) {
     }
 }
 
-$rights_num = 0;
-if (array_key_exists('userid', $_SESSION['wspvars'])) {
+if (!empty($_SESSION['wspvars']['userid'] ?? null)) {
 	$rights_sql = "SELECT * FROM `restrictions` WHERE `rid` = " . intval($_SESSION['wspvars']['userid']);
 	$rights_res = doSQL($rights_sql);
 	$rights_num = intval($rights_res['num']);
 }
 
-if ($rights_num==1) {
+if (($rights_num ?? 0) === 1) {
 	$_SESSION['wspvars']['usertype'] = @$rights_res['set'][0]['usertype']; // replaces $usertype
 	$_SESSION['wspvars']['realname'] = @$rights_res['set'][0]['realname']; // replaces $realname
 	$_SESSION['wspvars']['messages'] = @$rights_res['set'][0]['usernotice']; // replaces $messages
@@ -124,6 +123,16 @@ if ($rights_num==1) {
             }
         }
     }
+
+	// give admins all rights;
+	if ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1) {
+    foreach ($_SESSION['wspvars']['rightabilities'] as $right) {
+        $_SESSION['wspvars']['rights'][$right] = 1;
+    }
+
+    $_SESSION['wspvars']['rights']['contents_array'] = [];
+}
+
 }
 else {
 	if ($_SERVER['SCRIPT_NAME'] != cleanPath(filename: "/".$_SESSION['wspvars']['wspbasedir']."/index.php")) {

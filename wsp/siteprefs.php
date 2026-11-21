@@ -145,7 +145,7 @@ endif;
 	</fieldset>
 	<?php
 	
-	$tempdata = unserialize($sitedata['languages']);
+	$tempdata = unserializeBroken($sitedata['languages']);
 	unset($sitedata['languages']);
 
 	if (array_key_exists('languages', $tempdata) && is_array($tempdata['languages']['longname'])):

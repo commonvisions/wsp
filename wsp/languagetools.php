@@ -28,7 +28,7 @@ require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/"
 require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php");
 require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php");
 /* define page specific vars ----------------- */
-$worklang = unserialize($_SESSION['wspvars']['sitelanguages']);
+$worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
 /* define page specific funcs ----------------- */
 
 if (isset($_POST['transformlang']) && in_array(trim($_POST['transformlang']), $worklang['languages']['shortcut']) && trim($_POST['transformlang'])!="de"):

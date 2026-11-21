@@ -273,7 +273,7 @@ include ("data/include/wspmenu.inc.php");
 			$r=0; 
             foreach ($usercheck_res['set'] AS $ucrk => $ucrv) {
 				$userprops = "";
-				$userrights = unserialize($ucrv['rights']);
+				$userrights = unserializeBroken($ucrv['rights']);
 				$modicon = false;
 				if ($ucrv['rights']!=""):
 					$systemrights = array();

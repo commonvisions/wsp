@@ -323,33 +323,6 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 			</div>
 		</fieldset>
 		<?php endif; ?>
-		<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('usertype', $_SESSION['wspvars']) && $_SESSION['wspvars']['usertype']==1): ?>
-		<fieldset class="text two third">
-			<legend><?php echo returnIntLang('home logins'); ?> <?php echo legendOpenerCloser('index_lastuserinfo_fieldset'); ?></legend>
-			<div id="index_lastuserinfo_fieldset">
-			<?php
-			
-			$loginfo_sql = "SELECT * FROM `securitylog` WHERE `lastaction` = 'login' ORDER BY `lastchange` DESC"; 
-			$loginfo_res = doSQL($loginfo_sql);
-			
-			if ($loginfo_res['num']>0) {
-				$trackuid = array();
-				foreach ($loginfo_res['set'] AS $lirk => $lirv) {
-					if (!(in_array(intval($lirv['uid']), $trackuid)) && count($trackuid)<5) {
-						$trackuid[] = intval($lirv['uid']);
-						$userinfo_sql = "SELECT `realname` FROM `restrictions` WHERE `rid` = ".intval($lirv['uid']);
-						$userinfo_res = doResultSQL($userinfo_sql);
-						if (trim($userinfo_res)!='') {
-							echo "<p><em>".setUTF8($userinfo_res)."</em> - ".returnIntLang('home logins text')." <em>".date(returnIntLang("format date time", false), intval($lirv['lastchange']))."</em></p>";
-                        }
-                    }
-                }
-            }
-                
-			?>
-			</div>
-		</fieldset>
-		<?php endif; ?>
 		<hr class="clearbreak" />
 	<?php else: ?>
 		<div id="topspacer">&nbsp;</div>

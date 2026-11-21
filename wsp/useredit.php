@@ -557,7 +557,7 @@ include ("./data/include/wspmenu.inc.php");
 						<td class="tablecell two"><?php echo $wspmod['right'][$subkey]; ?></td>
 						<td class="tablecell four"><?php
 						
-						foreach (unserialize($wspmod['possibilities'][$subkey]) as $poskey => $posvalue):
+						foreach (unserializeBroken($wspmod['possibilities'][$subkey]) as $poskey => $posvalue):
 							if (key_exists('rights', $wspmod)):
 								$restrictions = unserializeBroken($wspmod['rights'][$subkey]);
 							else:

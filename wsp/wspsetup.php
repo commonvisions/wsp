@@ -1861,7 +1861,7 @@ function updateStat(field, width, text) {
 
 	$installdbpath = $_SERVER['DOCUMENT_ROOT']."/".$GLOBALS['tmpwspbasedir']."/tmp/".session_id()."/updatedatabase.php";
 	$installdb = file($installdbpath);
-	$selectChanges = unserialize(trim($installdb[0]));
+	$selectChanges = unserializeBroken(trim($installdb[0]));
 	DatabaseUpdate($selectChanges);
 	?>
 	<script type="text/javascript" language="javascript">

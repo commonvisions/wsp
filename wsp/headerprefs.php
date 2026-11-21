@@ -118,7 +118,7 @@ endif;
 					$forwarddata = array();
 					foreach($sitedata AS $sitekey => $sitevalue):
 						if (substr($sitekey,0,12)=="url_forward_"):
-							$forwarddata[] = unserialize($sitevalue);
+							$forwarddata[] = unserializeBroken($sitevalue);
 						endif;
 					endforeach; 
 					
@@ -174,7 +174,7 @@ endif;
 					$forwarddata = array();
 					foreach($sitedata AS $sitekey => $sitevalue):
 						if (substr($sitekey,0,12)=="var_forward_"):
-							$forwarddata[] = unserialize($sitevalue);
+							$forwarddata[] = unserializeBroken($sitevalue);
 						endif;
 					endforeach; 
 					

@@ -33,7 +33,7 @@ require ("./data/include/siteinfo.inc.php");
 /* page specific includes */
 require ("./data/include/clsinterpreter.inc.php");
 /* define page specific vars ----------------- */
-$worklang = unserialize($_SESSION['wspvars']['sitelanguages']);
+$worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
 /* define page specific functions ------------ */
 
 if (isset($_POST['op']) && $_POST['op']=='save'):

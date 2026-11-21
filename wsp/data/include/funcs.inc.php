@@ -1863,28 +1863,17 @@ if (!(function_exists('getjMenuStructure'))) {
 							$getList.= "<div class='col-3'>";
 							// show sublist
 							if ($mpfacts['sub']) {
-								$getList.= "<a style=\"cursor: pointer;\" onclick=\"showSub(".intval($gmsv["mid"]).", ".intval($gmsv["level"]).");\">";
-							}
-							$getList.= "<span id=\"showspan_".intval($gmsv["mid"])."\" class=\"bubblemessage ";
-							if ($mpfacts['sub']) {
-								$getList.= " orange ";
-							}
-							if (!($mpfacts['sub'])) {
-								$getList.= " disabled ";
-							}
-							$getList.= "\">";
-							if ($mpfacts['dyn']) {
-								$getList.= returnIntLang('bubble dynamic', false);
-							} else if ($mpfacts['sub']) {
-								$getList.= returnIntLang('bubble showsub', false);
-							} else if ($mpfacts['int']) {
-								$getList.= returnIntLang('bubble internlink', false);
-							} else {
-								$getList.= returnIntLang('bubble showsub', false);
-							}
-							$getList.= "</span>";
-							if ($mpfacts['sub']) {
+								$getList.= "<a role='button' class='text-info' onclick='showSub(" . intval($gmsv["mid"]) . ", " . intval($gmsv["level"]) . ");' style='font-size: 1.2em;'>";
+								$getList.= "<i class='fa-solid fa-sitemap'></i>";
 								$getList.= "</a>";
+							} else {
+								if ($mpfacts['dyn']) {
+									$getList.= "<span class='disabled' style='font-size: 1.2em;'><i class='fa-solid fa-table-cells'></i></span>";
+								} else if ($mpfacts['int']) {
+									$getList.= "<span class='disabled' style='font-size: 1.2em;'><i class='fa-solid fa-square-up-right'></i></span>";
+								} else {
+									$getList.= "<span class='disabled text-info' style='font-size: 1.2em; opacity: 0'><i class='fa-solid fa-square'></i></span>";
+								}
 							}
 							// output count content areas and count contents
 							// get content area count
@@ -1901,26 +1890,41 @@ if (!(function_exists('getjMenuStructure'))) {
 							// if contentdisplay is allowed
 							if (count($templatevars['contentareas'])>0 && $mpfacts['edit']) {
 								if ($mpfacts['con'] && !($mpfacts['int'])) {
-									$getList.= " <a style=\"cursor: pointer;\" onclick=\"showContent(".intval($gmsv["mid"]).", ".intval($gmsv["level"]).");\"><span class=\"bubblemessage blue\">".returnIntLang('bubble showcontent', false)."</span></a>";
+									$getList.= " <a role='button' class='text-primary' style='font-size: 1.2em;' ";
+									$getList.= "onclick='showContent(".intval($gmsv["mid"]).", ".intval($gmsv["level"]).");'>";
+									$getList.= "<i class='fa-solid fa-square-poll-horizontal'></i>";
+									$getList.= "</a>";
 								} else {
-									$getList.= " <span class=\"bubblemessage blue disabled\">".returnIntLang('bubble showcontent', false)."</span>";
+									$getList.= "<span class='disabled text-info' style='font-size: 1.2em; opacity: 0.25'>";
+									$getList.= "<i class='fa-solid fa-square-poll-horizontal'></i>";
+									$getList.= "</span> ";
 								}
 							} else {
-								$getList.= " <span class=\"bubblemessage hidden\">".returnIntLang('bubble showcontent', false)."</span>";
+								$getList.= "<span class='disabled text-info' style='font-size: 1.2em; opacity: 0'>";
+								$getList.= "<i class='fa-solid fa-square-poll-horizontal'></i>";
+								$getList.= "</span> ";
 							}
 							// if adding is allowed 
 							if (count($templatevars['contentareas'])>0 && $mpfacts['edit']) {
 								if ($mpfacts['con'] && ($_SESSION['wspvars']['rights']['contents']!=3 && $_SESSION['wspvars']['rights']['contents']!=4) && !($mpfacts['int']) && $gmsv['editable']!=7) {
-									$getList.= " <a onclick=\"addContent(".intval($gmsv["mid"]).", 1);\"><span class=\"bubblemessage orange\">".returnIntLang('bubble addcontent', false)."</span></a>\n";
-                                } else {
+									$getList.= "<a role='button' class='text-primary' onclick='addContent(".intval($gmsv["mid"]).", 1);' style='font-size: 1.2em;'>";
+									$getList.= "<i class='fa-solid fa-square-plus'></i>";
+									$getList.= "</a> ";
+								} else {
 									/* these contents should come from dynamic -> so ADDING is not allowed (but editing) */
-									$getList.= " <span class=\"bubblemessage orange disabled\">".returnIntLang('bubble addcontent', false)."</span>";
+									$getList.= "<span class='disabled text-warning' style='font-size: 1.2em; opacity: 0.25'>";
+									$getList.= "<i class='fa-solid fa-square-plus'></i>";
+									$getList.= "</span> ";
 								}
 							} else {
-								$getList.= " <span class=\"bubblemessage hidden\">".returnIntLang('bubble addcontent', false)."</span>";
+								$getList.= "<span class='disabled text-warning' style='font-size: 1.2em; opacity: 0.25'>";
+								$getList.= "<i class='fa-solid fa-square-plus'></i>";
+								$getList.= "</span> ";	
 							}
 							// preview content
-							$getList.= " <a href=\"showpreview.php?previewid=".intval($gmsv["mid"])."&previewlang=".$_SESSION['wspvars']['workspacelang']."\" target=\"_blank\"><span class=\"bubblemessage green\">".returnIntLang('publisher bubble preview', false)."</span></a>";
+							$getList.= "<a style='font-size: 1.2em;' href=\"showpreview.php?previewid=".intval($gmsv["mid"])."&previewlang=".$_SESSION['wspvars']['workspacelang']."\" target=\"_blank\">";
+							$getList.= "<i class=\"fa-solid fa-up-right-from-square\"></i>";
+							$getList.= "</a>";
 							$getList.= "</div>";
 						
 							// output page name

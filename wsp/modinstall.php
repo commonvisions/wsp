@@ -171,7 +171,7 @@ function delRestrictions($aRights) {
 		$rsRestrictions = doSQL($sql);
 		if ($rsRestrictions['num'] > 0) {
 			foreach ($rsRestrictions['set'] AS $row) {
-				$restriction = unserialize($row['rights']);
+				$restriction = unserializeBroken($row['rights']);
 				if (isset($restriction[$guid])) {
 					unset($restriction[$guid]);
 					doSQL("UPDATE `restrictions` SET `rights`='".serialize($restriction)."' WHERE `rid` = ".intval($row['rid']));
