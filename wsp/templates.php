@@ -243,129 +243,125 @@ include ("./data/include/wspmenu.inc.php");
 		}
         else {
             ?>
-            <ul class="tablelist">
-                <li class="tablecell head two"><?php echo returnIntLang('str templatename'); ?></li>
-                <li class="tablecell head two"><?php echo returnIntLang('str usage'); ?></li>
-                <li class="tablecell head two"><?php echo returnIntLang('str connection'); ?></li>
-                <li class="tablecell head two"><?php echo returnIntLang('str action'); ?></li>
-            </ul>
-
-            <ul class="tablelist">
-            <?php
-		
-            // lookup for default temp
-            $defaulttemp_sql = "SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'templates_id'";
-            $defaulttemp_res = doResultSQL($defaulttemp_sql);
-            $defaulttemp = intval($defaulttemp_res);
-
-            foreach ($templates_res['set'] AS $tsrk => $tsrv) {
-                
-                echo "<li class='tablecell two'><a href='#' onclick=\"document.getElementById('tempaction_".intval($tsrv['id'])."').submit();\">".trim($tsrv['name'])."</a></li>";
-                echo "<li class='tablecell two'>";
+            <table class="datatable table table-striped" cellspacing="0" cellpadding="0">
+                <thead>
+					<tr>
+						<th><?php echo returnIntLang('str templatename'); ?></th>
+						<th><?php echo returnIntLang('str usage'); ?></th>
+						<th><?php echo returnIntLang('str connection css'); ?></th>
+						<th><?php echo returnIntLang('str connection js'); ?></th>
+						<th><?php echo returnIntLang('str action'); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php
 			
-                $tempused_num = 0;
-                $tempused_sql = "SELECT `mid`, `description` FROM `menu` WHERE `templates_id` = ".intval($tsrv['id'])." AND `trash` = 0";
-                $tempused_res = doSQL($tempused_sql);
+				// lookup for default temp
+				$defaulttemp_sql = "SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'templates_id'";
+				$defaulttemp_res = doResultSQL($defaulttemp_sql);
+				$defaulttemp = intval($defaulttemp_res);
 
-                if ($tempused_res['num']>5):
-                    $tempused_show = 5;
-                else:
-                    $tempused_show = $tempused_res['num'];
-                endif;
-                for ($t=0;$t<$tempused_show;$t++):
-                    echo setUTF8(trim($tempused_res['set'][$t]["description"]))."<br />";
-                endfor;
-                if ($tempused_res['num']>5):
-                    echo "...<br />";
-                endif;
+				foreach ($templates_res['set'] AS $tsrk => $tsrv) {
+					echo "<tr>";	
+					echo "<td><a href='#' onclick=\"document.getElementById('tempaction_".intval($tsrv['id'])."').submit();\">".trim($tsrv['name'])."</a></td>";
+					echo "<td>";
+				
+					$tempused_num = 0;
+					$tempused_sql = "SELECT `mid`, `description` FROM `menu` WHERE `templates_id` = ".intval($tsrv['id'])." AND `trash` = 0";
+					$tempused_res = doSQL($tempused_sql);
 
-                echo "</li>";
-                echo "<li class='tablecell two'>";
-            
-                $usedstyles_sql = "SELECT `stylesheets_id` FROM `r_temp_styles` WHERE `templates_id` = " . intval($tsrv['id']) . " ORDER BY `id`";
-                $usedstyles_res = doSQL($usedstyles_sql);
+					if ($tempused_res['num']>5):
+						$tempused_show = 5;
+					else:
+						$tempused_show = $tempused_res['num'];
+					endif;
+					for ($t=0;$t<$tempused_show;$t++):
+						echo setUTF8(trim($tempused_res['set'][$t]["description"]))."<br />";
+					endfor;
+					if ($tempused_res['num']>5):
+						echo "...<br />";
+					endif;
 
-                if ($usedstyles_res['num']>0):
-                    $cssdisplay = FALSE;
-                    foreach ($usedstyles_res['set'] AS $usedstyle):
-                        $cssdata_sql = "SELECT `describ`, `cfolder` FROM `stylesheets` WHERE id = '" . intval($usedstyle['stylesheets_id']) . "'";
-                        $cssdata_res = doSQL($cssdata_sql);
-                        if ($cssdisplay==FALSE):
-                            echo "<span style=\"float: left; width: 3em;\">CSS: </span>";
-                            $cssdisplay = TRUE;
-                        else:
-                            echo "<span style=\"float: left; width: 3em;\">&nbsp;</span>";
-                        endif;
-                        if ($cssdata_res['num']>0):
-                            echo $cssdata_res['set'][0]['describ'];
-                            if (trim($cssdata_res['set'][0]['cfolder'])!=""):
-                                echo " <em>Library</em>"; 
-                            endif;
-                            echo "<br />";
-                        endif;
-                    endforeach;
-                endif;
+					echo "</td>";
+					echo "<td>";
+				
+					$usedstyles_sql = "SELECT `stylesheets_id` FROM `r_temp_styles` WHERE `templates_id` = " . intval($tsrv['id']) . " ORDER BY `id`";
+					$usedstyles_res = doSQL($usedstyles_sql);
 
-                // show used javascript-files
-                $used_sql = "SELECT `javascript_id` FROM `r_temp_jscript` WHERE `templates_id` = ".intval($tsrv['id'])." ORDER BY `id`";
-                $used_res = doSQL($used_sql);
-                if ($used_res['res'] > 0) {
-                    $display = false;
-                    foreach ($used_res['set'] AS $ursk => $ursv) {
-                        $data_sql = "SELECT `describ` FROM `javascript` WHERE id = ".intval($ursv['javascript_id'])." LIMIT 1";
-                        $data_res = doResultSQL($data_sql);
-                        if ($display===false):
-                            echo "<span style=\"float: left; width: 3em;\">JS: </span>";
-                            $display = true;
-                        else:
-                            echo "<span style=\"float: left; width: 3em;\">&nbsp;</span>";
-                        endif;
-                        if ($data_res!==false) {
-                            echo "<span style=\"display:table\">".trim($data_res)."</span>";
-                        }
-                    }
-                }
+					if ($usedstyles_res['num']>0):
+						foreach ($usedstyles_res['set'] AS $usedstyle):
+							$cssdata_sql = "SELECT `describ`, `cfolder`, `lastchange` FROM `stylesheets` WHERE id = '" . intval($usedstyle['stylesheets_id']) . "'";
+							$cssdata_res = doSQL($cssdata_sql);
+							if ($cssdata_res['num']>0):
+								echo $cssdata_res['set'][0]['describ'];
+								if (trim($cssdata_res['set'][0]['cfolder'])!="" && intval($cssdata_res['set'][0]['lastchange'])!=intval($cssdata_res['set'][0]['cfolder'])):
+									echo " <em>Library</em>"; 
+								endif;
+								echo "<br />";
+							endif;
+						endforeach;
+					endif;
+					
+					echo "</td>";
+					echo "<td>";
 
-                $usedrss_sql = "SELECT `rss_id` FROM `r_temp_rss` WHERE `templates_id` = ".intval($tsrv['id'])." ORDER BY `id`";
-                $usedrss_res = doResultSQL($usedrss_sql);
+					// show used javascript-files
+					$used_sql = "SELECT `javascript_id` FROM `r_temp_jscript` WHERE `templates_id` = ".intval($tsrv['id'])." ORDER BY `id`";
+					$used_res = doSQL($used_sql);
+					if ($used_res['res'] > 0) {
+						foreach ($used_res['set'] AS $ursk => $ursv) {
+							$data_sql = "SELECT `describ` FROM `javascript` WHERE id = ".intval($ursv['javascript_id'])." LIMIT 1";
+							$data_res = doResultSQL($data_sql);
+							if ($data_res!==false) {
+								echo trim($data_res)."<br />";
+							}
+						}
+					}
+					echo "</td>";
 
-                if ($usedrss_res!==false):
-                    $rssdata_sql = "SELECT `rsstitle` FROM `rssdata` WHERE rid = ".intval($usedrss_res);
-                    $rssdata_res = doResultSQL($rssdata_sql);
-                    if ($rssdata_res!==false):
-                        echo "<span style=\"float: left; width: 3em;\">RSS: </span>".trim($rssdata_res);
-                    endif;
-                endif;
-                
-                echo "</li>";
+					if ($defaulttemp == $tsrv['id']):
+						$del = "<span class=\"bubblemessage red disabled\">".returnIntLang('bubble delete', false)."</span>";
+						$standard = "<span class=\"bubblemessage green disabled\">".returnIntLang('bubble standard', false)."</span>";
+					else:
+						if ($tempused_num>0):
+							$del = "<span class=\"bubblemessage red disabled\">".returnIntLang('bubble delete', false)."</span>";
+						else:
+							$del = "<a onclick=\"return confirmDeleteTemplate('".$tsrv['name']."', ".$tsrv['id'].");\"><span class=\"bubblemessage red\">".returnIntLang('bubble delete', false)."</span></a>";
+						endif;
+						$standard = "<a href=\"".$_SERVER['PHP_SELF']."?op=defaulttemplate&id=".$tsrv['id']."\"><span class=\"bubblemessage green\">".strtoupper(returnIntLang('bubble standard', false))."</span></a>";
+					endif;
+					// clone button
+					$cloneit = "<a onclick=\"document.getElementById('action_".$tsrv['id']."').value = 'clone'; document.getElementById('tempaction_".$tsrv['id']."').submit();\"><span class=\"bubblemessage green\">".returnIntLang('bubble clone', false)."</span></a>";
+					// edit button
+					$edittemplate = "<a onclick=\"document.getElementById('action_".$tsrv['id']."').value = 'edit'; document.getElementById('tempaction_".$tsrv['id']."').submit();\"><span class=\"bubblemessage green\">".returnIntLang('bubble edit', false)."</span></a>";
 
-                if ($defaulttemp == $tsrv['id']):
-                    $del = "<span class=\"bubblemessage red disabled\">".returnIntLang('bubble delete', false)."</span>";
-                    $standard = "<span class=\"bubblemessage green disabled\">".returnIntLang('bubble standard', false)."</span>";
-                else:
-                    if ($tempused_num>0):
-                        $del = "<span class=\"bubblemessage red disabled\">".returnIntLang('bubble delete', false)."</span>";
-                    else:
-                        $del = "<a onclick=\"return confirmDeleteTemplate('".$tsrv['name']."', ".$tsrv['id'].");\"><span class=\"bubblemessage red\">".returnIntLang('bubble delete', false)."</span></a>";
-                    endif;
-                    $standard = "<a href=\"".$_SERVER['PHP_SELF']."?op=defaulttemplate&id=".$tsrv['id']."\"><span class=\"bubblemessage green\">".strtoupper(returnIntLang('bubble standard', false))."</span></a>";
-                endif;
-                // clone button
-                $cloneit = "<a onclick=\"document.getElementById('action_".$tsrv['id']."').value = 'clone'; document.getElementById('tempaction_".$tsrv['id']."').submit();\"><span class=\"bubblemessage green\">".returnIntLang('bubble clone', false)."</span></a>";
-                // edit button
-                $edittemplate = "<a onclick=\"document.getElementById('action_".$tsrv['id']."').value = 'edit'; document.getElementById('tempaction_".$tsrv['id']."').submit();\"><span class=\"bubblemessage green\">".returnIntLang('bubble edit', false)."</span></a>";
+					$links = trim($edittemplate." ".$cloneit." ".$del." ".$standard);
+					
+					echo "<td class='tablecell two'>" . $links ;
+					?>
+					<form name="tempaction" id="tempaction_<?php echo $tsrv['id']; ?>" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>#tpleditor"><input type="hidden" name="op" id="action_<?php echo $tsrv['id']; ?>" value="edit" /><input type="hidden" name="id" id="id_<?php echo $tsrv['id']; ?>" value="<?php echo $tsrv['id']; ?>" /></form>
+					<?php
+					echo "</td>";
+					echo '</tr>';
+				}
 
-                $links = trim($edittemplate." ".$cloneit." ".$del." ".$standard);
-                
-                echo "<li class='tablecell two'>".$links;
-                ?>
-                <form name="tempaction" id="tempaction_<?php echo $tsrv['id']; ?>" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>#tpleditor"><input type="hidden" name="op" id="action_<?php echo $tsrv['id']; ?>" value="edit" /><input type="hidden" name="id" id="id_<?php echo $tsrv['id']; ?>" value="<?php echo $tsrv['id']; ?>" /></form>
-                <?php
-                echo "</li>";
-            }
-        }
-                ?>
-            </ul>
+				?>
+	            </tbody>
+			</table>
+			<script>
+				$(document).ready(function() {
+					$('.datatable').DataTable({
+						"paging": false,
+						"lengthChange": false,
+						"searching": false,
+						"ordering": false,
+						"info": false,
+						"autoWidth": false,
+						"length": 999,
+					});
+				});
+			</script>
+			<?php } ?>
 		</div>
 	</fieldset>
 	<form name="deletetemplateform" id="deletetemplateform" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>"><input type="hidden" name="op" value="deltemplate" /><input type="hidden" id="deleteid" name="deleteid" value="" /></form>
