@@ -3428,7 +3428,7 @@ if (!(function_exists('legendOpenerCloser'))) {
 }
 
 if (!(function_exists('cardOpenerCloser'))) {
-	function cardOpenerCloser(string $idtag, bool|int $stat = 1) {
+	function cardOpenerCloser(string $description, string $idtag, bool|int $stat = 1) {
 		$setstyle = 'none';
 		$status = (array_key_exists($idtag, $_SESSION['opentabs'] ?? [])) ? 
 			$_SESSION['opentabs'][$idtag] :
@@ -3440,7 +3440,9 @@ if (!(function_exists('cardOpenerCloser'))) {
 			$_SESSION['opentabs'][$idtag] = 'display: block;';
 			$setstyle = 'block';
 		}
-		$soc = "<div class=\"openCloseCard text-secondary card-opener\" style='float: right; cursor: pointer;' ";
+		$soc = "<div class=\"openCloseCard card-opener\" style='float: left; cursor: pointer;' ";
+		$soc.= "rel=\"" . $idtag . "\"><strong>" . $description . "</strong></div>\n";
+		$soc.= "<div class=\"openCloseCard text-secondary card-opener\" style='float: right; cursor: pointer;' ";
 		$soc.= "rel=\"" . $idtag . "\"><i class='fa-regular fa-window-maximize'></i></div>\n";
 		$soc.= "<script> \$(document).ready(function() {\$('#".$idtag."').css('display', '".$setstyle."')}); </script>";
 		return $soc;
@@ -4306,9 +4308,9 @@ endif;
 
 if (!function_exists('returnIntLang')):
 	function returnIntLang($internationalize, $textoutput = true) {
-		if (!(isset($_SESSION['wspvars']['locallang'])) || $_SESSION['wspvars']['locallang'] == ''):
+		if (!(isset($_SESSION['wspvars']['locallang'])) || $_SESSION['wspvars']['locallang'] == '') {
 			$_SESSION['wspvars']['locallang'] = 'de';
-		endif;
+		}
 		if (is_array($GLOBALS['lang'][($_SESSION['wspvars']['locallang'])])):
 			if (array_key_exists($internationalize, $GLOBALS['lang'][($_SESSION['wspvars']['locallang'])])):
 				return setUTF8($GLOBALS['lang'][($_SESSION['wspvars']['locallang'])][$internationalize]);
