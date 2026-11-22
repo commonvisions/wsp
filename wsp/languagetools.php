@@ -112,7 +112,7 @@ include ("data/include/wspmenu.inc.php");
 	<fieldset class="text"><h1><?php echo returnIntLang('localisation headline', true); ?></h1></fieldset>
 	<fieldset class="text">
 		<legend><?php echo returnIntLang('str legend', true); ?> <span class="opencloseButton bubblemessage" rel="wsplegend">↕</span></legend>
-		<div id="wsplegend" style="<?php echo $_SESSION['opentabs']['wsplegend']; ?>">
+		<div id="wsplegend" style="<?php echo ($_SESSION['opentabs']['wsplegend'] ?? ''); ?>">
 			<p><?php echo returnIntLang('localisation legend', true); ?></p>
 		</div>
 	</fieldset>

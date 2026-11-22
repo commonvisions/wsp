@@ -34,7 +34,7 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
         
         foreach ($templatevars['contentareas'] AS $tk => $tv) {
             echo "<li class='m-0 p-0'>";
-            echo "<div class='row mx-1 py-1 bg-info text-white'>";
+            echo "<div class='row mx-1 py-1 bg-wsp-primary text-white'>";
             echo "<div class='col-3 nodrag'>";
             echo "<a role='button' style='font-size: 1.2em; margin-left: 2.7em;' onclick=\"addContent(".$_POST['mid'].", ".$tv.");\"><i class='fa-solid fa-square-plus'></i></a>";
             echo "</div>";
@@ -129,24 +129,24 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
                         ((intval($csresv['visibility'])==0) ? ' bg-danger text-white ' : '') . " \">";
                     echo "<div class='col-3 id" . intval($csresv['cid']) . "' style='font-size: 1.2em;'>";
                     // move
-                    echo " <i class='fa-solid fa-sort movehandle " . ((intval($csresv['visibility'])==0) ? ' text-white ' : ' text-primary ') . "'></i>";
+                    echo " <i class='fa-solid fa-sort movehandle " . ((intval($csresv['visibility'])==0) ? ' text-primary-off ' : ' text-primary ') . "'></i>";
                     // show or hide
                     if (intval($csresv['visibility'])==0):
-                        echo " <a id=\"acsh".intval($csresv['cid'])."\" onclick=\"contentShowHide('".intval($csresv['cid'])."');\"><i class='fa-solid fa-square-minus text-white'></i></a>";
+                        echo " <a id=\"acsh".intval($csresv['cid'])."\" onclick=\"contentShowHide('".intval($csresv['cid'])."');\"><i class='fa-solid fa-square-xmark text-white'></i></a>";
                     elseif (intval($csresv['visibility'])==1):
                         echo " <a id=\"acsh".intval($csresv['cid'])."\" onclick=\"contentShowHide('".intval($csresv['cid'])."');\"><i class='fa-solid fa-square-check text-success'></i></a>";
                     else:
                         echo " <a id=\"acsh".intval($csresv['cid'])."\" onclick=\"contentShowHide('".intval($csresv['cid'])."');\"><span class=\"bubblemessage\">".returnIntLang('bubble hide', false)."</span></a>";
                     endif;
                     // duplicate
-                    echo " <a onclick=\"contentClone('".intval($csresv['cid'])."','".str_replace("\"", "”", str_replace("'", "\'", $contentinfo))."');\"><i class='fa-solid fa-clone " . ((intval($csresv['visibility'])==0) ? ' text-white ' : ' text-primary ') . "' role='button'></i></a>";
+                    echo " <a onclick=\"contentClone('".intval($csresv['cid'])."','".str_replace("\"", "”", str_replace("'", "\'", $contentinfo))."');\"><i class='fa-solid fa-clone " . ((intval($csresv['visibility'])==0) ? ' text-primary-off ' : ' text-primary ') . "' role='button'></i></a>";
                     // delete
-                    echo " <a onclick=\"contentRemove('".intval($csresv['cid'])."','".strip_tags(str_replace("\"", "”", str_replace("'", "\'", $contentinfo)))."');\"><i class='fa-solid fa-trash " . ((intval($csresv['visibility'])==0) ? ' text-white ' : ' text-danger ') . "' role='button'></i></a>";
+                    echo " <a onclick=\"contentRemove('".intval($csresv['cid'])."','".strip_tags(str_replace("\"", "”", str_replace("'", "\'", $contentinfo)))."');\"><i class='fa-solid fa-trash " . ((intval($csresv['visibility'])==0) ? ' text-danger-off ' : ' text-danger ') . "' role='button'></i></a>";
                     // checkforedit
                     $cfe_sql = "SELECT `sid` FROM `security` WHERE `position` = '".escapeSQL("/".$_SESSION['wspvars']['wspbasedir']."/contentedit.php;cid=".intval($csresv['cid']))."'";
                     $cfe_res = doSQL($cfe_sql);
                     echo " <i role='button' class='fa-solid fa-square-pen " . 
-                        (($cfe_res['num']>0) ? ' text-warning ' : ((intval($csresv['visibility'])==0) ? ' text-white ' : ' text-primary '));
+                        (($cfe_res['num']>0) ? ' text-warning ' : ((intval($csresv['visibility'])==0) ? ' text-primary-off ' : ' text-primary '));
                     echo "' onclick=\"document.getElementById('editcontentid').value = '".intval($csresv['cid'])."'; document.getElementById('editcontents').submit();\"></i>";
                     echo "</div>";
                     echo "<div class=\"col-6 id".intval($csresv['cid'])."\">".$contentinfo."</div>";

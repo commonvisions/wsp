@@ -1890,7 +1890,7 @@ if (!(function_exists('getjMenuStructure'))) {
 							// if contentdisplay is allowed
 							if (count($templatevars['contentareas'])>0 && $mpfacts['edit']) {
 								if ($mpfacts['con'] && !($mpfacts['int'])) {
-									$getList.= " <a role='button' class='text-primary' style='font-size: 1.2em;' ";
+									$getList.= " <a role='button' class='text-wsp-primary' style='font-size: 1.2em;' ";
 									$getList.= "onclick='showContent(".intval($gmsv["mid"]).", ".intval($gmsv["level"]).");'>";
 									$getList.= "<i class='fa-solid fa-square-poll-horizontal'></i>";
 									$getList.= "</a>";
@@ -1907,7 +1907,7 @@ if (!(function_exists('getjMenuStructure'))) {
 							// if adding is allowed 
 							if (count($templatevars['contentareas'])>0 && $mpfacts['edit']) {
 								if ($mpfacts['con'] && ($_SESSION['wspvars']['rights']['contents']!=3 && $_SESSION['wspvars']['rights']['contents']!=4) && !($mpfacts['int']) && $gmsv['editable']!=7) {
-									$getList.= "<a role='button' class='text-primary' onclick='addContent(".intval($gmsv["mid"]).", 1);' style='font-size: 1.2em;'>";
+									$getList.= "<a role='button' class='text-wsp-primary' onclick='addContent(".intval($gmsv["mid"]).", 1);' style='font-size: 1.2em;'>";
 									$getList.= "<i class='fa-solid fa-square-plus'></i>";
 									$getList.= "</a> ";
 								} else {
@@ -3631,6 +3631,18 @@ if (!(function_exists('cleanPath'))) {
 	}
 }
 
+if (!(function_exists('absolutePath'))) {
+	function absolutePath(string $beginning, string $filepath): string
+	{
+		if (empty(trim($beginning))) return $filepath;
+		$filepath = '/' . ltrim($filepath, '/');
+		if (strpos($filepath, $beginning) !== 0) {
+			$filepath = $beginning . '/' . ltrim($filepath, '/');
+		}
+		return cleanPath('/', $filepath);
+	}
+}
+
 /**
  * ermittelt alle Bild-Dateien und gibt sie fuer ein select aufbereitet zurueck
  * new since 2015-03-17
@@ -3729,7 +3741,7 @@ if (!(function_exists('imageSelect'))) {
 				endif;
 				$showvalue = $value;
 				if ($hidepath):
-					$showvalue = substr($value, (strrpos($value, "/")+1));
+					$showvalue = basename($value);
 				endif;
 				$mediafiles .= "<option value=\"".$returnvalue."\"";
 				if (in_array(trim($returnvalue), $selected)):

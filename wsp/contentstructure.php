@@ -314,7 +314,7 @@ require ("./data/include/wspmenu.inc.php");
 		<div id="searchcontentarea"></div>
 	</fieldset>
 	<fieldset>
-		<?php if (($_SESSION['wspvars']['rights']['contents'] ?? 0 === 1) || ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)): ?>
+		<?php if (($_SESSION['wspvars']['rights']['contents'] ?? 0 === 1)): ?>
 			<legend><?php echo returnIntLang('structure actualstructure', true); ?></legend>
 		<?php else: ?>
 			<legend><?php echo returnIntLang('structure restrictedstructure', true); ?></legend>
@@ -472,7 +472,7 @@ require ("./data/include/wspmenu.inc.php");
 	function contentShowHide(cid) {
 		$.post("xajax/ajax.togglecontentview.php", { 'cid': cid}).done (function(data) {
 			if (data=="show") {
-				$('.row.id'+cid).removeClass('bg-danger').removeClass('text-white');
+				$('.row.id' + cid).removeClass('bg-danger').removeClass('text-white');
 				$('.id' + cid).find('i.text-primary-off').removeClass('text-primary-off').addClass('text-primary');
 				$('.id' + cid).find('i.text-danger-off').removeClass('text-danger-off').addClass('text-danger');
 				$('#acsh'+cid).html('<i class="fa-solid fa-square-check text-success"></i>');
@@ -481,7 +481,7 @@ require ("./data/include/wspmenu.inc.php");
 				$('.row.id'+cid).addClass('bg-danger').addClass('text-white');
 				$('.id' + cid).find('i.text-primary').removeClass('text-primary').addClass('text-primary-off');
 				$('.id' + cid).find('i.text-danger').removeClass('text-danger').addClass('text-danger-off');
-				$('#acsh'+cid).html('<i class="fa-solid fa-square-minus text-white"></i>');
+				$('#acsh'+cid).html('<i class="fa-solid fa-square-xmark text-white"></i>');
 				}
 			});
 	}
