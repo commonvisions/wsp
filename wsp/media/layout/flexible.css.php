@@ -769,9 +769,17 @@ table.contenttable input[type="checkbox"] {
 
 #menuholder li.level0 { }
 
+#menuholder li.level0 ul {
+	background: rgb(58, 176, 255);
+}
+
+#menuholder li.level0.active ul {
+	background: rgb(125, 203, 255);
+	color: #000;
+}
+
 #menuholder li.level0 ul.level1 {
 	position: absolute;
-	background: #C5D1D9;
 	display: none;
 	top: 100%;
 	left: 0;
@@ -784,7 +792,6 @@ table.contenttable input[type="checkbox"] {
 	
 #menuholder li.level0 ul li {
 	border-top: 1px solid #fff;
-	background: #C5D1D9;
 	position: relative;
 	}
 	
