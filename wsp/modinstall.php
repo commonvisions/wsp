@@ -171,7 +171,7 @@ function delRestrictions($aRights) {
 		$rsRestrictions = doSQL($sql);
 		if ($rsRestrictions['num'] > 0) {
 			foreach ($rsRestrictions['set'] AS $row) {
-				$restriction = unserialize($row['rights']);
+				$restriction = unserializeBroken($row['rights']);
 				if (isset($restriction[$guid])) {
 					unset($restriction[$guid]);
 					doSQL("UPDATE `restrictions` SET `rights`='".serialize($restriction)."' WHERE `rid` = ".intval($row['rid']));
@@ -269,19 +269,6 @@ function regMenu($modul, $aMenuParser, $modguid) {
 		}	// foreach
 	}	// if
 }	// regMenu()
-
-/**
-* Parser registrieren
-*/
-function regPlugin($modul, $aPluginInfo, $modguid) {
-	if (count($aPluginInfo) > 0):
-		$sql = "SELECT `pluginfolder` FROM `wspplugins` WHERE `guid` = '".$aPluginInfo[$modguid]["guid"]."'";
-		$res = doResultSQL($sql);
-		if ($res!==false && trim($res)!=''):
-			doSQL("INSERT INTO `wspplugins` SET `guid` = '".$aPluginInfo[$modguid]['guid']."', `pluginname` = '".$aPluginInfo[$modguid]['pluginname']."', `pluginfolder` = '".$aPluginInfo[$modguid]['pluginfolder']."'");
-		endif;
-	endif;	
-	}	// regPlugin()
 
 /**
  * SelfVars registrieren
@@ -550,11 +537,6 @@ include ("./data/include/wspmenu.inc.php");
             // Menue registrieren
             if (isset($type['ismenu']) && intval($type['ismenu'])==1):
                 regMenu($modfile, $modsetup->getMenuParser(), $modsetup->getGUID());
-            endif;
-
-            // plugin registrieren
-            if (isset($type['isplugin']) && intval($type['isplugin'])==1):
-                regPlugin($modfile, $modsetup->getPlugin(), $modsetup->getGUID());
             endif;
 	
             // Selfvars registrieren
@@ -1081,36 +1063,6 @@ include ("./data/include/wspmenu.inc.php");
 										echo "<td>-</td>";
 									else:
 										echo '<td>(installiert '.trim($res).')</td>';
-									endif;
-									
-									echo "</tr>";
-								endforeach;
-							endif;
-							?>
-							<?php if ((count($modsetup->getPlugin())==0) || ($type['isplugin']==0)): ?>
-							
-							<?php else:
-								$output = false;
-								foreach ($modsetup->getPlugin() as $value):
-									$r++;
-									echo "<tr ";
-									if($r/2==ceil($r/2)): echo "class=\"firstcol\""; else: echo "class=\"secondcol\""; endif;
-									echo ">";
-									if ($output):
-										echo "<td>&nbsp;</td>";
-									else:
-										echo "<td>Plugin:</td>";
-										$output = true;
-									endif;
-									// show plugin info
-									echo '<td>'.$value['pluginname'].'&nbsp;</td>';
-									
-									$sql = 'SELECT `pluginfolder` FROM `wspplugins` WHERE `guid` = "'.$value["guid"].'"';
-									$res = doResultSQL($sql);
-									if ($res===false):
-										echo "<td>-</td>";
-									else:
-										echo "<td>bereits installiert</td>";
 									endif;
 									
 									echo "</tr>";

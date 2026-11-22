@@ -14,7 +14,16 @@
 !media/layout/slick*/*/*
 
 !wsp/composer.json
+!wsp/modules/
+!wsp/modules/modules.json
+!wsp/modules/syncfiles.php
+!wsp/modules/syncmod.php
+!wsp/structure.xml
 !wsp/data/
+!wsp/data/include/
+!wsp/data/include/generichead.inc.php
+!wsp/data/classes/
+!wsp/data/classes/**
 !wsp/data/interpreter/
 !wsp/data/interpreter/gallery.php
 !wsp/data/interpreter/imgbox.php

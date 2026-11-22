@@ -21,12 +21,11 @@ global $loginindex;
 global $styleinclude;
 
 /* wsp infovars */
-$_SESSION['wspvars'] = [];
 $_SESSION['wspvars']['sitetitle'] = "WSP 6.26.1";
 // check for installed directory
 $tmpbase = basename(dirname(dirname(__DIR__)));
 $_SESSION['wspvars']['wspbasedir'] = ($tmpbase!='wsp') ? $tmpbase : 'wsp';
-$_SESSION['wspvars']['wspversion'] = "6.26.1#1";
+$_SESSION['wspvars']['wspversion'] = "6.26.11#5";
 $_SESSION['wspvars']['wsplongname'] = "WebSitePreview 6.26.1";
 $_SESSION['wspvars']['wspshortname'] = "WSP 6.26.1";
 $_SESSION['wspvars']['wspurl'] = "https://www.wsp3.de";
@@ -116,17 +115,15 @@ $_SESSION['wspvars']['tables']=array(
 	'wspmedia',
 	'wspmenu',
 	'wspmsg',
-	'wspplugins',
 	'wspproperties',
 	'wspqueue',
 	'wsprights'
 	);
 
 // define usevar
-$usevar = '';
 foreach ([$_SESSION, $_COOKIE, $_POST, $_REQUEST] as $Source) {
-    if (($Value = trim($Source['usevar'] ?? '')) !== '') {
-        $usevar = $Value;
+    if (($Value = trim($Source['usevar'] ?? '')) !== '' && empty(trim((string) $_SESSION['wspvars']['usevar']))) {
+        $_SESSION['wspvars']['usevar'] = $Value;
         break;
     }
 }

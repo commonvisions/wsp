@@ -511,23 +511,6 @@ include ("./data/include/wspmenu.inc.php");
 				$wspmod['standard'][trim($wrresv["guid"])] = trim($wrresv["standard"]);
 			}
 			
-			$pluginmod_sql = "SELECT * FROM `wspplugins` WHERE `guid` = '".trim($wrresv["guid"])."'";
-			$pluginmod_res = doSQL($pluginmod_sql);
-			
-			if ($pluginmod_res['num']>0) {
-				$wspmod['guid'][trim($wrresv["guid"])] = trim($wrresv["guid"]);
-				$wspmod['self_id'][trim($wrresv["guid"])] = intval($pluginmod_res['set'][0]["id"]);
-				$wspmod['parent_id'][trim($wrresv["guid"])] = 0;
-				$wspmod['position'][trim($wrresv["guid"])] = 0;
-				$wspmod['right'][trim($wrresv["guid"])] = trim($wrresv["right"])." [Plugin]";
-				if (strlen($wrresv["labels"]) > 0):
-					$wspmod['labels'][trim($wrresv["guid"])] = unserializeBroken($wrresv["labels"]);
-				else:
-					$wspmod['labels'][trim($wrresv["guid"])] = unserializeBroken($wrresv["possibilities"]);
-				endif;
-				$wspmod['possibilities'][trim($wrresv["guid"])] = trim($wrresv["possibilities"]);
-				$wspmod['standard'][trim($wrresv["guid"])] = trim($wrresv["standard"]);
-			}
         }
 		
 		if (is_array($wspmod['parent_id'])) {
@@ -574,7 +557,7 @@ include ("./data/include/wspmenu.inc.php");
 						<td class="tablecell two"><?php echo $wspmod['right'][$subkey]; ?></td>
 						<td class="tablecell four"><?php
 						
-						foreach (unserialize($wspmod['possibilities'][$subkey]) as $poskey => $posvalue):
+						foreach (unserializeBroken($wspmod['possibilities'][$subkey]) as $poskey => $posvalue):
 							if (key_exists('rights', $wspmod)):
 								$restrictions = unserializeBroken($wspmod['rights'][$subkey]);
 							else:

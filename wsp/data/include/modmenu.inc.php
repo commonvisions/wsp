@@ -25,7 +25,7 @@ if (!function_exists("buildWSPMenu")):
 		
 		if ($wspmenu_num>0):
 			for ($mres=0; $mres<$wspmenu_num; $mres++):
-				if (in_array(mysql_result($wspmenu_res, $mres, "guid"), $checkrights) || $GLOBALS['wspvars']['usertype']=='admin'):
+				if (in_array(mysql_result($wspmenu_res, $mres, "guid"), $checkrights) || ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)):
 					$GLOBALS['wspvars']['wspmodmenu'][mysql_result($wspmenu_res, $mres, "guid")] = array($spaces, mysql_result($wspmenu_res, $mres, "id"), mysql_result($wspmenu_res, $mres, "parent_id"), mysql_result($wspmenu_res, $mres, "title"), mysql_result($wspmenu_res, $mres, "link"));
 					if ($spaces==0):
 						$GLOBALS['wspvars']['wspmodmenucount'] = $GLOBALS['wspvars']['wspmodmenucount']+1;
@@ -103,7 +103,7 @@ function jumpTo(jumpValue) {
 		<li class="mainlist <?php if($wspvars['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>_1">
 			<a href="usernotice.php"><?php echo returnIntLang('menu user messages'); ?> <?
 			
-			$allmessage = unserialize($wspvars['messages']);
+			$allmessage = unserializeBroken($wspvars['messages']);
 			$i = 0;
 			if (count($allmessage)>0 && strlen(trim($wspvars['messages']))>4):
 				foreach ($allmessage AS $key => $value):

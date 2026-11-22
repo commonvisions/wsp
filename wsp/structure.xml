@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<structure>
+    <table name="content">
+        <field name="cid" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+        <field name="mid" type="int" unsigned="true" not_null="true" default="0"/>
+        <field name="globalcontent_id" type="int" unsigned="true" not_null="true" default="0"/>
+        <field name="connected" type="int" not_null="true" default="0"/>
+        <field name="position" type="int" not_null="true" default="0"/>
+        <field name="visibility" type="varchar" size="4" not_null="true" default="0"/>
+        <field name="sid" type="int" not_null="true" default="0"/>
+        <field name="valuefields" type="text" not_null="false"/>
+        <field name="lastchange" type="bigint" not_null="true" default="0"/>
+        <field name="interpreter_guid" type="text" not_null="false"/>
+        <field name="content_area" type="int" not_null="true" default="1"/>
+        <field name="content_lang" type="char" size="3" not_null="true" default="de"/>
+        <field name="showday" type="int" not_null="true" default="0"/>
+        <field name="showtime" type="text" not_null="false"/>
+        <field name="xajaxfunc" type="blob" not_null="false"/>
+        <field name="xajaxfuncnames" type="text" not_null="false"/>
+        <field name="container" type="int" unsigned="true" not_null="false"/>
+        <field name="containerclass" type="text" not_null="false"/>
+        <field name="trash" type="int" not_null="true" default="0"/>
+        <field name="containeranchor" type="varchar" size="255" not_null="false"/>
+        <field name="displayclass" type="int" not_null="true" default="0"/>
+        <field name="login" type="int" not_null="false" default="null" />
+        <field name="logincontrol" type="text" not_null="false" default="null" />
+        <field name="uid" type="int" unsigned="true" not_null="true" default="0"/>
+        <field name="description" type="text" not_null="false"/>
+    </table>
+    <table name="content_backup">
+<field name="cbid" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="cid" type="int" not_null="true" default="0"/>
+<field name="valuefields" type="text" not_null="false"/>
+<field name="lastchange" type="bigint" not_null="true" default="0"/>
+<field name="lastbackup" type="bigint" not_null="false" default="0"/>
+<field name="xajaxfunc" type="blob" not_null="false"/>
+<field name="xajaxfuncnames" type="text" not_null="false"/>
+<field name="content_lang" type="char" size="3" not_null="false"/>
+<field name="uid" type="int" not_null="true"/>
+</table>
+<table name="end_menu">
+<field name="mid" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="editable" type="int" not_null="true"/>
+<field name="breaktree" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="position" type="int" not_null="true" default="0"/>
+<field name="visibility" type="varchar" size="3" not_null="true" default="1"/>
+<field name="description" type="text" not_null="false"/>
+<field name="offlink" type="text" not_null="false"/>
+<field name="inmenu" type="varchar" size="16" not_null="true" default="main"/>
+<field name="header_img" type="varchar" size="255" not_null="false"/>
+<field name="imageon" type="varchar" size="255" not_null="false"/>
+<field name="imageoff" type="varchar" size="255" not_null="false"/>
+<field name="templates_id" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="filetarget" type="varchar" size="32" not_null="false"/>
+<field name="filetop" type="int" not_null="true" default="0"/>
+<field name="fileleft" type="int" not_null="true" default="0"/>
+<field name="fileheight" type="int" not_null="true" default="0"/>
+<field name="filewidth" type="int" not_null="true" default="0"/>
+<field name="internlink_id" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="interntarget" type="varchar" size="32" not_null="false"/>
+<field name="interntop" type="int" not_null="true" default="0"/>
+<field name="internleft" type="int" not_null="true" default="0"/>
+<field name="internheight" type="int" not_null="true" default="0"/>
+<field name="internwidth" type="int" not_null="true" default="0"/>
+<field name="externtarget" type="varchar" size="32" not_null="false"/>
+<field name="externtop" type="int" not_null="true" default="0"/>
+<field name="externleft" type="int" not_null="true" default="0"/>
+<field name="externheight" type="int" not_null="true" default="0"/>
+<field name="externwidth" type="int" not_null="true" default="0"/>
+<field name="forwarding_id" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="level" type="int" not_null="true" default="1"/>
+<field name="connected" type="int" not_null="true" default="0"/>
+<field name="filename" type="varchar" size="255" not_null="false"/>
+<field name="contentchanged" type="tinyint" not_null="true" default="1"/>
+<field name="imageakt" type="varchar" size="255" not_null="false"/>
+<field name="imageclick" type="varchar" size="255" not_null="false"/>
+<field name="changetime" type="int" not_null="true"/>
+<field name="addscript" type="text" not_null="false"/>
+<field name="addcss" type="text" not_null="false"/>
+<field name="pluginmenu" type="int" not_null="true"/>
+<field name="pluginguid" type="varchar" size="64" not_null="false"/>
+<field name="dynamicmenu" type="int" not_null="true"/>
+<field name="forwardmenu" type="int" not_null="true"/>
+<field name="addclass" type="text" not_null="false"/>
+<field name="dynamicguid" type="varchar" size="64" not_null="false"/>
+<field name="langdescription" type="text" not_null="false"/>
+<field name="linktoshortcut" type="varchar" size="255" not_null="false"/>
+<field name="jsmouseover" type="text" not_null="false"/>
+<field name="jsclick" type="text" not_null="false"/>
+<field name="jsmouseout" type="text" not_null="false"/>
+<field name="passscript" type="int" not_null="true"/>
+<field name="passcss" type="int" not_null="true"/>
+<field name="pluginconfig" type="text" not_null="false"/>
+<field name="dynamicconfig" type="text" not_null="false"/>
+<field name="filepopup" type="text" not_null="false"/>
+<field name="internpopup" type="text" not_null="false"/>
+<field name="externpopup" type="text" not_null="false"/>
+<field name="denylang" type="text" not_null="false"/>
+<field name="isindex" type="int" not_null="true" default="0"/>
+<field name="trash" type="int" not_null="true" default="0"/>
+<field name="mobileexclude" type="int" not_null="true" default="0"/>
+<field name="weekday" type="int" not_null="true" default="0"/>
+<field name="showtime" type="text" not_null="false"/>
+<field name="docintern" type="text" not_null="false"/>
+<field name="login" type="int" not_null="true" default="0"/>
+<field name="logincontrol" type="text" not_null="false"/>
+<field name="lockpage" type="int" not_null="true" default="0"/>
+<field name="structurechanged" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="menuchangetime" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="lastchange" type="int" not_null="true" default="0"/>
+</table>
+<table name="globalcontent">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="interpreter_id" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="valuefield" type="text" not_null="false"/>
+<field name="interpreter_guid" type="varchar" size="38" not_null="false"/>
+<field name="content_lang" type="char" size="3" not_null="true" default="de"/>
+<field name="trash" type="int" not_null="true" default="0"/>
+<field name="valuefields" type="text" not_null="false"/>
+</table>
+<table name="interpreter">
+<field name="sid" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="name" type="text" not_null="false"/>
+<field name="classname" type="varchar" size="20" not_null="false"/>
+<field name="htmlmode" type="tinyint" not_null="false" default="0"/>
+<field name="phpvars" type="tinyint" not_null="false" default="0"/>
+<field name="parsefile" type="text" not_null="false" />
+<field name="maxfields" type="tinyint" not_null="true" default="1"/>
+<field name="version" type="tinytext" not_null="false"/>
+<field name="guid" type="varchar" size="64" not_null="false"/>
+<field name="module_guid" type="varchar" size="64" not_null="false"/>
+<field name="bodyfunc" type="int" not_null="true" default="0"/>
+<field name="metascript" type="int" not_null="true" default="0"/>
+</table>
+<table name="javascript">
+<field name="id" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="file" type="varchar" size="255" not_null="false"/>
+<field name="cfolder" type="varchar" size="255" not_null="false"/>
+<field name="scriptcode" type="text" not_null="false"/>
+<field name="describ" type="text" not_null="false"/>
+<field name="lastchange" type="int" not_null="true" default="0"/>
+<field name="lastpublish" type="int" not_null="true" default="0"/>
+</table>
+<table name="mediadesc">
+<field name="id" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="mediafile" type="text" not_null="false"/>
+<field name="filedesc" type="text" not_null="false"/>
+<field name="filekeys" type="text" not_null="false"/>
+</table>
+<table name="menu">
+<field name="mid" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="editable" type="int" not_null="true"/>
+<field name="breaktree" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="position" type="int" not_null="true" default="0"/>
+<field name="visibility" type="varchar" size="3" not_null="true" default="1"/>
+<field name="description" type="text" not_null="false"/>
+<field name="offlink" type="text" not_null="false"/>
+<field name="inmenu" type="varchar" size="16" not_null="true" default="main" />
+<field name="header_img" type="varchar" size="255" not_null="false"/>
+<field name="imageon" type="varchar" size="255" not_null="false"/>
+<field name="imageoff" type="varchar" size="255" not_null="false"/>
+<field name="templates_id" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="filetarget" type="varchar" size="32" not_null="false"/>
+<field name="filetop" type="int" not_null="true" default="0"/>
+<field name="fileleft" type="int" not_null="true" default="0"/>
+<field name="fileheight" type="int" not_null="true" default="0"/>
+<field name="filewidth" type="int" not_null="true" default="0"/>
+<field name="internlink_id" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="interntarget" type="varchar" size="32" not_null="false"/>
+<field name="interntop" type="int" not_null="true" default="0"/>
+<field name="internleft" type="int" not_null="true" default="0"/>
+<field name="internheight" type="int" not_null="true" default="0"/>
+<field name="internwidth" type="int" not_null="true" default="0"/>
+<field name="externtarget" type="varchar" size="32" not_null="false"/>
+<field name="externtop" type="int" not_null="true" default="0"/>
+<field name="externleft" type="int" not_null="true" default="0"/>
+<field name="externheight" type="int" not_null="true" default="0"/>
+<field name="externwidth" type="int" not_null="true" default="0"/>
+<field name="forwarding_id" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="level" type="int" not_null="true" default="1"/>
+<field name="connected" type="int" not_null="true" default="0"/>
+<field name="filename" type="varchar" size="255" not_null="false"/>
+<field name="contentchanged" type="tinyint" not_null="true" default="1"/>
+<field name="imageakt" type="varchar" size="255" not_null="false"/>
+<field name="imageclick" type="varchar" size="255" not_null="false"/>
+<field name="changetime" type="int" not_null="true"/>
+<field name="addscript" type="text" not_null="false"/>
+<field name="addcss" type="text" not_null="false"/>
+<field name="pluginmenu" type="int" not_null="true"/>
+<field name="pluginguid" type="varchar" size="64" not_null="false"/>
+<field name="dynamicmenu" type="int" not_null="true"/>
+<field name="forwardmenu" type="int" not_null="true"/>
+<field name="addclass" type="text" not_null="false"/>
+<field name="dynamicguid" type="varchar" size="64" not_null="false"/>
+<field name="langdescription" type="text" not_null="false"/>
+<field name="linktoshortcut" type="varchar" size="255" not_null="false"/>
+<field name="jsmouseover" type="text" not_null="false"/>
+<field name="jsclick" type="text" not_null="false"/>
+<field name="jsmouseout" type="text" not_null="false"/>
+<field name="passscript" type="int" not_null="true"/>
+<field name="passcss" type="int" not_null="true"/>
+<field name="pluginconfig" type="text" not_null="false"/>
+<field name="dynamicconfig" type="text" not_null="false"/>
+<field name="filepopup" type="text" not_null="false"/>
+<field name="internpopup" type="text" not_null="false"/>
+<field name="externpopup" type="text" not_null="false"/>
+<field name="denylang" type="text" not_null="false"/>
+<field name="isindex" type="int" not_null="true" default="0"/>
+<field name="trash" type="int" not_null="true" default="0"/>
+<field name="mobileexclude" type="int" not_null="true" default="0"/>
+<field name="weekday" type="int" not_null="true" default="0"/>
+<field name="showtime" type="text" not_null="false"/>
+<field name="docintern" type="text" not_null="false"/>
+<field name="login" type="int" not_null="true" default="0"/>
+<field name="logincontrol" type="text" not_null="false"/>
+<field name="lockpage" type="int" not_null="true" default="0"/>
+<field name="structurechanged" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="menuchangetime" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="lastchange" type="int" not_null="true" default="0"/>
+</table>
+<table name="modules">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="name" type="varchar" size="255" not_null="false"/>
+<field name="version" type="varchar" size="32" not_null="false"/>
+<field name="guid" type="varchar" size="64" not_null="false"/>
+<field name="archive" type="varchar" size="128" not_null="false"/>
+<field name="dependences" type="text" not_null="false"/>
+<field name="isparser" type="tinyint" size="1" not_null="true" default="0"/>
+<field name="iscmsmodul" type="tinyint" size="1" not_null="true" default="0"/>
+<field name="ismenu" type="tinyint" size="1" not_null="true" default="0"/>
+<field name="modsetup" type="varchar" size="255" not_null="false"/>
+<field name="settings" type="text" not_null="false"/>
+<field name="affectedcontent" type="text" not_null="false"/>
+<field name="filelist" type="text" not_null="false"/>
+</table>
+<table name="pageproperties">
+<field name="mid" type="int" not_null="true" default="0" primary_key="true"/>
+<field name="pagetitle" type="text" not_null="false"/>
+<field name="pagekeys" type="text" not_null="false"/>
+<field name="pagedesc" type="text" not_null="false"/>
+<field name="pagecopy" type="text" not_null="false"/>
+</table>
+<table name="restrictions">
+<field name="rid" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="usertype" type="int" unsigned="true" not_null="true" default="1"/>
+<field name="user" type="varchar" size="64" not_null="true"/>
+<field name="pass" type="varchar" size="128" not_null="true"/>
+<field name="realname" type="varchar" size="128" not_null="false"/>
+<field name="realmail" type="varchar" size="255" not_null="false"/>
+<field name="rights" type="text" not_null="false"/>
+<field name="idrights" type="text" not_null="false"/>
+<field name="usernotice" type="text" not_null="false"/>
+<field name="saveprops" type="tinyint" size="1" not_null="true" default="0"/>
+<field name="userprops" type="text" not_null="false"/>
+<field name="disablenews" type="tinyint" size="1" not_null="true" default="0"/>
+</table>
+<table name="r_temp_jscript">
+<field name="id" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="templates_id" type="int" not_null="true" default="0"/>
+<field name="javascript_id" type="int" not_null="true" default="0"/>
+</table>
+<table name="r_temp_styles">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="templates_id" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="stylesheets_id" type="int" unsigned="true" not_null="true" default="0"/>
+</table>
+<table name="security">
+<field name="sid" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="referrer" type="varchar" size="32" not_null="true"/>
+<field name="userid" type="int" not_null="true" default="0"/>
+<field name="timevar" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="viewer_mode" type="int" size="1" not_null="true" default="0"/>
+<field name="usevar" type="varchar" size="128" not_null="true"/>
+<field name="logintime" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="position" type="varchar" size="255" not_null="true"/>
+<field name="useragent" type="varchar" size="255" not_null="true"/>
+<field name="viewermode" type="int" size="1" not_null="true" default="0" />
+</table>
+<table name="securitylog">
+<field name="id" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="uid" type="int" not_null="true" default="0"/>
+<field name="lastposition" type="text" not_null="false"/>
+<field name="lastaction" type="text" not_null="false"/>
+<field name="lastchange" type="int" not_null="true" default="0"/>
+</table>
+<table name="selfvars">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="name" type="text" not_null="true"/>
+<field name="selfvar" type="text" not_null="false"/>
+<field name="module_guid" type="varchar" size="64" not_null="false"/>
+<field name="guid" type="varchar" size="64" not_null="false"/>
+<field name="shortcut" type="varchar" size="255" not_null="false"/>
+</table>
+<table name="siteproperties">
+<field name="siteurl" type="text" not_null="false"/>
+<field name="sitetitle" type="varchar" size="250" not_null="true" default="made with websitepreview - powered by covi.de"/>
+<field name="sitekeys" type="text" not_null="false"/>
+<field name="sitedesc" type="text" not_null="false"/>
+<field name="sitecopy" type="varchar" size="150" not_null="true" default="www.wsp3.de"/>
+<field name="menutype" type="enum" size="'steps','replace','divopen','undefined'" not_null="true" default="undefined"/>
+<field name="nonames" type="text" not_null="true"/>
+<field name="languages" type="text" not_null="true"/>
+<field name="options" type="text" not_null="true"/>
+<field name="templates_id" type="int" not_null="true" default="0"/>
+<field name="revisit" type="varchar" size="50" not_null="true"/>
+<field name="use_session" type="char" size="1" not_null="true" default="0"/>
+<field name="show_media" type="enum" size="'galerie','liste'" not_null="true" default="galerie"/>
+<field name="use_stats" type="char" size="1" not_null="true" default="0"/>
+<field name="use_css" type="varchar" size="20" not_null="true" default="wsp"/>
+<field name="siterobots" type="enum" size="'all','noindex','nofollow','none'" not_null="true" default="all"/>
+<field name="googleverify" type="varchar" size="50" not_null="true"/>
+<field name="siteauthor" type="varchar" size="200" not_null="true"/>
+<field name="googlemaps" type="varchar" size="100" not_null="true"/>
+<field name="devurl" type="varchar" size="255" not_null="true"/>
+<field name="googleanalytics" type="text" not_null="true"/>
+<field name="errorreporting" type="int" not_null="true" default="0"/>
+<field name="failedlogins" type="int" not_null="true" default="0"/>
+<field name="medialistlength" type="int" not_null="true" default="20"/>
+<field name="filereplacer" type="varchar" size="2" not_null="true" default="_"/>
+<field name="adminmode" type="int" not_null="true" default="0"/>
+<field name="setlang" type="varchar" size="10" not_null="true"/>
+<field name="showlang" type="varchar" size="10" not_null="true"/>
+<field name="defaultpublish" type="int" not_null="true" default="20"/>
+<field name="wspkey" type="varchar" size="200" not_null="true"/>
+<field name="ga_email" type="varchar" size="150" not_null="true"/>
+<field name="ga_password" type="varchar" size="50" not_null="true"/>
+<field name="ga_profile_id" type="int" not_null="true"/>
+<field name="site_tracking" type="tinyint" not_null="true"/>
+</table>
+<table name="stylesheets">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="file" type="varchar" size="128" not_null="false"/>
+<field name="stylesheet" type="text" not_null="false"/>
+<field name="describ" type="text" not_null="false"/>
+<field name="media" type="varchar" size="128" not_null="true" default="screen"/>
+<field name="browser" type="varchar" size="128" not_null="true" default="all"/>
+<field name="lastchange" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="lastpublish" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="cfolder" type="varchar" size="255" not_null="false"/>
+</table>
+<table name="templates">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="name" type="varchar" size="255" not_null="false"/>
+<field name="template" type="text" not_null="false"/>
+<field name="bodytag" type="text" not_null="false"/>
+<field name="head" type="text" not_null="false"/>
+<field name="iphone_optimize" type="tinyint" size="1" not_null="true" default="0"/>
+<field name="iphone_viewport" type="text" not_null="false"/>
+<field name="ipad_optimize" type="tinyint" size="1" not_null="true" default="0"/>
+<field name="ipad_viewport" type="text" not_null="false"/>
+<field name="generic_viewport" type="text" not_null="false"/>
+<field name="framework" type="text" not_null="false"/>
+<field name="fonts" type="text" not_null="false"/>
+</table>
+<table name="templates_menu">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="guid" type="varchar" size="64" not_null="false"/>
+<field name="title" type="varchar" size="255" not_null="false"/>
+<field name="describ" type="text" not_null="false"/>
+<field name="parser" type="text" not_null="false"/>
+<field name="version" type="varchar" size="32" not_null="false"/>
+<field name="module_guid" type="varchar" size="64" not_null="false"/>
+<field name="code" type="blob" not_null="false"/>
+<field name="startlevel" type="int" not_null="true" default="1"/>
+</table>
+<table name="usercontrol">
+<field name="id" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="username" type="varchar" size="255" not_null="true"/>
+<field name="password" type="varchar" size="255" not_null="true"/>
+<field name="lastlogin" type="int" not_null="true"/>
+<field name="sessionid" type="varchar" size="255" not_null="false"/>
+<field name="cidvalue" type="text" not_null="false"/>
+<field name="midvalue" type="text" not_null="false"/>
+<field name="userdata" type="text" not_null="false"/>
+</table>
+<table name="wspaccess">
+<field name="id" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="description" type="varchar" size="50" not_null="false"/>
+<field name="type" type="varchar" size="255" not_null="false"/>
+<field name="host" type="varchar" size="255" not_null="false"/>
+<field name="location" type="varchar" size="255" not_null="false"/>
+<field name="username" type="varchar" size="255" not_null="true"/>
+<field name="passphrase" type="text" not_null="false"/>
+<field name="definition" type="int" not_null="true"/>
+</table>
+<table name="wspmedia">
+<field name="mid" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="filename" type="varchar" size="255" not_null="false"/>
+<field name="filetype" type="varchar" size="64" not_null="false"/>
+<field name="mediatype" type="varchar" size="50" not_null="false"/>
+<field name="mediafolder" type="text" not_null="false"/>
+<field name="filefolder" type="text" not_null="false"/>
+<field name="filekey" type="varchar" size="64" not_null="false"/>
+<field name="filedata" type="text" not_null="false"/>
+<field name="filesize" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="filedate" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="thumb" type="text" not_null="false"/>
+<field name="preview" type="text" not_null="false"/>
+<field name="original" type="text" not_null="false"/>
+<field name="embed" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="lastchange" type="int" unsigned="true" not_null="true" default="0"/>
+<field name="filepath" type="text" not_null="false"/>
+<field name="filedesc" type="varchar" size="255" not_null="false"/>
+</table>
+<table name="wspmenu">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="title" type="varchar" size="70" not_null="true"/>
+<field name="link" type="varchar" size="255" not_null="true"/>
+<field name="parent_id" type="int" not_null="true" default="0"/>
+<field name="position" type="tinyint" not_null="true" default="0"/>
+<field name="describ" type="varchar" size="255" not_null="true"/>
+<field name="system" type="tinyint" unsigned="true" not_null="true" default="0"/>
+<field name="guid" type="varchar" size="36" not_null="true"/>
+<field name="module_guid" type="varchar" size="36" not_null="true"/>
+</table>
+<table name="wspmodules">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="name" type="varchar" size="128" not_null="false"/>
+<field name="version" type="varchar" size="32" not_null="false"/>
+<field name="guid" type="varchar" size="64" not_null="false"/>
+<field name="token" type="varchar" size="128" not_null="false"/>
+<field name="dependencies" type="text" not_null="false"/>
+<field name="isparser" type="tinyint" size="1" not_null="false" default="0"/>
+<field name="iscmsmodul" type="tinyint" size="1" not_null="false" default="0"/>
+<field name="ismenu" type="tinyint" size="1" not_null="false" default="0"/>
+<field name="settings" type="text" not_null="false"/>
+</table>
+<table name="wspmsg">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="targetuid" type="int" unsigned="true" not_null="true"/>
+<field name="message" type="text" not_null="true"/>
+<field name="read" type="int" unsigned="true" not_null="true"/>
+</table>
+<table name="wspproperties">
+<field name="id" type="int" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="varname" type="varchar" size="255" not_null="true"/>
+<field name="varvalue" type="text" not_null="false"/>
+</table>
+<table name="wspqueue">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="uid" type="int" not_null="true"/>
+<field name="set" type="int" not_null="true"/>
+<field name="action" type="text" not_null="false"/>
+<field name="param" type="text" not_null="false"/>
+<field name="timeout" type="int" not_null="true"/>
+<field name="done" type="int" not_null="true"/>
+<field name="priority" type="int" not_null="true"/>
+<field name="outputuid" type="varchar" size="80" not_null="false"/>
+<field name="output" type="text" not_null="false"/>
+<field name="lang" type="varchar" size="5" not_null="false"/>
+</table>
+<table name="wsprights">
+<field name="id" type="int" unsigned="true" not_null="true" auto_increment="true" primary_key="true"/>
+<field name="guid" type="varchar" size="64" not_null="false"/>
+<field name="right" type="text" not_null="false"/>
+<field name="standard" type="tinyint" unsigned="true" not_null="true" default="0"/>
+<field name="possibilities" type="text" not_null="false"/>
+<field name="labels" type="text" not_null="false"/>
+</table>
+</structure>

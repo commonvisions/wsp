@@ -292,13 +292,15 @@ include ("data/include/wspmenu.inc.php");
 	</fieldset>
 	<?php
 	
+	$usedfiles = [];
+	
 	if ($op=="editfolder" && $id>0) {
 		$cssfolder_sql = "SELECT `id`, `cfolder`, `describ`, `stylesheet` FROM `stylesheets` WHERE `id` = ".intval($id);
 		$cssfolder_res = doSQL($cssfolder_sql);
 		if ($cssfolder_res['num']>0) {
 			$describ = trim($cssfolder_res['set'][0]['describ']);
 			$cfolder = trim($cssfolder_res['set'][0]['cfolder']);
-			$usedones = unserializeBroken(trim($cssfolder_res['set'][0]['stylesheet']));
+			$usedfiles = unserializeBroken(trim($cssfolder_res['set'][0]['stylesheet']));
         }
     }
 	
@@ -320,8 +322,8 @@ include ("data/include/wspmenu.inc.php");
 			<td width="75%"><?php
 			
 			$path = "/media/layout/".$cfolder."/";
-			$usefiles = array();
-//			$usedones = array();
+			$usefiles = [];
+			$usedfiles = is_array($usedfiles) ? $usedfiles : [];
 			
 			function listFiles($path, $startpath) {
 				if (is_dir($_SERVER['DOCUMENT_ROOT'].$path)):
@@ -342,30 +344,26 @@ include ("data/include/wspmenu.inc.php");
 			if (is_dir($_SERVER['DOCUMENT_ROOT'].$path)):
 				listFiles($path, '');
 				
-				if (is_array($usedones)):
-					$temporderusefiles = array();
-					foreach ($usefiles AS $key => $value):
-						if (in_array($value, $usedones)):
-							$upkey = array_keys($usedones, $value);
-							$temporderusefiles[($upkey[0])] = $value;
-						else:
-							$temporderusefiles[(count($usefiles)+$key)] = $value;
-						endif;
-						$temporderusefiles[] = $value;
-					endforeach;
-					unset($usefiles);
-					$usefiles = array_unique($temporderusefiles);
-					ksort($usefiles);
-				endif;
+				$temporderusefiles = array();
+				foreach ($usefiles AS $key => $value):
+					if (in_array($value, $usedfiles)):
+						$upkey = array_keys($usedfiles, $value);
+						$temporderusefiles[($upkey[0])] = $value;
+					else:
+						$temporderusefiles[(count($usefiles)+$key)] = $value;
+					endif;
+					$temporderusefiles[] = $value;
+				endforeach;
+				unset($usefiles);
+				$usefiles = array_unique($temporderusefiles);
+				ksort($usefiles);
 
 				echo "<ul id=\"sortcssfolder\" style=\"margin: 0px; padding: 0px; list-style-type: none;\">";
 				foreach ($usefiles AS $key => $value):
 					echo "<li id=\"sortcssfolder_".$key."\"><table border=\"0\" cellspacing=\"0\" cellpadding=\"0\"><tr><td>";
 					echo "<input type=\"checkbox\" name=\"stylesheet[]\" id=\"usefiles_".$key."\" value=\"".$value."\" ";
-					if (is_array($usedones)):
-						if (in_array($value, $usedones)):
-							echo " checked=\"checked\" ";
-						endif;
+					if (in_array($value, $usedfiles)):
+						echo " checked=\"checked\" ";
 					endif;
 					echo " /></td><td style=\"cursor: move;\">".$value."</td></tr></table></li>";
 				endforeach;

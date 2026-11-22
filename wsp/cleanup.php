@@ -6,29 +6,14 @@
  * @version GIT
  */
 
-/* start session ----------------------------- */
-session_start();
-/* base includes ----------------------------- */
-require ("./data/include/usestat.inc.php");
-require ("./data/include/globalvars.inc.php");
-require ("./data/include/wsplang.inc.php");
-require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
-require ("./data/include/funcs.inc.php");
-require ("./data/include/filesystemfuncs.inc.php");
-// checkParamVar -----------------------------
-
-// define actual system position -------------
-$_SESSION['wspvars']['lockstat'] = '';
-$_SESSION['wspvars']['mgroup'] = 10;
-$_SESSION['wspvars']['fpos'] = $_SERVER['PHP_SELF'];
-$_SESSION['wspvars']['fposcheck'] = false;
-$_SESSION['wspvars']['preventleave'] = false;
+// first includes
+require ("./data/include/generichead.inc.php");
+// set page vars
+(new wspBase())->setPage('', 10, basename(__FILE__), false, false);
 // second includes ---------------------------
 require ("./data/include/checkuser.inc.php");
 require ("./data/include/errorhandler.inc.php");
 require ("./data/include/siteinfo.inc.php");
-// define page specific vars -----------------
 
 // define page specific funcs ----------------
 // cleanup tmp directory

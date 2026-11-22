@@ -857,7 +857,7 @@ if ($contentbackup_num>0):
 					lang_list: [
 						<?php
 						if($_SESSION['wspvars']['sitelanguages']):
-							$langs = unserialize($_SESSION['wspvars']['sitelanguages']);
+							$langs = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
 							if(count($langs['languages']['longname'])>0):
 								for($l=0;$l<count($langs['languages']['longname']);$l++):
 									echo "{title: '" . $langs['languages']['longname'][$l] . "', value: '" . $langs['languages']['shortcut'][$l] . "'}";
@@ -916,7 +916,7 @@ if ($contentbackup_num>0):
 		lang_list: [
 			<?php
 			if($_SESSION['wspvars']['sitelanguages']):
-				$langs = unserialize($_SESSION['wspvars']['sitelanguages']);
+				$langs = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
 				if(count($langs['languages']['longname'])>0):
 					for($l=0;$l<count($langs['languages']['longname']);$l++):
 						echo "{title: '" . $langs['languages']['longname'][$l] . "', value: '" . $langs['languages']['shortcut'][$l] . "'}";
@@ -1042,7 +1042,7 @@ if ($contentbackup_num>0):
 			lang_list: [
 				<?php
 				if($_SESSION['wspvars']['sitelanguages']):
-					$langs = unserialize($_SESSION['wspvars']['sitelanguages']);
+					$langs = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
 					if(count($langs['languages']['longname'])>0):
 						for($l=0;$l<count($langs['languages']['longname']);$l++):
 							echo "{title: '" . $langs['languages']['longname'][$l] . "', value: '" . $langs['languages']['shortcut'][$l] . "'}";

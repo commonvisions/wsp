@@ -1835,7 +1835,7 @@ $lang['de'] = array(
 'bubble down' => '↓',
 'bubble move structure icondesc' => 'Menüpunkt umsortieren (Drag&Drop)',
 'bubble move content icondesc' => 'Inhalte umsortieren (Drag&Drop)',
-'bubble showsub' => '☰',
+'bubble showsub' => '<i class="fa-solid fa-sitemap"></i>',
 'bubble showsub icondesc' => 'Substruktur einblenden',
 'bubble showsub nosub icondesc' => 'Substruktur zum Umsortieren anbieten',
 'bubble showcontent' => '☷',

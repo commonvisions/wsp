@@ -35,7 +35,7 @@ require ("./data/include/checkuser.inc.php");
 require ("./data/include/errorhandler.inc.php");
 require ("./data/include/siteinfo.inc.php");
 /* define page specific vars ----------------- */
-$worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
+$worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages'] ?? 'de');
 $openpath = 0;
 // jump from modules ..
 if (isset($_REQUEST['mjid']) && intval($_REQUEST['mjid'])>0):
@@ -48,9 +48,9 @@ endif;
 /* page specific includes */
 require ("./data/include/clsinterpreter.inc.php");
 /* page specific funcs and actions */
-if (!($_SESSION['wspvars']['rights']['contents']==2 || $_SESSION['wspvars']['rights']['contents']==4 || $_SESSION['wspvars']['rights']['contents']==5 || $_SESSION['wspvars']['rights']['contents']==7 || $_SESSION['wspvars']['rights']['contents']==15)):
-	$_SESSION['wspvars']['rights']['contents_array'] = array();
-endif;
+if (!in_array(($_SESSION['wspvars']['rights']['contents'] ?? 0), [2, 4, 5, 7, 15], true)) {
+    $_SESSION['wspvars']['rights']['contents_array'] = [];
+}
 
 if ((isset($_POST['op']) && $_POST['op']=='add') && isset($_POST['sid']) && isset($_POST['gcid']) && isset($_POST['mid']) && intval($_POST['mid'])>0):
 	// find contents in same content area
@@ -171,26 +171,26 @@ require ("./data/include/wspmenu.inc.php");
 			}
 		}
 	
-	function showContent(mid, showlevel, copystat) {
-		copystat = typeof copystat !== 'undefined' ? copystat : 500;
+	function showContent(mid, showlevel, copystat = 500, reload = false) {
+		let toggleFunc = 'slideToggle';
 		if (mid>0) {
+			if (reload) {
+				copystat = 0; 
+				$("#ulc_" + mid).css('display', 'none'); 
+				toggleFunc = 'toggle';
+			}
 			if ($("#ulc_" + mid).css('display')=='none') {
 				$.post("xajax/ajax.showcontent.php", { 'mid': mid, 'showlevel': showlevel, 'type': 'contents'}).done (function(data) {
-					$("#ulc_" + mid).html(data);
-					$("#ulc_" + mid).toggle('blind', copystat, function() {
-						$("#ulc_" + mid).addClass('open');
-						$("#ulc_" + mid).addClass('tablelist');
-						passLiTable('ul.tablelist.contentstructure', 'li.tablecell', 8, new Array('one','two','three','four','five','six','seven','eight'), 'tblcss');
+					$("#ulc_" + mid).addClass('m-0').addClass('p-0').addClass('open').addClass('tablelist').html(data);
+					$("#ulc_" + mid)[toggleFunc](copystat, function() {
+						$("#ulc_" + mid).addClass('open').addClass('tablelist');
 						$(".droplist").sortable({
 							connectWith: ".droplist",
 							helper: function(e,li) {
 								if(e.shiftKey){
-									console.log(e.shiftKey);
 									copyHelper= li.clone().insertAfter(li);
     		    					return li.clone();
 								} else {
-									console.log(e.shiftKey);
-									
 									return li;
 								}
     						},
@@ -201,7 +201,10 @@ require ("./data/include/wspmenu.inc.php");
 				     			},
 							handle: '.movehandle', 
 							// receive -> if dropped from one list to another
-				     		receive: function (event, ui) { 
+				     		receive: function (event, ui) {
+							
+							console.info(ui);
+
 								$.post("xajax/ajax.dragdropcontent.php", {
 									'action': 'dragdrop',
 									'itempos': ui.item.index(),
@@ -226,17 +229,18 @@ require ("./data/include/wspmenu.inc.php");
 						     	},
 							// update -> if sorted in list
 							update: function (event, ui) { 
+								var $item = $(ui.item);
 								if (!ui.sender && this === ui.item.parent()[0]) {
 									$.post("xajax/ajax.dragdropcontent.php", {
 										'action': 'sort',
-										'itempos': ui.item.index(),
-										'dropid': ui.item.context.id,
-										'droparea': ui.item.context.parentElement.className,
-										'dropmid': $(this).parentsUntil('.moveable').parent().attr('id'),
+										'itempos': $item.index(),
+										'dropid': $item.attr('id'),
+										'droparea': $item.closest('ul.careaholder').attr('rel'),
+										'dropmid': $item.closest('.moveable').attr('id'),
 										'copy': event.shiftKey}).done (function(data) {
 											var return_vals = JSON.parse(data);
 											if (return_vals['copy']=='copy') {		
-	        	    							var oldID = ui.item.context.id;
+	        	    							var oldID = $item.attr('id');
 	            								var newID = $(ui.item.html());
 												ui.item.html(newID.html().replace(new RegExp(oldID.substring(4),"g"), return_vals['thenewid']));
 												}
@@ -263,10 +267,10 @@ require ("./data/include/wspmenu.inc.php");
 					})
 				}
 			else {
-				$("#ulc_" + mid).toggle('blind', copystat, function() {
+				$("#ulc_" + mid)[toggleFunc](copystat, function() {
 					$("#ulc_" + mid).removeClass('open');
 					$("#ulc_" + mid).removeClass('tablelist');
-					$("#ulc_" + mid).html('');
+					$("#ulc_" + mid).html(null);
 					});
 				}
 			}
@@ -310,7 +314,7 @@ require ("./data/include/wspmenu.inc.php");
 		<div id="searchcontentarea"></div>
 	</fieldset>
 	<fieldset>
-		<?php if ($_SESSION['wspvars']['rights']['contents']==1): ?>
+		<?php if (($_SESSION['wspvars']['rights']['contents'] ?? 0 === 1)): ?>
 			<legend><?php echo returnIntLang('structure actualstructure', true); ?></legend>
 		<?php else: ?>
 			<legend><?php echo returnIntLang('structure restrictedstructure', true); ?></legend>
@@ -326,7 +330,7 @@ require ("./data/include/wspmenu.inc.php");
                 $openpath = $midpath[1];
                 $_SESSION['opencontent'] = intval($_REQUEST['sgc']);
 			endif;
-		elseif (isset($_SESSION['opencontent']) && intval($_SESSION['opencontent'])>0):
+		elseif (intval($_SESSION['opencontent'] ?? 0) > 0):
 			$oc_sql = "SELECT `mid` FROM `content` WHERE `cid` = ".$_SESSION['opencontent'];
 			$oc_res = doResultSQL($oc_sql);
 			if ($oc_res!==false):
@@ -342,7 +346,7 @@ require ("./data/include/wspmenu.inc.php");
 		
 		$topmid = 0;
 		$contentallowed = array();
-		if ($_SESSION['wspvars']['rights']['contents']==2 || $_SESSION['wspvars']['rights']['contents']==4):
+		if (($_SESSION['wspvars']['rights']['contents'] ?? 0) ==2 || ($_SESSION['wspvars']['rights']['contents'] ?? 0)==4):
 			if (count($_SESSION['wspvars']['rights']['contents_array'])>0):
 				$menuallowed = $_SESSION['wspvars']['rights']['contents_array'];
 				$contentallowed = $_SESSION['wspvars']['rights']['contents_array'];
@@ -350,14 +354,14 @@ require ("./data/include/wspmenu.inc.php");
 			if (!(in_array($openpath, $menuallowed))):
 				$openpath = 0;
 			endif;
-		elseif ($_SESSION['wspvars']['rights']['contents']==7):
+		elseif (($_SESSION['wspvars']['rights']['contents'] ?? 0)==7):
 			if (count($_SESSION['wspvars']['rights']['contents_array'])>0):
 				$GLOBALS['midlist'] = array($_SESSION['wspvars']['rights']['contents_array'][0]);
 				subMID($_SESSION['wspvars']['rights']['contents_array'][0]);
 				$menuallowed = $GLOBALS['midlist'];
 				$contentallowed = $GLOBALS['midlist'];
 			endif;
-		elseif ($_SESSION['wspvars']['rights']['contents']==15):
+		elseif (($_SESSION['wspvars']['rights']['contents'] ?? 0)==15):
 			$topm_sql = "SELECT `connected` FROM `menu` WHERE `mid` = ".intval($_SESSION['structuremidlist'][0]);
 			$topm_res = doResultSQL($topm_sql);
 			if ($topm_res!==false): $topmid = intval($topm_res); endif;
@@ -380,7 +384,7 @@ require ("./data/include/wspmenu.inc.php");
 			$menuallowed = array();
 		endif;
 		
-		if ($_SESSION['wspvars']['rights']['contents']==7 && is_array($contentallowed)):
+		if ((($_SESSION['wspvars']['rights']['contents'] ?? 0) == 7) && is_array($contentallowed)):
 			if (!(in_array($openpath, $contentallowed))):
 				$openpath = 0;
 			endif;
@@ -391,7 +395,6 @@ require ("./data/include/wspmenu.inc.php");
 		array_pop($openlist);
 		
 		/* 
-		
 		getjMenuStructure(
 			ausgehend von hier wird der baum dargestellt
 			array mit mid's, deren eigenschaften bearbeitet werden dürfen
@@ -428,7 +431,6 @@ require ("./data/include/wspmenu.inc.php");
 	
 	<input type="hidden" id="toggleopenview" value="" />
 	<script type="text/javascript" charset="utf-8">
-	<!--
 	
 	function toggleOpenView() {
 		if ($('#toggleopenview').val()=='') {
@@ -470,16 +472,19 @@ require ("./data/include/wspmenu.inc.php");
 	function contentShowHide(cid) {
 		$.post("xajax/ajax.togglecontentview.php", { 'cid': cid}).done (function(data) {
 			if (data=="show") {
-				$('.id'+cid).removeClass('hiddencontent',500);
-				$('#acsh'+cid).html('<span class="bubblemessage green"><?php echo returnIntLang('bubble hide', false); ?></span>');
-				}
+				$('.row.id' + cid).removeClass('bg-danger').removeClass('text-white');
+				$('.id' + cid).find('i.text-primary-off').removeClass('text-primary-off').addClass('text-primary');
+				$('.id' + cid).find('i.text-danger-off').removeClass('text-danger-off').addClass('text-danger');
+				$('#acsh'+cid).html('<i class="fa-solid fa-square-check text-success"></i>');
+			}
 			else if (data=="hide") {
-				$('.id'+cid).addClass('hiddencontent',500);
-				$('#acsh'+cid).html('<span class="bubblemessage red"><?php echo returnIntLang('bubble show', false); ?></span>');
+				$('.row.id'+cid).addClass('bg-danger').addClass('text-white');
+				$('.id' + cid).find('i.text-primary').removeClass('text-primary').addClass('text-primary-off');
+				$('.id' + cid).find('i.text-danger').removeClass('text-danger').addClass('text-danger-off');
+				$('#acsh'+cid).html('<i class="fa-solid fa-square-xmark text-white"></i>');
 				}
 			});
-		}
-
+	}
 	function contentRemove(cid, cname) {
 		if (cid>0) {
 			if (confirm('<?php echo returnIntLang('contentstructure jshint confirmdelete content1', false); ?>»' + cname + '«<?php echo returnIntLang('contentstructure jshint confirmdelete content2', false); ?>')) {
@@ -487,30 +492,25 @@ require ("./data/include/wspmenu.inc.php");
 				.done (function(data) {
 					$(data).toggle('fade', {}, 300);
 					});
-				
-				
-				}
 			}
 		}
+	}
 
 	function contentClone(cid, cname) {
 		if (cid>0) {
-			$.post("xajax/ajax.clonecontent.php", { 'cid': cid })
-			.done (function(data) {
-				var return_vals = JSON.parse(data);
-          		if (return_vals['clone']==true) {
-					var copyHelper= $('#cli_'+cid).clone(); //.insertAfter(li); 							
-					var oldID = cid;
-	         		//	var newID = $(ui.item.html());
-					copyHelper.html($('#cli_'+cid).html().replace(new RegExp(cid,"g"), return_vals['newcid']));
-					copyHelper.insertAfter($('#cli_'+cid));
-          			copyHelper.attr('id', 'cli_'+return_vals['newcid']);
-          			}
+			let contentList = $('#cli_' + cid).closest('ul.tablelist');
+			if (contentList) {
+				$.post("xajax/ajax.clonecontent.php", { 'cid': cid })
+				.done (function(data) {
+					var return_vals = JSON.parse(data);
+					if (return_vals['clone'] == true) {
+						showContent(return_vals['mid'], return_vals['carea'], 0, true);
+					}
 				});
 			}
 		}
-	
-	-->
+	}
+
 	</script>
 	<?php if($_SESSION['wspvars']['rights']['contents']!=3 && $_SESSION['wspvars']['rights']['contents']!=4): ?>
 		<div style="display: none;">
@@ -583,7 +583,7 @@ require ("./data/include/wspmenu.inc.php");
             if ((!(isset($mpforward)) || (isset($mpforward) && intval($mpforward)==0)) && (in_array(intval($oc_res), $_SESSION['wspvars']['rights']['contents_array']) || count($_SESSION['wspvars']['rights']['contents_array'])==0)):
                 echo "<script type=\"text/javascript\" charset=\"utf-8\">\n";
                 echo "<!--\n";
-                echo "showContent(".intval($oc_res).", '');\n";
+                echo "showContent(".intval($oc_res).", '', 500);\n";
                 echo "// -->\n";
                 echo "</script>\n";
             endif;
@@ -599,7 +599,7 @@ require ("./data/include/wspmenu.inc.php");
         if ((!(isset($mpforward)) || (isset($mpforward) && intval($mpforward)==0)) && (in_array(intval($_SESSION['pathmid']), $_SESSION['wspvars']['rights']['contents_array']) || count($_SESSION['wspvars']['rights']['contents_array'])==0)):
             echo "<script type=\"text/javascript\" charset=\"utf-8\">\n";
             echo "<!--\n";
-            echo "showContent(".$_SESSION['pathmid'].", '');\n";
+            echo "showContent(".$_SESSION['pathmid'].", '', 500);\n";
             echo "// -->\n";
             echo "</script>\n";
         endif;
@@ -612,7 +612,7 @@ require ("./data/include/wspmenu.inc.php");
 <!--	
 
 $(document).ready(function() {
-	<?php if (!(isset($_SESSION['wspvars']['editmenuid']))) $_SESSION['wspvars']['editmenuid'] = 0; if (intval($_SESSION['wspvars']['editmenuid'])>0): ?>showContent(<?php echo intval($_SESSION['wspvars']['editmenuid']); ?>,1);<?php endif; ?>
+	<?php if (!(isset($_SESSION['wspvars']['editmenuid']))) $_SESSION['wspvars']['editmenuid'] = 0; if (intval($_SESSION['wspvars']['editmenuid'])>0): ?>showContent(<?php echo intval($_SESSION['wspvars']['editmenuid']); ?>,1,500);<?php endif; ?>
 
 	$(document).bind('keydown', function(e) {
 		if(e.keyCode==16){
