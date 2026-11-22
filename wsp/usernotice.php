@@ -32,7 +32,7 @@ require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/"
 /* define page specific funcs ----------------- */
 
 if ($op=="rm"):
-	$allmessage = unserialize($wspvars['messages']);
+	$allmessage = unserializeBroken($wspvars['messages']);
 	if ($allmessage!=""):
 		foreach ($allmessage AS $key => $value):
 			if ($value[1]==$_POST['rm']):
@@ -49,7 +49,7 @@ if ($op=="rm"):
 		$wspvars['messages'] = "";
 	endif;
 elseif ($op=="dm"):
-	$allmessage = unserialize($wspvars['messages']);
+	$allmessage = unserializeBroken($wspvars['messages']);
 	if ($allmessage!=""):
 		foreach ($allmessage AS $key => $value):
 			if ($value[1]==$_POST['dm']):
@@ -146,7 +146,7 @@ elseif ($op=="srm" && intval($_POST['submitfrom'])>0 && intval($_POST['submitfro
 		3 => 2
 		);
 	
-	$allmessage = unserialize($wspvars['messages']);
+	$allmessage = unserializeBroken($wspvars['messages']);
 	if (is_array($allmessage)):
 		array_unshift($allmessage, $insertmessage);
 	else:

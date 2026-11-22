@@ -28,9 +28,12 @@ function checkDB() {
 }
 
 $Assets = [
-    'vendor/twbs/bootstrap/dist/css/bootstrap.min.css' => 'assets/css/bootstrap.min.css',
-    'vendor/twbs/bootstrap/dist/css/bootstrap.min.css.map' => 'assets/css/bootstrap.min.css.map',
-    'vendor/twbs/bootstrap/dist/js/bootstrap.bundle.js' => 'assets/js/bootstrap.bundle.js',
+    'vendor/twbs/bootstrap/dist/css/bootstrap.min.css' => './assets/css/bootstrap.min.css',
+    'vendor/twbs/bootstrap/dist/css/bootstrap.min.css.map' => './assets/css/bootstrap.min.css.map',
+    'vendor/twbs/bootstrap/dist/js/bootstrap.min.js' => './assets/js/bootstrap.min.js',
+    'vendor/twbs/bootstrap/dist/js/bootstrap.min.js.map' => './assets/js/bootstrap.min.js.map',
+    'vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js' => './assets/js/bootstrap.bundle.min.js',
+    'vendor/twbs/bootstrap/dist/js/bootstrap.bundle.min.js.map' => './assets/js/bootstrap.bundle.min.js.map',
     'vendor/datatables.net/datatables.net/js/dataTables.min.js' => './assets/js/dataTables.min.js',
     'vendor/datatables.net/datatables.net-dt/js/dataTables.dataTables.min.js' => './assets/js/dataTables.dataTables.min.js',
     'vendor/datatables.net/datatables.net-dt/css/dataTables.dataTables.min.css' => './assets/css/dataTables.dataTables.min.css',

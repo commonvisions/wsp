@@ -12,19 +12,19 @@ session_start();
 require ("data/include/usestat.inc.php");
 require ("data/include/globalvars.inc.php");
 /* first includes ---------------------------- */
-if (is_file($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/javascript/xajax/xajax_core/xajax.inc.php")):
-	require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/javascript/xajax/xajax_core/xajax.inc.php");
+if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/javascript/xajax/xajax_core/xajax.inc.php")):
+	require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/javascript/xajax/xajax_core/xajax.inc.php");
 endif;
-require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/wsplang.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/dbaccess.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/wsplang.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/dbaccess.inc.php");
 if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/funcs.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/filesystemfuncs.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/funcs.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/filesystemfuncs.inc.php");
 /* checkParamVar ----------------------------- */
 
-require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/checkuser.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/errorhandler.inc.php");
-require ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasedir']."/data/include/siteinfo.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/checkuser.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/errorhandler.inc.php");
+require ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasedir']."/data/include/siteinfo.inc.php");
 
 $tmppath = $_SERVER['DOCUMENT_ROOT']."/".$GLOBALS['wspvars']['wspbasedir']."/tmp/".$GLOBALS['wspvars']['usevar']."/";
 $tmpfile = tempnam($tmppath, 'wsp');

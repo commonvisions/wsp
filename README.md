@@ -1,6 +1,31 @@
 # WSP
 WebSitePreview
 
+## 6.26.11
+
+- added composer supported assets to backend
+    - bootstrap
+    - jquery
+    - datatables
+- bugfixes on contentstructure
+    - bugfix on cloning contents
+    - bugfix on drag&drop
+    - changed contentshow functionality
+- changed sql-connect-method
+- added backend props for better sync
+- prepared new module system on installing modules from external sources
+- removal of deprecated plugin functions
+
+## 6.26.2
+
+- templates
+    - fixed wrong "library" output on JS and CSS
+    - fixed undefined variables name
+    - fixed inserting a new template bug on viewport data
+    - removed RSS finally
+- scriptedit
+    - fixed wrong closing HTML
+
 ## 6.26.1
 
 - frontend

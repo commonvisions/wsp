@@ -70,21 +70,5 @@ elseif (array_key_exists('wspvars', $_SESSION) && array_key_exists('wspbaselang'
 	$_SESSION['wspvars']['locallang'] = $_SESSION['wspvars']['wspbaselang'];
 endif;
 
-// try to get plugin wsplang
-$plugin_sql = "SELECT * FROM `wspplugins`";
-$plugin_res = doSQL($plugin_sql);
-if ($plugin_res['num']>0) {
-	for ($pres=0; $pres<$plugin_res['num']; $pres++) {
-		$pluginident = $plugin_res['set'][$pres]['guid'];
-		$pluginfolder = $plugin_res['set'][$pres]['pluginfolder'];
-		if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/data/include/wsplang.inc.php")) {
-			@require_once ($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/data/include/wsplang.inc.php");
-		}
-	}
-}
-
 // set ftp port if not set
-
 if (!(isset($_SESSION['wspvars']['ftpport']))): $_SESSION['wspvars']['ftpport'] = 21; endif;
-
-// EOF ?>

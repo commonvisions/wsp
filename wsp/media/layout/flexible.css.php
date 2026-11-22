@@ -68,6 +68,24 @@ hr.clearbreak { width: 100%; height: 0.1px; clear: both; float: none; background
 
 /** BootStrap redefinitions */
 
+.text-wsp-primary {
+  --bs-text-opacity: 1;
+  color: #354E65 !important;
+}
+
+.bg-wsp-primary {
+  background-color: #354E65 !important;
+}
+
+.text-wsp-secondary {
+  --bs-text-opacity: 1;
+  color: #C5D1D9 !important;
+}
+
+.bg-wsp-secondary {
+  background-color: #C5D1D9 !important;
+}
+
 .btn-square {
 	aspect-ratio: 1/1;
 }

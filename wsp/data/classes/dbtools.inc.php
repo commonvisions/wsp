@@ -1,0 +1,434 @@
+<?php
+/**
+ * Create or synchronize tables from the WSP structure XML format.
+ *
+ * Expected format:
+ * <structure><table name="..."><field name="..." type="int" size="11"
+ * not_null="true" default="0" auto_increment="true" primary_key="true" />
+ * </table></structure>
+ */
+if (!class_exists('dbTools')) {
+    class dbTools
+    {
+        private $connection;
+        private $lastError = '';
+
+        public function __construct($connection)
+        {
+            $this->connection = $connection;
+        }
+
+        /**
+         * Synchronize every table in the given XML. Returns success, actions,
+         * and any SQL/schema errors; existing columns are never removed.
+         */
+        public function applyStructure($xml): array
+        {
+            $report = ['success' => false, 'actions' => [], 'errors' => []];
+            if (!$this->connection instanceof mysqli) {
+                $report['errors'][] = 'Keine aktive mysqli-Verbindung.';
+                return $report;
+            }
+
+            if ($xml instanceof SimpleXMLElement) {
+                $root = $xml;
+            } else {
+                libxml_use_internal_errors(true);
+                $root = simplexml_load_string((string)$xml);
+                if ($root === false) {
+                    foreach (libxml_get_errors() as $error) {
+                        $report['errors'][] = 'Ungültiges XML: ' . trim($error->message);
+                    }
+                    libxml_clear_errors();
+                    return $report;
+                }
+            }
+
+            $tables = [];
+            if ($root->getName() === 'table') {
+                $tables[] = $root;
+            } else {
+                foreach ($root->table as $table) $tables[] = $table;
+            }
+            if (!$tables) {
+                $report['errors'][] = 'Das XML enthält keine <table>-Elemente.';
+                return $report;
+            }
+
+            foreach ($tables as $table) {
+                $name = (string)$table['name'];
+                if (!$this->validIdentifier($name)) {
+                    $report['errors'][] = "Ungültiger Tabellenname: {$name}";
+                    continue;
+                }
+                $fields = [];
+                foreach ($table->field as $field) {
+                    $definition = $this->parseField($field, $name, $report['errors']);
+                    if ($definition !== null) $fields[$definition['name']] = $definition;
+                }
+                if (!$fields) {
+                    $report['errors'][] = "Tabelle {$name}: keine gültigen Felder definiert.";
+                    continue;
+                }
+                $this->syncTable($name, $fields, $report);
+            }
+            $report['success'] = count($report['errors']) === 0;
+            return $report;
+        }
+
+        /** Inspect the XML against the current schema without changing it. */
+        public function previewStructure($xml): array
+        {
+            $report = ['success' => false, 'tables' => [], 'changes' => [], 'errors' => []];
+            if (!$this->connection instanceof mysqli) {
+                $report['errors'][] = 'Keine aktive mysqli-Verbindung.';
+                return $report;
+            }
+            libxml_use_internal_errors(true);
+            $root = $xml instanceof SimpleXMLElement ? $xml : simplexml_load_string((string)$xml);
+            if ($root === false) {
+                foreach (libxml_get_errors() as $error) $report['errors'][] = 'Ungültiges XML: ' . trim($error->message);
+                libxml_clear_errors();
+                return $report;
+            }
+            // Preserve repeated <table> siblings; their default SimpleXML keys
+            // are identical, so iterator_to_array() must use numeric keys.
+            $tables = $root->getName() === 'table' ? [$root] : iterator_to_array($root->table, false);
+            if (!$tables) {
+                $report['errors'][] = 'Das XML enthält keine <table>-Elemente.';
+                return $report;
+            }
+            foreach ($tables as $tableNode) {
+                $table = (string)$tableNode['name'];
+                if (!$this->validIdentifier($table)) {
+                    $report['errors'][] = "Ungültiger Tabellenname: {$table}";
+                    continue;
+                }
+                $fields = [];
+                foreach ($tableNode->field as $fieldNode) {
+                    $definition = $this->parseField($fieldNode, $table, $report['errors']);
+                    if ($definition !== null) $fields[$definition['name']] = $definition;
+                }
+                if (!$fields) {
+                    $report['errors'][] = "Tabelle {$table}: keine gültigen Felder definiert.";
+                    continue;
+                }
+                $report['tables'][] = $table;
+                $exists = $this->connection->query("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = " . $this->sqlString($table));
+                if (!$exists) {
+                    $report['errors'][] = "Tabelle {$table}: Prüfung fehlgeschlagen: " . $this->connection->error;
+                    continue;
+                }
+                $tableExists = $exists->num_rows > 0;
+                $exists->free();
+                if (!$tableExists) {
+                    $report['changes'][] = ['table' => $table, 'field' => '*', 'operation' => 'Tabelle hinzufügen', 'details' => implode(', ', array_keys($fields))];
+                    continue;
+                }
+                $columns = $this->connection->query('SHOW FULL COLUMNS FROM ' . $this->quote($table));
+                if (!$columns) {
+                    $report['errors'][] = "Tabelle {$table}: Spalten konnten nicht gelesen werden: " . $this->connection->error;
+                    continue;
+                }
+                $actual = [];
+                while ($column = $columns->fetch_assoc()) $actual[$column['Field']] = $column;
+                $columns->free();
+                foreach ($fields as $name => $field) {
+                    if (!isset($actual[$name])) {
+                        $report['changes'][] = ['table' => $table, 'field' => $name, 'operation' => 'Feld hinzufügen', 'details' => $field['sqlType'] . ($field['notNull'] ? ' NOT NULL' : ' NULL')];
+                    } else {
+                        $differences = $this->differences($actual[$name], $field);
+                        if ($differences) $report['changes'][] = ['table' => $table, 'field' => $name, 'operation' => 'Feld ändern', 'details' => implode(', ', $differences) . ' → ' . $field['sqlType']];
+                    }
+                }
+            }
+            $report['success'] = count($report['errors']) === 0;
+            return $report;
+        }
+
+        /** Alias for callers that prefer a shorter function name. */
+        public function sync($xml): array
+        {
+            return $this->applyStructure($xml);
+        }
+
+        /**
+         * Return one table's schema as XML compatible with applyStructure().
+         * Returns false on failure; getLastError() then contains the reason.
+         */
+        public function tableToXml(string $table)
+        {
+            $this->lastError = '';
+            if (!$this->connection instanceof mysqli) {
+                $this->lastError = 'Keine aktive mysqli-Verbindung.';
+                return false;
+            }
+            if (!$this->validIdentifier($table)) {
+                $this->lastError = "Ungültiger Tabellenname: {$table}";
+                return false;
+            }
+            $exists = $this->connection->query("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = " . $this->sqlString($table));
+            if (!$exists) {
+                $this->lastError = "Tabelle {$table}: Prüfung fehlgeschlagen: " . $this->connection->error;
+                return false;
+            }
+            $found = $exists->num_rows > 0;
+            $exists->free();
+            if (!$found) {
+                $this->lastError = "Tabelle {$table} existiert nicht in der aktuellen Datenbank.";
+                return false;
+            }
+
+            $result = $this->connection->query('SHOW FULL COLUMNS FROM ' . $this->quote($table));
+            if (!$result) {
+                $this->lastError = "Tabelle {$table}: Struktur konnte nicht gelesen werden: " . $this->connection->error;
+                return false;
+            }
+            $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n<structure>\n  <table name=\"" . $this->xmlEscape($table) . "\">\n";
+            while ($column = $result->fetch_assoc()) {
+                if (!preg_match('/^([a-z]+)(?:\((.*)\))?( unsigned)?$/i', $column['Type'], $matches)) {
+                    $result->free();
+                    $this->lastError = "Tabelle {$table}, Feld {$column['Field']}: Typ '{$column['Type']}' kann nicht in das Struktur-XML übertragen werden.";
+                    return false;
+                }
+                $type = strtolower($matches[1]);
+                $size = $matches[2] ?? '';
+                $unsigned = !empty($matches[3]);
+                $attributes = [
+                    'name' => $column['Field'],
+                    'type' => $type,
+                ];
+                if ($size !== '') $attributes['size'] = $size;
+                if ($unsigned) $attributes['unsigned'] = 'true';
+                $attributes['not_null'] = $column['Null'] === 'NO' ? 'true' : 'false';
+                if ($column['Default'] !== null) $attributes['default'] = (string)$column['Default'];
+                if (strpos(strtolower($column['Extra']), 'auto_increment') !== false) $attributes['auto_increment'] = 'true';
+                if ($column['Key'] === 'PRI') $attributes['primary_key'] = 'true';
+                $xml .= '    <field';
+                foreach ($attributes as $key => $value) $xml .= ' ' . $key . '="' . $this->xmlEscape($value) . '"';
+                $xml .= " />\n";
+            }
+            $result->free();
+            return $xml . "  </table>\n</structure>\n";
+        }
+
+        public function getLastError(): string
+        {
+            return $this->lastError;
+        }
+
+        private function parseField(SimpleXMLElement $field, string $table, array &$errors): ?array
+        {
+            $name = (string)$field['name'];
+            $type = strtolower((string)$field['type']);
+            $size = (string)$field['size'];
+            $allowed = ['int', 'tinyint', 'smallint', 'mediumint', 'bigint', 'varchar', 'char', 'text', 'tinytext', 'mediumtext', 'longtext', 'date', 'datetime', 'timestamp', 'float', 'double', 'decimal', 'enum', 'blob', 'mediumblob', 'longblob'];
+            if (!$this->validIdentifier($name) || !in_array($type, $allowed, true)) {
+                $errors[] = "Tabelle {$table}: ungültige Felddefinition für '{$name}'.";
+                return null;
+            }
+            $precisionTypes = ['decimal', 'float', 'double'];
+            $validSize = $size === ''
+                || ($type === 'enum'
+                    ? preg_match("/^'(?:[^'\\\\]|\\\\.)*'(?:\\s*,\\s*'(?:[^'\\\\]|\\\\.)*')*$/", $size) === 1
+                    : (in_array($type, $precisionTypes, true)
+                        ? preg_match('/^\d+(?:,\d+)?$/', $size) === 1
+                        : ctype_digit($size)));
+            if (!$validSize || ($size !== '' && $type !== 'enum' && (int)strtok($size, ',') < 1)) {
+                $errors[] = "Tabelle {$table}, Feld {$name}: ungültige Größe '{$size}'.";
+                return null;
+            }
+            $needsSize = in_array($type, ['varchar','char','decimal','enum'], true);
+            if ($needsSize && $size === '') {
+                $errors[] = "Tabelle {$table}, Feld {$name}: Größe fehlt für {$type}.";
+                return null;
+            }
+            $auto = $this->boolAttr($field, 'auto_increment', false);
+            $primary = $this->boolAttr($field, 'primary_key', false);
+            $notNull = $this->boolAttr($field, 'not_null', $auto || $primary);
+            if ($auto && (!$notNull || !in_array($type, ['int','tinyint','smallint','mediumint','bigint'], true))) {
+                $errors[] = "Tabelle {$table}, Feld {$name}: AUTO_INCREMENT erfordert einen ganzzahligen NOT NULL-Typ.";
+                return null;
+            }
+            $unsigned = $this->boolAttr($field, 'unsigned', false);
+            if ($unsigned && !in_array($type, ['int','tinyint','smallint','mediumint','bigint','float','double','decimal'], true)) {
+                $errors[] = "Tabelle {$table}, Feld {$name}: UNSIGNED ist für {$type} nicht zulässig.";
+                return null;
+            }
+            $sqlType = $type . ($size !== '' ? '(' . $size . ')' : '') . ($unsigned ? ' unsigned' : '');
+            $attributes = $field->attributes();
+            $defaultProvided = isset($attributes['default']);
+            $default = $defaultProvided ? (string)$field['default'] : null;
+            return compact('name', 'type', 'size', 'sqlType', 'notNull', 'auto', 'primary', 'defaultProvided', 'default');
+        }
+
+        private function syncTable(string $table, array $fields, array &$report): void
+        {
+            $tableSql = $this->quote($table);
+            $result = $this->connection->query("SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = " . $this->sqlString($table));
+            if (!$result) {
+                $report['errors'][] = "Tabelle {$table}: Prüfung fehlgeschlagen: " . $this->connection->error;
+                return;
+            }
+            $exists = $result->num_rows > 0;
+            $result->free();
+
+            if (!$exists) {
+                $definitions = [];
+                $primary = [];
+                foreach ($fields as $field) {
+                    $definitions[] = $this->columnSql($field);
+                    if ($field['primary']) $primary[] = $this->quote($field['name']);
+                }
+                if ($primary) $definitions[] = 'PRIMARY KEY (' . implode(', ', $primary) . ')';
+                $sql = 'CREATE TABLE ' . $tableSql . ' (' . implode(', ', $definitions) . ')';
+                if ($this->run($sql, $table, $report)) $report['actions'][] = "Tabelle {$table} angelegt.";
+                return;
+            }
+
+            $result = $this->connection->query('SHOW FULL COLUMNS FROM ' . $tableSql);
+            if (!$result) {
+                $report['errors'][] = "Tabelle {$table}: Spalten konnten nicht gelesen werden: " . $this->connection->error;
+                return;
+            }
+            $current = [];
+            $currentPrimary = [];
+            while ($row = $result->fetch_assoc()) {
+                $current[$row['Field']] = $row;
+                if ($row['Key'] === 'PRI') $currentPrimary[] = $row['Field'];
+            }
+            $result->free();
+
+            $expectedPrimary = [];
+            foreach ($fields as $field) if ($field['primary']) $expectedPrimary[] = $field['name'];
+            sort($expectedPrimary);
+            sort($currentPrimary);
+
+            // AUTO_INCREMENT must be indexed. If the expected single primary
+            // key column is missing, add it and its key in one ALTER statement.
+            if ($expectedPrimary && !$currentPrimary) {
+                $missingPrimary = array_values(array_filter($expectedPrimary, function ($fieldName) use ($current) {
+                    return !isset($current[$fieldName]);
+                }));
+                if (count($expectedPrimary) === 1 && count($missingPrimary) === 1) {
+                    $primaryName = $missingPrimary[0];
+                    $primaryField = $fields[$primaryName];
+                    $primarySql = 'ALTER TABLE ' . $tableSql . ' ADD ' . $this->columnSql($primaryField) . ' PRIMARY KEY';
+                    if ($this->run($primarySql, $table, $report)) {
+                        $currentPrimary = $expectedPrimary;
+                        $current[$primaryName] = [
+                            'Field' => $primaryName,
+                            'Type' => $primaryField['sqlType'],
+                            'Null' => $primaryField['notNull'] ? 'NO' : 'YES',
+                            'Default' => $primaryField['defaultProvided'] ? $primaryField['default'] : null,
+                            'Extra' => $primaryField['auto'] ? 'auto_increment' : '',
+                            'Key' => 'PRI',
+                        ];
+                        $report['actions'][] = "Tabelle {$table}: fehlendes Primärschlüsselfeld {$primaryName} ergänzt.";
+                    }
+                } elseif (!$missingPrimary) {
+                    $primarySql = 'ALTER TABLE ' . $tableSql . ' ADD PRIMARY KEY (' . implode(', ', array_map([$this, 'quote'], $expectedPrimary)) . ')';
+                    if ($this->run($primarySql, $table, $report)) {
+                        $currentPrimary = $expectedPrimary;
+                    }
+                }
+            }
+            $primaryMatches = $expectedPrimary === $currentPrimary;
+            if (!$primaryMatches) {
+                $report['errors'][] = "Tabelle {$table}: Primärschlüssel weicht ab (vorhanden: " . ($currentPrimary ? implode(', ', $currentPrimary) : 'keiner') . '; erwartet: ' . ($expectedPrimary ? implode(', ', $expectedPrimary) : 'keiner') . '). Die Schlüsseldefinition kann nicht automatisch abgeglichen werden.';
+            }
+
+            foreach ($fields as $name => $field) {
+                if (!isset($current[$name])) {
+                    if (!$primaryMatches && ($field['primary'] || $field['auto'])) continue;
+                    if ($this->run('ALTER TABLE ' . $tableSql . ' ADD ' . $this->columnSql($field), $table, $report)) {
+                        $report['actions'][] = "Tabelle {$table}: Feld {$name} ergänzt.";
+                    }
+                    continue;
+                }
+                $differences = $this->differences($current[$name], $field);
+                if (!$differences) continue;
+                if (!$primaryMatches && $field['auto'] && !$current[$name]['Extra']) {
+                    $report['errors'][] = "Tabelle {$table}, Feld {$name}: AUTO_INCREMENT wurde wegen des abweichenden Primärschlüssels nicht geändert.";
+                    continue;
+                }
+                if ($this->run('ALTER TABLE ' . $tableSql . ' MODIFY ' . $this->columnSql($field), $table, $report)) {
+                    $report['actions'][] = 'Tabelle ' . $table . ': Feld ' . $name . ' angepasst (' . implode(', ', $differences) . ').';
+                }
+            }
+        }
+
+        private function differences(array $actual, array $expected): array
+        {
+            $differences = [];
+            $actualType = $this->normalizeType($actual['Type']);
+            $expectedType = $this->normalizeType($expected['sqlType']);
+            if ($actualType !== $expectedType) $differences[] = 'Typ';
+            if (($actual['Null'] === 'NO') !== $expected['notNull']) $differences[] = 'NULL-Eigenschaft';
+            if ((strtoupper((string)$actual['Extra']) === 'AUTO_INCREMENT') !== $expected['auto']) $differences[] = 'AUTO_INCREMENT';
+            if ($expected['defaultProvided']) {
+                $actualDefault = $actual['Default'];
+                $expectedDefault = strtoupper($expected['default']) === 'NULL' ? null : $expected['default'];
+                if ((string)$actualDefault !== (string)$expectedDefault || (($actualDefault === null) !== ($expectedDefault === null))) $differences[] = 'DEFAULT';
+            }
+            return $differences;
+        }
+
+        private function normalizeType(string $type): string
+        {
+            $type = strtolower(preg_replace('/\s+/', '', $type));
+            if (preg_match('/^(tinyint|smallint|mediumint|int|integer|bigint)\(\d+\)(unsigned)?$/', $type, $matches)) {
+                return $matches[1] . ($matches[2] ?? '');
+            }
+            return $type;
+        }
+
+        private function columnSql(array $field): string
+        {
+            $sql = $this->quote($field['name']) . ' ' . $field['sqlType'] . ($field['notNull'] ? ' NOT NULL' : ' NULL');
+            if ($field['defaultProvided']) {
+                $sql .= strtoupper($field['default']) === 'NULL' ? ' DEFAULT NULL' : ' DEFAULT ' . $this->sqlString($field['default']);
+            }
+            if ($field['auto']) $sql .= ' AUTO_INCREMENT';
+            return $sql;
+        }
+
+        private function run(string $sql, string $table, array &$report): bool
+        {
+            try {
+                if ($this->connection->query($sql) === true) return true;
+                $error = $this->connection->error;
+            } catch (mysqli_sql_exception $exception) {
+                $error = $exception->getMessage();
+            }
+            $report['errors'][] = "Tabelle {$table}: SQL konnte nicht ausgeführt werden: {$error} [{$sql}]";
+            return false;
+        }
+
+        private function boolAttr(SimpleXMLElement $element, string $name, bool $default): bool
+        {
+            if (!isset($element[$name])) return $default;
+            return in_array(strtolower((string)$element[$name]), ['1', 'true', 'yes'], true);
+        }
+
+        private function validIdentifier(string $identifier): bool
+        {
+            return preg_match('/^[A-Za-z0-9_$-]+$/', $identifier) === 1;
+        }
+
+        private function quote(string $identifier): string
+        {
+            return '`' . str_replace('`', '``', $identifier) . '`';
+        }
+
+        private function sqlString(string $value): string
+        {
+            return "'" . $this->connection->real_escape_string($value) . "'";
+        }
+
+        private function xmlEscape(string $value): string
+        {
+            return htmlspecialchars($value, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        }
+    }
+}

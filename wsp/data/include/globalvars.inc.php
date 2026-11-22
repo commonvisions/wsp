@@ -21,7 +21,7 @@ global $loginindex;
 global $styleinclude;
 
 /* wsp infovars */
-if (!defined('WSPVERSION')) define('WSPVERSION', '6.26.11');
+if (!defined('WSPVERSION')) define('WSPVERSION', 'WSP 6.26.12#beta');
 if (!defined('WSPLONGNAME')) define('WSPLONGNAME', 'WebSitePreview ' . WSPVERSION);
 if (!defined('WSPSHORTNAME')) define('WSPSHORTNAME', 'WSP ' . WSPVERSION);
 
@@ -71,8 +71,8 @@ $_SESSION['wspvars']['rightabilityarray'] = array(
 
 $usevar = '';
 foreach ([$_SESSION, $_COOKIE, $_POST, $_REQUEST] as $Source) {
-    if (($Value = trim($Source['usevar'] ?? '')) !== '') {
-        $usevar = $Value;
+    if (($Value = trim($Source['usevar'] ?? '')) !== '' && empty(trim((string) $_SESSION['wspvars']['usevar']))) {
+        $_SESSION['wspvars']['usevar'] = $Value;
         break;
     }
 }

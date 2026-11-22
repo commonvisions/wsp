@@ -23,7 +23,7 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
 		[action] => sort
 		[itempos] => 1
 		[dropid] => cli_541
-		[droparea] => droplist droponempty carea_1 ui-sortable
+		[droparea] => int
 		[dropmid] => li_57
 		[copy] => false/true
 		*/
@@ -41,36 +41,28 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
 		$itemcopy = false;
 		$itemmid = intval(str_replace("li_", "", $_POST['dropmid']));
 		$itemcid = intval(str_replace("cli_", "", $_POST['dropid']));
-		$newitempos = intval($_POST['itempos'])+1;
-		$tmpitemarea = explode(" ", $_POST['droparea']);
-		if (is_array($tmpitemarea)):
-			foreach($tmpitemarea AS $tiak => $tiav):
-				if (strchr($tiav, 'carea_')):
-					$newitemarea = intval(str_replace("carea_", "", $tiav));
-					break;
-				else:
-					$newitemarea = 1;
-				endif;
-			endforeach;
-		else:
-			$newitemarea = 1;
-		endif;
+		$newitempos = intval($_POST['itempos']) + 1;
+		$newitemarea = (int) $_POST['droparea'] ?: 1;
+
 		$return_vals = array('copy' => 'no', 'thenewid' => 0);
 		if ($_POST['copy']=='true'): $itemcopy = true; endif;
 		// get information from element
 		$clang = '';
-		$clang_sql = "SELECT `content_lang`, `mid` FROM `content` WHERE `cid` = ".intval($itemcid);
+		$clang_sql = "SELECT `content_lang`, `mid` FROM `content` WHERE `cid` = " . intval($itemcid);
 		$clang_res = doSQL($clang_sql);
-		if ($clang_res['num']>0): $clang = trim($clang_res['set'][0]['content_lang']); $olditemmid = intval($clang_res['set'][0]['mid']); endif;
+		if ($clang_res['num']>0) { 
+			$clang = trim($clang_res['set'][0]['content_lang']); 
+			$olditemmid = intval($clang_res['set'][0]['mid']);
+		}
 		// get all elements from target area except dragged element
-		$cid_sql = "SELECT `cid`, `position` FROM `content` WHERE `mid` = ".intval($itemmid)." AND `cid` != ".intval($itemcid)." AND `content_area` = ".intval($newitemarea)." AND `content_lang` = '".escapeSQL($clang)."' AND `trash` = 0 ORDER BY `position` ASC";
+		$cid_sql = "SELECT `cid`, `position` FROM `content` WHERE `mid` = " . $itemmid . " AND `cid` != " . $itemcid . " AND `content_area` = " . $newitemarea . 
+			" AND `content_lang` = '" . escapeSQL($clang) . "' AND `trash` = 0 ORDER BY `position` ASC";
 		$cid_res = doSQL($cid_sql);
 		if ($cid_res['num']>0):
-			$itemx = 0;
 			foreach ($cid_res['set'] AS $cpresk => $cpresv) {
+				$addPos = (($cpresk + ($addPos ?? 1)) < $newitempos) ? 1 : 2;
 				// updating all positions
-				if (intval($cpresv['position'])<$newitempos): $itemx = -1; else: $itemx = 2; endif;
-				doSQL("UPDATE `content` SET `position` = ".intval($cpresk+$itemx)." WHERE `cid` = ".intval($cpresv['cid']));
+				doSQL("UPDATE `content` SET `position` = " . ($cpresk + $addPos) . " WHERE `cid` = " . (int) $cpresv['cid']);
 			}
 		endif;
 		// move or copy item

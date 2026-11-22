@@ -111,9 +111,9 @@ endif;
 // setup some siteinfo facts
 $sitedata['devurl'] = trim(str_replace("http://", "", $sitedata['devurl']));
 if (trim(str_replace("http://", "", $sitedata['devurl']))==""): $sitedata['devurl'] = trim(str_replace("http://", "", $sitedata['siteurl']));	endif;
-if (intval($sitedata['backupsteps'])<3): $sitedata['backupsteps'] = 3; endif;
-if (intval($sitedata['autologout'])<15): $sitedata['autologout'] = 15; endif;
-if (intval($sitedata['loginfails'])<3): $sitedata['loginfails'] = 3; endif;
+if (intval($sitedata['backupsteps'] ?? 0)<3): $sitedata['backupsteps'] = 3; endif;
+if (intval($sitedata['autologout'] ?? 0)<15): $sitedata['autologout'] = 15; endif;
+if (intval($sitedata['loginfails'] ?? 0)<3): $sitedata['loginfails'] = 3; endif;
 if (!(isset($sitedata['cookiedays'])) || (isset($sitedata['cookiedays']) && intval($sitedata['cookiedays']))<1): $sitedata['cookiedays'] = 1; endif;
 
 // create rotots.txt if needed
@@ -179,51 +179,55 @@ endif;
 							endif;
 						endforeach;
 					endif;
-					
+                        
 					?>
-				</select></div>
-				<div class="col-3"><?php echo returnIntLang('editorprefs menudisplay'); ?></div>
-				<div class="col-3"><select name="menustyle" class="form-control" size="1">
-					<option value="0" <?php if(intval($sitedata['menustyle'])==0) echo " selected=\"selected\" "; ?>><?php echo returnIntLang('editorprefs menustyle horizontal', false); ?></option>
-					<option value="1" <?php if(intval($sitedata['menustyle'])==1) echo " selected=\"selected\" "; ?>><?php echo returnIntLang('editorprefs menustyle vertical', false); ?></option>
-				</select></div>
-			</div>
-			<div class="row mb-1">
-				<div class="col-3"><?php echo returnIntLang('editorprefs wspstyle'); ?></div>
-				<div class="col-3"><?php
-					
-				/* read all files from /media/layout/ and find files with @type design */
-				$funcfolder = array();
-				$designfiles = array();
-				$functiondir = opendir ($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasediradd']."/".$wspvars['wspbasedir']."/media/layout/");
-				while ($entry = readdir($functiondir)):
-					if (stristr($entry, ".css.php")):
-						$cssfile[] = $entry;
-					endif;
-				endwhile;
-				closedir ($functiondir);
-				sort ($cssfile);
-				foreach($cssfile AS $key => $fileinfo):
-					$filearray = file($_SERVER['DOCUMENT_ROOT']."/".$wspvars['wspbasediradd']."/".$wspvars['wspbasedir']."/media/layout/".$fileinfo);
-					$designfiles[$key]['file'] = str_replace(".css.php", "", $fileinfo);
-					for ($fa=1; $fa<count($filearray); $fa++):
-						if (substr(trim($filearray[$fa]),0,3)=="* @"):
-							if (substr(trim($filearray[$fa]),3,11)=="description"):
-								$designfiles[$key]['desc'] = trim(substr(trim($filearray[$fa]),14));
-							elseif (substr(trim($filearray[$fa]),3,4)=="type"):
-								$designfiles[$key]['type'] = trim(substr(trim($filearray[$fa]),7));
-							elseif (substr(trim($filearray[$fa]),3,7)=="version"):
-								$designfiles[$key]['vers'] = trim(substr(trim($filearray[$fa]),10));
+					</select></td>
+					<td class="tablecell two"><?php echo returnIntLang('editorprefs menudisplay'); ?></td>
+					<td class="tablecell two"><select name="menustyle" class="one full">
+						<option value="0" <?php if(intval($sitedata['menustyle'])==0) echo " selected=\"selected\" "; ?>><?php echo returnIntLang('editorprefs menustyle horizontal', false); ?></option>
+						<option value="1" <?php if(intval($sitedata['menustyle'])==1) echo " selected=\"selected\" "; ?>><?php echo returnIntLang('editorprefs menustyle vertical', false); ?></option>
+					</select></td>
+				</tr>
+				<tr>
+					<td class="tablecell two"><?php echo returnIntLang('editorprefs wspstyle'); ?></td>
+					<td class="tablecell two"><?php
+						
+					/* read all files from /media/layout/ and find files with @type design */
+					$funcfolder = array();
+					$designfiles = array();
+                    $functiondir = opendir($_SERVER['DOCUMENT_ROOT'] . "/" .
+                        $_SESSION['wspvars']['wspbasediradd'] . "/" .
+                        $_SESSION['wspvars']['wspbasedir'] . "/media/layout/");
+				    while ($entry = readdir($functiondir)):
+						if (stristr($entry, ".css.php")):
+							$cssfile[] = $entry;
+						endif;
+					endwhile;
+				    closedir ($functiondir);
+					sort ($cssfile);
+					foreach($cssfile AS $key => $fileinfo):
+						$filearray = file($_SERVER['DOCUMENT_ROOT'] . "/" .
+                            $_SESSION['wspvars']['wspbasediradd'] . "/" .
+                            $_SESSION['wspvars']['wspbasedir']."/media/layout/".$fileinfo);
+						$designfiles[$key]['file'] = str_replace(".css.php", "", $fileinfo);
+						for ($fa=1; $fa<count($filearray); $fa++):
+							if (substr(trim($filearray[$fa]),0,3)=="* @"):
+								if (substr(trim($filearray[$fa]),3,11)=="description"):
+									$designfiles[$key]['desc'] = trim(substr(trim($filearray[$fa]),14));
+								elseif (substr(trim($filearray[$fa]),3,4)=="type"):
+									$designfiles[$key]['type'] = trim(substr(trim($filearray[$fa]),7));
+								elseif (substr(trim($filearray[$fa]),3,7)=="version"):
+									$designfiles[$key]['vers'] = trim(substr(trim($filearray[$fa]),10));
+								endif;
 							endif;
+							if ($fa>20 || substr(trim($filearray[$fa]),0,2)=="*/"):
+								$fa = count($filearray);
+							endif;
+						endfor;
+						if (!(key_exists('type', $designfiles[$key])) || (key_exists('type', $designfiles[$key]) && trim($designfiles[$key]['type'])=="")):
+							unset($designfiles[$key]);
 						endif;
-						if ($fa>20 || substr(trim($filearray[$fa]),0,2)=="*/"):
-							$fa = count($filearray);
-						endif;
-					endfor;
-					if (!(key_exists('type', $designfiles[$key])) || (key_exists('type', $designfiles[$key]) && trim($designfiles[$key]['type'])=="")):
-						unset($designfiles[$key]);
-					endif;
-				endforeach;
+					endforeach;
 				if (count($designfiles)>0):
 					echo "<select name=\"wspstyle\" class=\"form-control\" size='1'>";
 					foreach ($designfiles AS $dkey => $dvalue):

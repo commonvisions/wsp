@@ -33,13 +33,12 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
         endif;
         
         foreach ($templatevars['contentareas'] AS $tk => $tv) {
-            echo "<li style=\"margin: 0px; padding: 0px;\">";
-            echo "<table class=\"tablelist nodrag\">";
-            echo "<tr>";
-            echo "<td class=\"tablecell two head nodrag\">";
-            echo "<span class=\"bubblemessage hidden\">".returnIntLang('bubble addcontent', false)."</span> <span class=\"bubblemessage hidden\">".returnIntLang('bubble addcontent', false)."</span> <a onclick=\"addContent(".$_POST['mid'].", ".$tv.");\"><span class=\"bubblemessage orange\">".returnIntLang('bubble addcontent', false)."</span></a>";
-            echo "</td>";
-            echo "<td class=\"tablecell four head nodrag\">";
+            echo "<li class='m-0 p-0'>";
+            echo "<div class='row mx-1 py-1 bg-wsp-primary text-white'>";
+            echo "<div class='col-3 nodrag'>";
+            echo "<a role='button' style='font-size: 1.2em; margin-left: 2.7em;' onclick=\"addContent(".$_POST['mid'].", ".$tv.");\"><i class='fa-solid fa-square-plus'></i></a>";
+            echo "</div>";
+            echo "<div class='col-9 nodrag'>";
             if (isset($contentvardesc) && is_array($contentvardesc)) {
                 if (array_key_exists(($tv-1), $contentvardesc) && trim($contentvardesc[($tv-1)])!=''):
                     echo $contentvardesc[($tv-1)];
@@ -50,10 +49,8 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
             else {
                 echo returnIntLang('contentstructure contentarea', false)." ".$tv;
             }
-            echo "</td>";
-            echo "<td class='tablecell two head nodrag'>&nbsp;</td>";
-            echo "</tr>";
-            echo "</table>";
+            echo "</div>";
+            echo "</row>";
             echo "</li>";
             echo "</ul>";
             echo "<ul class=\"carea_".$tv." careaholder\" rel=\"".$tv."\" style=\"margin: 0px; padding: 0px; list-style-type: none;\">";
@@ -128,48 +125,36 @@ if (!empty($_SERVER['HTTP_REFERER'] ?? null)):
                     // create output
                     echo "<ul class=\"\" id=\"cli_".intval($csresv['cid'])."\" style=\"list-style-type: none;\">";
                     echo "<li id=\"li_".intval($csresv['cid'])."\" class=\"droplistitem\">";
-                    echo "<ul id=\"ul_".intval($csresv['cid'])."\" class=\"tablelist id".intval($csresv['cid'])."\">";
-                    echo "<li class=\"tablecell ";
-                    // visibility information
-                    if (intval($csresv['visibility'])==0) {
-                        echo " hiddencontent ";
-                    }
-                    echo " two id".intval($csresv['cid'])."\">";
+                    echo "<div id=\"ul_".intval($csresv['cid'])."\" class=\"row mx-1 py-1 tablelist id".intval($csresv['cid']) .
+                        ((intval($csresv['visibility'])==0) ? ' bg-danger text-white ' : '') . " \">";
+                    echo "<div class='col-3 id" . intval($csresv['cid']) . "' style='font-size: 1.2em;'>";
                     // move
-                    echo " <span class=\"bubblemessage orange movehandle\">".returnIntLang('bubble move', false)."</span>";
+                    echo " <i class='fa-solid fa-sort movehandle " . ((intval($csresv['visibility'])==0) ? ' text-primary-off ' : ' text-primary ') . "'></i>";
                     // show or hide
                     if (intval($csresv['visibility'])==0):
-                        echo " <a id=\"acsh".intval($csresv['cid'])."\" onclick=\"contentShowHide('".intval($csresv['cid'])."');\"><span class=\"bubblemessage red\">".returnIntLang('bubble show', false)."</span></a>";
+                        echo " <a id=\"acsh".intval($csresv['cid'])."\" onclick=\"contentShowHide('".intval($csresv['cid'])."');\"><i class='fa-solid fa-square-xmark text-white'></i></a>";
                     elseif (intval($csresv['visibility'])==1):
-                        echo " <a id=\"acsh".intval($csresv['cid'])."\" onclick=\"contentShowHide('".intval($csresv['cid'])."');\"><span class=\"bubblemessage green\">".returnIntLang('bubble hide', false)."</span></a>";
+                        echo " <a id=\"acsh".intval($csresv['cid'])."\" onclick=\"contentShowHide('".intval($csresv['cid'])."');\"><i class='fa-solid fa-square-check text-success'></i></a>";
                     else:
                         echo " <a id=\"acsh".intval($csresv['cid'])."\" onclick=\"contentShowHide('".intval($csresv['cid'])."');\"><span class=\"bubblemessage\">".returnIntLang('bubble hide', false)."</span></a>";
                     endif;
                     // duplicate
-                    echo " <a onclick=\"contentClone('".intval($csresv['cid'])."','".str_replace("\"", "”", str_replace("'", "\'", $contentinfo))."');\"><span class=\"bubblemessage orange\">".returnIntLang('bubble clonex2', false)."</span></a>";
+                    echo " <a onclick=\"contentClone('".intval($csresv['cid'])."','".str_replace("\"", "”", str_replace("'", "\'", $contentinfo))."');\"><i class='fa-solid fa-clone " . ((intval($csresv['visibility'])==0) ? ' text-primary-off ' : ' text-primary ') . "' role='button'></i></a>";
                     // delete
-                    echo " <a onclick=\"contentRemove('".intval($csresv['cid'])."','".strip_tags(str_replace("\"", "”", str_replace("'", "\'", $contentinfo)))."');\"><span class=\"bubblemessage red\">".returnIntLang('bubble delete', false)."</span></a>";
+                    echo " <a onclick=\"contentRemove('".intval($csresv['cid'])."','".strip_tags(str_replace("\"", "”", str_replace("'", "\'", $contentinfo)))."');\"><i class='fa-solid fa-trash " . ((intval($csresv['visibility'])==0) ? ' text-danger-off ' : ' text-danger ') . "' role='button'></i></a>";
                     // checkforedit
                     $cfe_sql = "SELECT `sid` FROM `security` WHERE `position` = '".escapeSQL("/".$_SESSION['wspvars']['wspbasedir']."/contentedit.php;cid=".intval($csresv['cid']))."'";
                     $cfe_res = doSQL($cfe_sql);
-                    echo " <span class=\"bubblemessage ";
-                    if ($cfe_res['num']>0): echo " orange "; else: echo " green "; endif;
-                    echo "\" onclick=\"document.getElementById('editcontentid').value = '".intval($csresv['cid'])."'; document.getElementById('editcontents').submit();\">".returnIntLang('bubble edit', false)."</span>";
-                    echo "</li>";
-                    echo "<li class=\"tablecell ";
-                    if (intval($csresv['visibility'])==0):
-                        echo " hiddencontent ";
-                    endif;
-                    echo " four id".intval($csresv['cid'])."\">".$contentinfo."</li>";
-                    echo "<li class='tablecell ";
-                    if (intval($csresv['visibility'])==0):
-                        echo " hiddencontent ";
-                    endif;
-                    echo " two id".intval($csresv['cid'])."'>";
+                    echo " <i role='button' class='fa-solid fa-square-pen " . 
+                        (($cfe_res['num']>0) ? ' text-warning ' : ((intval($csresv['visibility'])==0) ? ' text-primary-off ' : ' text-primary '));
+                    echo "' onclick=\"document.getElementById('editcontentid').value = '".intval($csresv['cid'])."'; document.getElementById('editcontents').submit();\"></i>";
+                    echo "</div>";
+                    echo "<div class=\"col-6 id".intval($csresv['cid'])."\">".$contentinfo."</div>";
+                    echo "<div class='col-3 id".intval($csresv['cid'])."'>";
                     echo date(returnIntLang('format date time',false), intval($csresv['lastchange']));
                     echo " ".returnUserData(' | shortcut', intval($csresv['uid']));
-                    echo "</li>";
-                    echo "</ul>";
+                    echo "</div>";
+                    echo "</div>";
                     echo "</li>";
                     echo "</ul>";
                 }

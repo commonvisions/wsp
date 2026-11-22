@@ -24,6 +24,10 @@
  * 
  */
 
+/* require classes --------------------------- */
+require_once __DIR__ . '/../classes/base.inc.php';
+require_once __DIR__ . '/../classes/dosql.inc.php';
+
 // OLD MYSQL functions
 if (!(function_exists('mysql_query'))) {
     define('MYSQL_ASSOC', true);
@@ -156,11 +160,13 @@ if (!(function_exists('mysqli_result'))) {
         return $datarow[$field]; 
     }
 }
+
 // escape strings to sql
 if (!(function_exists('escapeSQL'))) {
     function escapeSQL($string) {
         if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {
-            return mysqli_real_escape_string($_SESSION['wspvars']['db'], $string);
+            $sql = new doSQL($_SESSION['wspvars']['db']);
+            return $sql->escape($string);
         } else {
             return $string;
         }
@@ -183,85 +189,20 @@ function groupbyval( $groupby , $table ) {
 // doSQL returns array with resultset and complete information
 if (!(function_exists('doSQL'))) {
     function doSQL($statement) {
-		$set = array('res'=>false,'aff'=>0,'num'=>0,'set'=>array(),'sql'=>$statement,'inf'=>'','err'=>'','mysqli'=>false);
-        if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db']) {			
-			/*
-			if (mysqli_get_server_info($_SESSION['wspvars']['db'])>=8) {
-				// grep the group by part 
-				$grp = '/(GROUP BY \`[a-zA-Z_\-0-9]*\`)/i';
-				$grpfnd = preg_match($grp, $statement, $grpmatches, PREG_OFFSET_CAPTURE, 0);
-				if ($grpfnd>0) {
-					// get info about the WHERE statement
-					$whr = '/(WHERE \`[a-zA-Z_\-0-9]*\`)/i';
-					$whrfnd = preg_match($grp, $statement);
-					// get info about FROM
-					$frm = '/(FROM \`[a-zA-Z_\-0-9]*\` )(?!,)/i';
-					$frmfnd = preg_match($frm, $statement, $frmmatches, PREG_OFFSET_CAPTURE, 0);
-					// get the table
-					preg_match('/`[a-zA-Z_\-0-9]*`/i', $frmmatches[0][0], $frmval, PREG_OFFSET_CAPTURE, 0);
-					// get the groupfield
-					preg_match('/`[a-zA-Z_\-0-9]*`/i', $grpmatches[0][0], $grpfld, PREG_OFFSET_CAPTURE, 0);
-					$grpreplace = groupbyval( str_replace('`', '', $grpfld[0][0]) , str_replace('`', '', $frmval[0][0] ));
-					if ($whrfnd>0) {
-						$statement = str_replace($grpmatches[0][0], ' AND ('.$grpreplace.') ', $statement);
-					} else {
-						$statement = str_replace($grpmatches[0][0], ' WHERE ('.$grpreplace.') ', $statement);
-					}
-				}
-			}
-			*/
-			try {
-				$res = $_SESSION['wspvars']['db']->query($statement);
-			}
-			catch (Exception $e) {
-				$set['err'] = $e;
-				addWSPMsg('errormsg', '<p>' . nl2br($statement) . '</p>');
-				addWSPMsg('errormsg', '<p>' . nl2br($e) . '</p>');
-			}
-		    if (isset($res) && $res===true) {
-                $set['res'] = true;
-                $set['aff'] = $_SESSION['wspvars']['db']->affected_rows;
-            } else if (isset($res)) {
-                $set['res'] = true;
-                $set['aff'] = $_SESSION['wspvars']['db']->affected_rows;
-                $set['num'] = $res->num_rows;
-            } else if (!isset($set['err'])) {
-                $set['err'] = $_SESSION['wspvars']['db']->error_list;
-            }
-            if ($set['res']) {
-                $set['inf'] = $_SESSION['wspvars']['db']->insert_id;
-            }
-            if ($set['num'] && $set['num']>0) {
-                for($n=0; $n<$set['num']; $n++) {
-                    $set['set'][$n] = mysqli_fetch_assoc($res);
-                }
-                mysqli_free_result($res);
-            }
-            $set['mysqli'] = mysqli_get_server_info($_SESSION['wspvars']['db']);
-        } else if (function_exists('mysql_get_client_info') && mysql_get_client_info()!==false) {
-            $result = mysql_query($statement);
-			if ($result) {
-                $set['res'] = true;
-                $set['num'] = (($result===false || $result===true)?0:mysql_num_rows($result)); 
-                $set['aff'] = mysql_affected_rows();
-                $set['inf'] = (mysql_insert_id()>0)?mysql_insert_id():'';
-            }
-            if ($set['num']>0) {
-                for ($r=0; $r<$set['num']; $r++) {
-                    $set['set'][$r] = mysql_fetch_assoc($result);
-                }
-            }
-            if (mysql_error()) {
-                $set['err'] = array (
-                    'error' => mysql_error()
-                );
-            }
-            $set['mysqli'] = false;
+        $set = array('res'=>false,'aff'=>0,'num'=>0,'set'=>array(),'sql'=>$statement,'inf'=>'','err'=>'','mysqli'=>false);
+        if (isset($_SESSION['wspvars']['db']) && $_SESSION['wspvars']['db'] instanceof mysqli) {
+            $sql = new doSQL($_SESSION['wspvars']['db']);
+            return $sql->query($statement);
+        }
+
+        $set['err'] = 'Keine aktive mysqli-Datenbankverbindung.';
+        if (function_exists('addWSPMsg')) {
+            addWSPMsg('errormsg', $set['err']);
         }
         return $set;
-	}
+    }
 }
-// doResultSQL returns ONE result with a given statement that SHOULD return ONE result 
+// doResultSQL returns ONE result with a given statement that SHOULD return ONE result
 if (!(function_exists('doResultSQL'))) {
 function doResultSQL($statement) {
 	$tmp = doSQL($statement);
@@ -1538,6 +1479,7 @@ if (!(function_exists('getjMenuStructure'))) {
 	function getjMenuStructure($parent = 0, $aSelectIDs = array(), $op = '', $showmidpath = array(), $outputtype = 'structure', $showlang = 'de') {
 		// define empty output var
 		$getList = '';
+        $tmplid = 0;
 		/* get all menu information to parent connector */
 		$gms_sql = "SELECT * FROM `menu` WHERE `trash` = 0 AND `connected` = ".intval($parent)." ORDER BY `position`";
 		$gms_res = doSQL($gms_sql);
@@ -1685,21 +1627,25 @@ if (!(function_exists('getjMenuStructure'))) {
 				// start output
 				if ($mpfacts['act']) {
 					$getList.= "<li id=\"li_".intval($gmsv["mid"])."\" class=\"moveable\">\n";
-					$getList.= "<ul id=\"conttab_".intval($gmsv["mid"])."\" class=\"tablelist ";
-					if ($outputtype=="structure") {
-						$getList.= " structure ";
-						if (intval($gmsv["visibility"])==0) {
-							$getList.= " hiddenstructure ";
-                        } else {
-							if (is_array($dlarray) && in_array($showlang, $dlarray)) {
+					if ($outputtype=="contents") {
+						$getList.= "<div id=\"conttab_".intval($gmsv["mid"])."\" class=\"row py-1 mx-1 level-".$mpfacts['lvl']."\" style='border-bottom: 1px solid lightgrey; background: #efefef;'>";
+					} else {
+						$getList.= "<ul id=\"conttab_".intval($gmsv["mid"])."\" class=\"tablelist ";
+						if ($outputtype=="structure") {
+							$getList.= " structure ";
+							if (intval($gmsv["visibility"])==0) {
 								$getList.= " hiddenstructure ";
-                            } else {
-								$getList.= " shownstructure ";
-                            }
-                        }
+							} else {
+								if (is_array($dlarray) && in_array($showlang, $dlarray)) {
+									$getList.= " hiddenstructure ";
+								} else {
+									$getList.= " shownstructure ";
+								}
+							}
+						}
+						$getList.= " level-".$mpfacts['lvl']." ";
+						$getList.= "\">";
 					}
-					$getList.= " level-".$mpfacts['lvl']." ";
-					$getList.= "\">";
 					
 					if ($outputtype=="structure") {
                         // avaiable options
@@ -1892,7 +1838,7 @@ if (!(function_exists('getjMenuStructure'))) {
 							$getList.= "<li class=\"tablecell col-2 alignright\">";
 							foreach ($tplopt_res['set'] AS $tplok => $tplov) {
 								$getList.= "<div class='chstpl mid".intval($gmsv["mid"])." tpl".intval($tplov['id'])."' ";
-								if (intval($tmplid)!=intval($tplov['id'])): $getList.= " style='display: none;' "; endif;
+								if (intval($tmplid ?? 0)!=intval($tplov['id'])): $getList.= " style='display: none;' "; endif;
 								$getList.= "><a href=\"showpreview.php?previewid=".intval($gmsv["mid"])."&previewlang=".$_SESSION['wspvars']['workspacelang']."&previewtpl=".intval($tplov['id'])."\" target=\"_blank\"><span class=\"bubblemessage green\">".returnIntLang('structure bubble preview', false)."</span></a>&nbsp;</div>";
 							}			
 							$getList.= "</li>";
@@ -1914,31 +1860,20 @@ if (!(function_exists('getjMenuStructure'))) {
 						if (!($mpfacts['ext'] && !($mpfacts['sub'])) && !($mpfacts['forw'] && !($mpfacts['sub'])) && !($mpfacts['int'] && !($mpfacts['sub']))) {
                             // show only lines not forwarding and NO subs
                             // start output
-							$getList.= "<li class=\"tablecell two\">";
+							$getList.= "<div class='col-3'>";
 							// show sublist
 							if ($mpfacts['sub']) {
-								$getList.= "<a style=\"cursor: pointer;\" onclick=\"showSub(".intval($gmsv["mid"]).", ".intval($gmsv["level"]).");\">";
-							}
-							$getList.= "<span id=\"showspan_".intval($gmsv["mid"])."\" class=\"bubblemessage ";
-							if ($mpfacts['sub']) {
-								$getList.= " orange ";
-							}
-							if (!($mpfacts['sub'])) {
-								$getList.= " disabled ";
-							}
-							$getList.= "\">";
-							if ($mpfacts['dyn']) {
-								$getList.= returnIntLang('bubble dynamic', false);
-							} else if ($mpfacts['sub']) {
-								$getList.= returnIntLang('bubble showsub', false);
-							} else if ($mpfacts['int']) {
-								$getList.= returnIntLang('bubble internlink', false);
-							} else {
-								$getList.= returnIntLang('bubble showsub', false);
-							}
-							$getList.= "</span>";
-							if ($mpfacts['sub']) {
+								$getList.= "<a role='button' class='text-info' onclick='showSub(" . intval($gmsv["mid"]) . ", " . intval($gmsv["level"]) . ");' style='font-size: 1.2em;'>";
+								$getList.= "<i class='fa-solid fa-sitemap'></i>";
 								$getList.= "</a>";
+							} else {
+								if ($mpfacts['dyn']) {
+									$getList.= "<span class='disabled' style='font-size: 1.2em;'><i class='fa-solid fa-table-cells'></i></span>";
+								} else if ($mpfacts['int']) {
+									$getList.= "<span class='disabled' style='font-size: 1.2em;'><i class='fa-solid fa-square-up-right'></i></span>";
+								} else {
+									$getList.= "<span class='disabled text-info' style='font-size: 1.2em; opacity: 0'><i class='fa-solid fa-square'></i></span>";
+								}
 							}
 							// output count content areas and count contents
 							// get content area count
@@ -1955,38 +1890,53 @@ if (!(function_exists('getjMenuStructure'))) {
 							// if contentdisplay is allowed
 							if (count($templatevars['contentareas'])>0 && $mpfacts['edit']) {
 								if ($mpfacts['con'] && !($mpfacts['int'])) {
-									$getList.= " <a style=\"cursor: pointer;\" onclick=\"showContent(".intval($gmsv["mid"]).", ".intval($gmsv["level"]).");\"><span class=\"bubblemessage blue\">".returnIntLang('bubble showcontent', false)."</span></a>";
+									$getList.= " <a role='button' class='text-wsp-primary' style='font-size: 1.2em;' ";
+									$getList.= "onclick='showContent(".intval($gmsv["mid"]).", ".intval($gmsv["level"]).");'>";
+									$getList.= "<i class='fa-solid fa-square-poll-horizontal'></i>";
+									$getList.= "</a>";
 								} else {
-									$getList.= " <span class=\"bubblemessage blue disabled\">".returnIntLang('bubble showcontent', false)."</span>";
+									$getList.= "<span class='disabled text-info' style='font-size: 1.2em; opacity: 0.25'>";
+									$getList.= "<i class='fa-solid fa-square-poll-horizontal'></i>";
+									$getList.= "</span> ";
 								}
 							} else {
-								$getList.= " <span class=\"bubblemessage hidden\">".returnIntLang('bubble showcontent', false)."</span>";
+								$getList.= "<span class='disabled text-info' style='font-size: 1.2em; opacity: 0'>";
+								$getList.= "<i class='fa-solid fa-square-poll-horizontal'></i>";
+								$getList.= "</span> ";
 							}
 							// if adding is allowed 
 							if (count($templatevars['contentareas'])>0 && $mpfacts['edit']) {
 								if ($mpfacts['con'] && ($_SESSION['wspvars']['rights']['contents']!=3 && $_SESSION['wspvars']['rights']['contents']!=4) && !($mpfacts['int']) && $gmsv['editable']!=7) {
-									$getList.= " <a onclick=\"addContent(".intval($gmsv["mid"]).", 1);\"><span class=\"bubblemessage orange\">".returnIntLang('bubble addcontent', false)."</span></a>\n";
-                                } else {
+									$getList.= "<a role='button' class='text-wsp-primary' onclick='addContent(".intval($gmsv["mid"]).", 1);' style='font-size: 1.2em;'>";
+									$getList.= "<i class='fa-solid fa-square-plus'></i>";
+									$getList.= "</a> ";
+								} else {
 									/* these contents should come from dynamic -> so ADDING is not allowed (but editing) */
-									$getList.= " <span class=\"bubblemessage orange disabled\">".returnIntLang('bubble addcontent', false)."</span>";
+									$getList.= "<span class='disabled text-warning' style='font-size: 1.2em; opacity: 0.25'>";
+									$getList.= "<i class='fa-solid fa-square-plus'></i>";
+									$getList.= "</span> ";
 								}
 							} else {
-								$getList.= " <span class=\"bubblemessage hidden\">".returnIntLang('bubble addcontent', false)."</span>";
+								$getList.= "<span class='disabled text-warning' style='font-size: 1.2em; opacity: 0.25'>";
+								$getList.= "<i class='fa-solid fa-square-plus'></i>";
+								$getList.= "</span> ";	
 							}
 							// preview content
-							$getList.= " <a href=\"showpreview.php?previewid=".intval($gmsv["mid"])."&previewlang=".$_SESSION['wspvars']['workspacelang']."\" target=\"_blank\"><span class=\"bubblemessage green\">".returnIntLang('publisher bubble preview', false)."</span></a>";
-							$getList.= "</li>";
+							$getList.= "<a style='font-size: 1.2em;' href=\"showpreview.php?previewid=".intval($gmsv["mid"])."&previewlang=".$_SESSION['wspvars']['workspacelang']."\" target=\"_blank\">";
+							$getList.= "<i class=\"fa-solid fa-up-right-from-square\"></i>";
+							$getList.= "</a>";
+							$getList.= "</div>";
 						
 							// output page name
-							$getList.= "<li class=\"tablecell four\" id=\"contenthead_".intval($gmsv["mid"])."\">";
+							$getList.= "<div class=\"col-6\" id=\"contenthead_".intval($gmsv["mid"])."\">";
 							$getList.= $mpfacts['sd'];
 							// development
 							if (isset($_SESSION['wspvars']['devcontent']) && $_SESSION['wspvars']['devcontent']) {
 								$getList.= " [mid".intval($gmsv["mid"])."]";
 							}
-							$getList.= "</li>\n";
+							$getList.= "</div>\n";
 							if ($mpfacts['con'] && !($mpfacts['int']) && $mpfacts['edit']) {
-								$getList.= "<li class=\"tablecell two\">";
+								$getList.= "<div class=\"col-3\">";
 								$getList.= "[".intval($contents)." ";
 								if ($contents!=1):
 									$getList.= returnIntLang('str contents', true)." ";
@@ -2000,13 +1950,14 @@ if (!(function_exists('getjMenuStructure'))) {
 								else:
 									$getList.= returnIntLang('str contentarea', true);
 								endif;
-								$getList.= "]</li>\n";
+								$getList.= "]</div>\n";
 							} else {
-								$getList.= "<li class=\"tablecell two\">&nbsp;</li>";
+								$getList.= "<div class='col-3'></li>";
 							}
                         } // end show only lines not forwarding and NO subs
                     }
-					$getList.= "</ul>";
+
+					$getList.= ($outputtype=="contents") ? "</div>" : "</ul>";
 					
 					if ($outputtype=="contents") {
 						$getList.= "<ul id=\"ulc_".intval($gmsv["mid"])."\" class=\"tablelist sub sortable\" style=\"margin: 0px; width: 100%; padding: 0px; display: none;\"></ul>";
@@ -2295,8 +2246,10 @@ if (!(function_exists('getPublisherStructure'))) {
  * create the ftp connect
  */
 function doFTP() {
-	$ftp = false;
-	$ftp = (($_SESSION['wspvars']['ftpssl'] ?? false)===true) ? 
+    if (!function_exists(('ftp_ssl_connect')) || !function_exists('ftp_connect')) {
+        return null;
+    }
+	$ftp = (($_SESSION['wspvars']['ftpssl'] ?? false)===true) ?
 		ftp_ssl_connect(
 			($_SESSION['wspvars']['ftphost'] ?? 'localhost'), 
 			intval($_SESSION['wspvars']['ftpport'] ?? 22)) : 
@@ -3678,6 +3631,18 @@ if (!(function_exists('cleanPath'))) {
 	}
 }
 
+if (!(function_exists('absolutePath'))) {
+	function absolutePath(string $beginning, string $filepath): string
+	{
+		if (empty(trim($beginning))) return $filepath;
+		$filepath = '/' . ltrim($filepath, '/');
+		if (strpos($filepath, $beginning) !== 0) {
+			$filepath = $beginning . '/' . ltrim($filepath, '/');
+		}
+		return cleanPath('/', $filepath);
+	}
+}
+
 /**
  * ermittelt alle Bild-Dateien und gibt sie fuer ein select aufbereitet zurueck
  * new since 2015-03-17
@@ -3776,7 +3741,7 @@ if (!(function_exists('imageSelect'))) {
 				endif;
 				$showvalue = $value;
 				if ($hidepath):
-					$showvalue = substr($value, (strrpos($value, "/")+1));
+					$showvalue = basename($value);
 				endif;
 				$mediafiles .= "<option value=\"".$returnvalue."\"";
 				if (in_array(trim($returnvalue), $selected)):

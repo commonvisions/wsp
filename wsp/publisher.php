@@ -411,7 +411,7 @@ function setToPublish(selectType) {
 	<?php
 	
 	// check for rights to publish scripts
-	// if ($wspvars['rights']['script'] == 1):
+	// ['rights']['script'] == 1
 	// pruefung auf aktualisierungen in der js-datei seit letztem publishing
 			
 	$jschanges_sql = "SELECT `id`, `describ`, `file`, (`lastchange` > `lastpublish`) AS `changed` FROM `javascript` WHERE `cfolder` = '' ORDER BY `lastchange` < `lastpublish`, `describ`";

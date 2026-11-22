@@ -96,13 +96,13 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
 	$login_sql = "SELECT * FROM `restrictions` WHERE `user` = '".escapeSQL($_POST['loginuser'])."' AND `pass` = '".md5($_POST['loginpassword'])."' AND `usertype` != '0'";
 	$login_res = doSQL($login_sql);
 
-	if ($login_res['num']==1) {
+	if ($login_res['num'] === 1) {
 		$_SESSION['wspvars']['usevar'] = md5($login_res['set'][0]['rid'].$_SERVER['REMOTE_ADDR'].time().$_SERVER['HTTP_USER_AGENT']);
 		$sql = "INSERT INTO `security` SET 
 			`referrer` = '".substr($_SERVER['REMOTE_ADDR'],0,12)."',
 			`userid` = '".intval($login_res['set'][0]['rid'])."',
 			`timevar` = '".time()."',
-			`usevar` = '".$_SESSION['wspvars']['usevar']."',
+			`usevar` = '" . escapeSQL($_SESSION['wspvars']['usevar']) . "',
 			`logintime` = '".time()."',
 			`position` = 'loginattempt',
 			`useragent` = '".$_SERVER['HTTP_USER_AGENT']."'"; //'
@@ -195,8 +195,8 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
                 doSQL("DELETE FROM `security` WHERE `userid` = '".intval($login_res['set'][0]['rid'])."'");
             }
 		}
-		if ($loginindex) {
-			require ("./data/include/checkuser.inc.php");
+		if (isset($loginindex)) {
+            require ("./data/include/checkuser.inc.php");
 		}
 	}
 	else {
@@ -247,34 +247,6 @@ if (array_key_exists('actusersid', $_SESSION['wspvars']) && intval($_SESSION['ws
 	$loginindex = true;
 }
 
-// check for system update
-if (_isCurl()) {
-    $lastupdate_sql = "SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'lastupdate'";
-    $lastupdate_res = doResultSQL($lastupdate_sql);
-    if ($lastupdate_res!==false) {
-        $_SESSION['wspvars']['updatesystem'] = false;
-        $defaults = array( 
-            CURLOPT_URL => trim($_SESSION['wspvars']['updateuri']."/updatenote.txt?sys=".$_SESSION['wspvars']['wspversion']), 
-            CURLOPT_HEADER => 0, 
-            CURLOPT_RETURNTRANSFER => TRUE, 
-            CURLOPT_TIMEOUT => 4 
-        );
-        $ch = curl_init();
-        curl_setopt_array($ch, $defaults);    
-        if( ! $fileupdate = curl_exec($ch)) { trigger_error(curl_error($ch)); } 
-        curl_close($ch);
-        if ($fileupdate>intval($lastupdate_res)) {
-            $_SESSION['wspvars']['updatesystem'] = true;
-        }
-    }
-    else {
-        $sql = "INSERT INTO `wspproperties` SET `varname` = 'lastupdate', `varvalue` = '".time()."'";
-        doSQL($sql);
-    }
-} else {
-    addWSPMsg('errormsg', 'CURL not supported.');
-}
-
 /* include head ------------------------------ */
 require ("./data/include/header.inc.php");
 
@@ -304,20 +276,6 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 		<p><?php echo returnIntLang('home logouthint'); ?></p></fieldset>
         <?php 
 
-		$plugin_sql = "SELECT * FROM `wspplugins`";
-		$plugin_res = doSQL($plugin_sql);
-		if ($plugin_res['num']>0) {
-			foreach ($plugin_res['set'] AS $prk => $prv) {
-				$pluginident = $prv["guid"];
-				if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists($pluginident, $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights'][$pluginident]==1) {
-					$pluginfolder = $prv["pluginfolder"];
-					if (is_file(DOCUMENT_ROOT."/".$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/cmindex.php")) {
-						include (DOCUMENT_ROOT."/".$_SESSION['wspvars']['wspbasediradd'].'/'.$_SESSION['wspvars']['wspbasedir']."/plugins/".$pluginfolder."/cmindex.php");
-					}
-				}
-			}
-		}
-		
 		if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && array_key_exists('contents', $_SESSION['wspvars']['rights']) && $_SESSION['wspvars']['rights']['contents']!=0): ?>
 		<fieldset class="text two first">
 			<legend><?php echo returnIntLang('home edited'); ?> <?php echo legendOpenerCloser('index_lasteditinfo_fieldset'); ?></legend>
@@ -361,33 +319,6 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
                 }
             }
 			
-			?>
-			</div>
-		</fieldset>
-		<?php endif; ?>
-		<?php if (array_key_exists('wspvars', $_SESSION) && array_key_exists('usertype', $_SESSION['wspvars']) && $_SESSION['wspvars']['usertype']==1): ?>
-		<fieldset class="text two third">
-			<legend><?php echo returnIntLang('home logins'); ?> <?php echo legendOpenerCloser('index_lastuserinfo_fieldset'); ?></legend>
-			<div id="index_lastuserinfo_fieldset">
-			<?php
-			
-			$loginfo_sql = "SELECT * FROM `securitylog` WHERE `lastaction` = 'login' ORDER BY `lastchange` DESC"; 
-			$loginfo_res = doSQL($loginfo_sql);
-			
-			if ($loginfo_res['num']>0) {
-				$trackuid = array();
-				foreach ($loginfo_res['set'] AS $lirk => $lirv) {
-					if (!(in_array(intval($lirv['uid']), $trackuid)) && count($trackuid)<5) {
-						$trackuid[] = intval($lirv['uid']);
-						$userinfo_sql = "SELECT `realname` FROM `restrictions` WHERE `rid` = ".intval($lirv['uid']);
-						$userinfo_res = doResultSQL($userinfo_sql);
-						if (trim($userinfo_res)!='') {
-							echo "<p><em>".setUTF8($userinfo_res)."</em> - ".returnIntLang('home logins text')." <em>".date(returnIntLang("format date time", false), intval($lirv['lastchange']))."</em></p>";
-                        }
-                    }
-                }
-            }
-                
 			?>
 			</div>
 		</fieldset>

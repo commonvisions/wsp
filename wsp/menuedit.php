@@ -33,7 +33,7 @@ require ("./data/include/checkuser.inc.php");
 require ("./data/include/errorhandler.inc.php");
 require ("./data/include/siteinfo.inc.php");
 /* define page specific vars ----------------- */
-$worklang = unserialize($_SESSION['wspvars']['sitelanguages']);
+$worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
 /* page specific funcs and actions */
 
 if (isset($_POST['op']) && $_POST['op']=='new' && isset($_POST['newmenuitem']) && trim($_POST['newmenuitem'])!=""):
