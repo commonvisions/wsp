@@ -163,7 +163,8 @@ if (isset($_SESSION['wspvars']['devstat']) && $_SESSION['wspvars']['devstat']===
 <script type="text/javascript">
 
 $(document).ready(function() {
-	$('.datatable').each(function () {
+	
+$('.datatable').each(function () {
 		if (!$.fn.DataTable.isDataTable(this)) {
 			$(this).DataTable({
 				language: {
@@ -172,6 +173,21 @@ $(document).ready(function() {
 			});
 		}
 	});
+
+	$('select.select2').each(function () {
+		if (!$(this).hasClass('select2-hidden-accessible')) {
+			$('select.select2').select2({
+				matcher: function (params, data) {
+					const term = $.trim(params.term).toLowerCase();
+					if (!term) { return data; }
+					const text = (data.text || '').toLowerCase();
+					const value = (data.id || '').toLowerCase();
+					return text.includes(term) || value.includes(term) ? data : null;
+				}
+			});
+		}
+	});
+
 });
 
 <?php 
