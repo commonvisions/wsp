@@ -14,6 +14,8 @@
 !media/layout/slick*/*/*
 
 !wsp/composer.json
+!wsp/assets/
+!wsp/assets/**
 !wsp/modules/
 !wsp/modules/modules.json
 !wsp/modules/syncfiles.php
