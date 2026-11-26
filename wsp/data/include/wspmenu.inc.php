@@ -116,423 +116,543 @@ function mobileJump(jumpValue) {
 	}
 
 </script>
-<div id="menuholder" class="horizontal">
-	<div id="togglenav">
-		<i class="fa-solid fa-bars"></i>
-	</div> 
-	<nav><ul>
-		<?php $mp = 1; ?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><i class="fa-solid fa-house"></i> <?php echo returnIntLang('menu home'); ?></a> <ul class="basic level1">
-			<li><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php"><?php echo returnIntLang('menu home cms'); ?></a></li>
-			<?php if ($_SESSION['wspvars']['liveurl']==$_SESSION['wspvars']['workspaceurl']){ ?>
-				<li><a href="http://<?php echo $_SESSION['wspvars']['liveurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>"><?php echo returnIntLang('menu home'); ?> <?php echo returnIntLang('menu home website'); ?></a></li>
-			<?php } else{ ?>
-				<li><a href="http://<?php echo $_SESSION['wspvars']['liveurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>"><?php echo returnIntLang('menu home website'); ?> (LIVE)</a></li>
-				<li><a href="http://<?php echo $_SESSION['wspvars']['workspaceurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>"><?php echo returnIntLang('menu home website'); ?> (DEV)</a></li>
-			<?php } ?>
-		</ul></li>
-	<?php $mp = 2; if ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1) { ?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu user'); ?></a>
-		<ul class="basic level1">
-			<li class="level1" id="m_<?php echo $mp; ?>_0">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usermanagement.php"><?php echo returnIntLang('menu user manage'); ?></a>
-			</li>
-			<li class="level1" id="m_<?php echo $mp; ?>_1">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usershow.php"><?php echo returnIntLang('menu user login'); ?></a>
-			</li>
-			<?php if ($isextended==1){ ?>
-				<li class="level1" id="m_<?php echo $mp; ?>_3">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/userhistory.php"><?php echo returnIntLang('menu user logs'); ?></a>
-				</li>
-			<?php } ?>
-		</ul>
-		</li>
-	<?php } else { ?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu user'); ?></a> <?php
-
-			if (isset($_SESSION['wspvars']['messages'])){
-				$allmessage = unserializeBroken($_SESSION['wspvars']['messages']) ?: [];
-				$i = 0;
-				if (count($allmessage)>0 && strlen(trim($_SESSION['wspvars']['messages']))>4){
-					foreach ($allmessage AS $key => $value) {
-						if ($value[3]==0){
-							$i++;
-						}
-					}
-				}
-				if ($i>0){
-					echo "<span class=\"bubblemessageholder\"><span class=\"bubblemessage orange\" id=\"\">".$i."</span></span>";
-				}
-			}
-
-			?>
-			<ul class="basic level1">
-				<li id="m_<?php echo $mp; ?>_0">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usermanagement.php"><?php echo returnIntLang('menu user managedata'); ?></a>
-				</li>
-			</ul>
-		</li>
-	<?php } ?>
-
-	<?php $mp = 3; if (
-		($_SESSION['wspvars']['rights']['siteprops'] ?? 0) != 0) { ?>
-		<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu siteprefs'); ?></a>
-		<ul class="basic level1">
-			<?php if ($isextended==1){ ?>
-				<li class="level1" id="m_<?php echo $mp; ?>_2">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/siteprefs.php"><?php echo returnIntLang('menu siteprefs generell'); ?></a>
-				</li>
-				<li class="level1" id="m_<?php echo $mp; ?>_2">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/sites.php"><?php echo returnIntLang('menu siteprefs sites'); ?></a>
-				</li>
-				<li class="level1" id="m_<?php echo $mp; ?>_1">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/headerprefs.php"><?php echo returnIntLang('menu siteprefs redirects'); ?></a>
-				</li>
-			<?php } ?>
-			<li class="level1" id="m_<?php echo $mp; ?>_3">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/semanagement.php"><?php echo returnIntLang('menu siteprefs seo'); ?></a>
-			</li>
-			<li class="level1" id="m_<?php echo $mp; ?>_4">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/analytics.php"><?php echo returnIntLang('menu siteprefs google'); ?></a>
-			</li>
-			<li class="level1" id="m_<?php echo $mp; ?>_4">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/privacy.php"><?php echo returnIntLang('menu siteprefs privacy'); ?></a>
-			</li>
-		</ul>
-		</li>
-		<?php } ?>
-
-	<?php
-	$mp = 4;
-	if (($_SESSION['wspvars']['rights']['design'] ?? 0) != 0) { ?>
-			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu design'); ?></a> <ul class="basic level1">
-			<?php if ($fsaccess) { ?><li class="level1" id="m_<?php echo $mp; ?>_0">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/screenmanagement.php"><?php echo returnIntLang('menu design media'); ?></a>
-			</li>
-			<?php if ($isextended==1) { ?>
-				<li class="level1" id="m_<?php echo $mp; ?>_8">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/fontmanagement.php"><?php echo returnIntLang('menu design fonts'); ?></a>
-				</li>
-			<?php } ?>
-			<?php } ?>
-			<li class="level1" id="m_<?php echo $mp; ?>_1">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/designedit.php"><?php echo returnIntLang('menu design css'); ?></a>
-			</li>
-			<?php if ($isextended==1){ ?>
-				<li class="level1" id="m_<?php echo $mp; ?>_7">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/scriptedit.php"><?php echo returnIntLang('menu design js'); ?></a>
-				</li>
-			<?php } ?>
-			<li class="level1" id="m_<?php echo $mp; ?>_2">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/menutemplate.php"><?php echo returnIntLang('menu design menutmp'); ?></a>
-			</li>
-			<li class="level1" id="m_<?php echo $mp; ?>_3">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/selfvarsedit.php"><?php echo returnIntLang('menu design selfvars'); ?></a>
-			</li>
-			<li class="level1" id="m_<?php echo $mp; ?>_4">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/templates.php"><?php echo returnIntLang('menu design templates'); ?></a>
-			</li>
-			</ul>
-			</li>
-		<?php } ?>
-
-	<?php
-	$mp = 6;
-	if (
-		($_SESSION['wspvars']['rights']['imagesfolder'] ?? "0") != "0"
-		|| ($_SESSION['wspvars']['rights']['downloadfolder'] ?? "0") != "0"
-		|| ($_SESSION['wspvars']['rights']['flashfolder'] ?? "0") != "0"
-	) {
-
-		if ($fsaccess) {
-			?>
-			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_6"><a><?php echo returnIntLang('menu files'); ?></a>
-			<ul id="m_6s" class="basic level1">
-				<?php if (($_SESSION['wspvars']['rights']['imagesfolder'] ?? 0)!="0") { ?>
-				<li class="level1" id="m_6_1">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/imagemanagement.php"><?php echo returnIntLang('menu files images'); ?></a>
-				</li>
-				<?php } ?>
-				<?php if (($_SESSION['wspvars']['rights']['downloadfolder'] ?? 0)!="0") { ?>
-				<li class="level1" id="m_6_2">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/documentmanagement.php"><?php echo returnIntLang('menu files docs'); ?></a>
-				</li>
-				<?php } ?>
-				<?php if (($_SESSION['wspvars']['rights']['videofolder'] ?? 0)!="0") { ?>
-				<li class="level1" id="m_6_3">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/videomanagement.php"><?php echo returnIntLang('menu files video'); ?></a>
-				</li>
-				<?php } ?>
-			</ul>
-			</li>
-		<?php
-		}
-		}
-
-		if ($standardtemp>0) { /* allow structure/contents only with defined standard template */ ?>
-		<?php
-		$mp = 5;
-		if (
-			(($_SESSION['wspvars']['rights']['sitestructure'] ?? "0") != "0")
-			|| (($_SESSION['wspvars']['rights']['contents'] ?? "0") != "0")
-			|| ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)
-		) { ?>
-				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu content'); ?></a>
-				<ul class="basic level1">
-					<?php if (($_SESSION['wspvars']['rights']['sitestructure'] ?? 0 || ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)) != 0){ ?>
+<div id="mainmenu">
+	<nav>
+		<ul>
+			<?php $mp = 1; ?>
+			<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
+				<a>
+					<span class="icon"><i class="fa-solid fa-house"></i></span>
+					<span class="link"><?php echo returnIntLang('menu home'); ?></span>
+					<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
+				</a>
+				<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>>
+					<li><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php">
+						<span class="icon"><i class="fa-solid fa-gauge"></i></span>
+						<span class="link"><?php echo returnIntLang('menu home cms'); ?></span>
+					</a></li>
+					<?php if ($_SESSION['wspvars']['liveurl']==$_SESSION['wspvars']['workspaceurl']){ ?>
+						<li><a href="http://<?php echo $_SESSION['wspvars']['liveurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>">
+							<span class="icon"><i class="fa-solid fa-globe"></i></span>
+							<span class="link"><?php echo returnIntLang('menu home'); ?> <?php echo returnIntLang('menu home website'); ?></span>
+						</a></li>
+					<?php } else{ ?>
+						<li><a href="http://<?php echo $_SESSION['wspvars']['liveurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>">
+							<span class="icon"><i class="fa-solid fa-globe"></i></span>
+							<span class="link"><?php echo returnIntLang('menu home website'); ?> (LIVE)</span>
+						</a></li>
+						<li><a href="http://<?php echo $_SESSION['wspvars']['workspaceurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>">
+							<span class="icon"><i class="fa-brands fa-dev"></i></span>
+							<span class="link"><?php echo returnIntLang('menu home website'); ?> (DEV)</span>
+						</a></li>
+					<?php } ?>
+			</ul></li>
+			<?php $mp = 2; if ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1) { ?>
+				<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
+					<a>
+						<span class="icon"><i class="fa-solid fa-user"></i></span>
+						<span class="link"><?php echo returnIntLang('menu user'); ?></span>
+						<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
+					</a>
+					<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block;'";?>>
 						<li class="level1" id="m_<?php echo $mp; ?>_0">
-							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/menuedit.php"><?php echo returnIntLang('menu content structure'); ?></a>
+							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usermanagement.php">
+								<span class="icon"><i class="fa-solid fa-user-group"></i></span>
+								<span class="link"><?php echo returnIntLang('menu user manage'); ?></span>
+							</a>
 						</li>
-					<?php } ?>
-					<?php if (($_SESSION['wspvars']['rights']['contents'] ?? 0) != 0 || ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)){ ?>
 						<li class="level1" id="m_<?php echo $mp; ?>_1">
-							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/contentstructure.php"><?php echo returnIntLang('menu content contents'); ?></a>
+							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usershow.php">
+								<span class="icon"><i class="fa-solid fa-user-lock"></i></span>
+								<span class="link"><?php echo returnIntLang('menu user login'); ?></span>
+							</a>
 						</li>
-					<?php } ?>
-					<?php if ($isextended==1) {
-						$worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
-						if (((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)) { ?>
-							<li class="level1" id="m_<?php echo $mp; ?>_4">
-								<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/languagetools.php"><?php echo returnIntLang('menu content localize'); ?></a>
+						<?php if ($isextended==1){ ?>
+							<li class="level1" id="m_<?php echo $mp; ?>_3">
+								<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/userhistory.php">
+									<span class="icon"><i class="fa-solid fa-user-clock"></i></span>
+									<span class="link"><?php echo returnIntLang('menu user logs'); ?></span>
+								</a>
 							</li>
-						<?php }
-						if (($_SESSION['wspvars']['rights']['contents'] ?? 0)==1 || ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)) {
-							echo '<li class="level1" id="m_' . $mp . '_2">';
-							echo '<a href="/' . $_SESSION['wspvars']['wspbasedir'] . '/globalcontent.php">';
-							echo returnIntLang('menu content global');
-							echo '</a></li>';
-						}
-					echo '</ul></li>';
-					}
-				} ?>
-		<?php }
-		$mp = 7;
-		if (
-			(int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1
-			|| (
-				($_SESSION['wspvars']['rights']['publisher'] ?? 0) != 0
-				&& ($_SESSION['wspvars']['rights']['publisher'] ?? 0) < 100
-			)
-		) {
-			if ($standardtemp>0){ // allow preview/publisher only with defined standard template
-
-				$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
-				$queue_res = doSQL($queue_sql);
-				$queue_num = $queue_res['num'];
-
-				if ($isextended==1) {
-				// show publisher and queue link as submenupoints
-				if ($fsaccess) {
-				?>
-				<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed publisher'); ?> <?php if($queue_num>0){ echo "&nbsp;<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; } ?></a> <ul class="basic level1">
-					<li class="level1" id="m_<?php echo $mp; ?>_0">
-						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed'); ?></a>
-					</li>
-					<li class="level1" id="m_<?php echo $mp; ?>_1">
-						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publishqueue.php"><?php echo returnIntLang('menu changed queue'); ?><?php if($queue_num>0){ echo "&nbsp;&nbsp;&nbsp;<span class='bubblemessage orange'>".$queue_num."</span>&nbsp;"; } ?></a>
-					</li>
-				</ul></li>
-				<?php
-				}
-			}
-				else {
-					if ($fsaccess) {
-					// show only publisher as main menupoint
-					?>
-					<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed'); ?></a></li>
-					<?php
-					}
-				} ?>
-		<?php } ?>
-		<?php } elseif (($_SESSION['wspvars']['rights']['contents'] ?? 0)!=0){ ?>
-			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed preview'); ?></a></li>
-		<?php } ?>
-
-		<?php
-		$mp = 10;
-		if ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1) {
-		?>
-			<li class="basic level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a><?php echo returnIntLang('menu manage'); ?><?php if (isset($_SESSION['wspvars']['updatesystem']) && $_SESSION['wspvars']['updatesystem']===true){ echo " &nbsp;<span class='bubblemessage orange'>!</span>"; } ?></a>
-			<ul id="m_10s" class="basic level1">
-				<?php if (is_array($_SESSION['wspvars']['locallanguages']) && count($_SESSION['wspvars']['locallanguages'])>1){
-
-					ksort($_SESSION['wspvars']['locallanguages'], SORT_STRING);
-
-					?>
-					<li><a><?php echo returnIntLang('menu manage language'); ?></a>
-					<ul class="basic level2" id="m_lang" style="display: none;">
-						<?php
-						foreach ($_SESSION['wspvars']['locallanguages'] as $llkey => $llvalue) {
-							echo "<li style=\"\"><a href=\"" . $_SERVER['PHP_SELF'] . "?setlang=" . $llkey . "\">" . $llvalue . "</a></li>";
-						}
-						?>
+						<?php } ?>
 					</ul>
 				</li>
-				<?php } ?>
-			<li class="level1" id="m_<?php echo $mp; ?>_0">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/editorprefs.php"><?php echo returnIntLang('menu manage editor'); ?></a>
-			</li>
-			<?php if ($isextended==1){ ?>
-				<li class="level1" id="m_<?php echo $mp; ?>_4">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/dev.php"><?php echo returnIntLang('menu manage developer'); ?></a>
-				</li>
-				<?php if ($fsaccess) { ?>
-				<li class="level1" id="m_<?php echo $mp; ?>_4">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/cleanup.php"><?php echo returnIntLang('menu manage cleanup'); ?></a>
-				</li>
-                <li class="level1" id="m_<?php echo $mp; ?>_6">
-                    <a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/trash.php"><?php echo returnIntLang('menu content trash'); ?></a>
-                </li>
-				<?php } ?>
-				<!-- <li class="level1" id="m_<?php echo $mp; ?>_6">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/editcon.php"><?php echo returnIntLang('menu manage connections'); ?></a>
-				</li> -->
-			<?php } ?>
-			<li class="level1" id="m_<?php echo $mp; ?>_2">
-				<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/modules.php"><?php echo returnIntLang('menu manage modules'); ?></a>
-			</li>
-			<?php if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/system.php")){ ?>
-				<li class="level1" id="m_<?php echo $mp; ?>_3">
-					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/system.php"><?php echo returnIntLang('menu manage system'); if (isset($_SESSION['wspvars']['updatesystem']) && $_SESSION['wspvars']['updatesystem']===true){ echo " &nbsp;<span class='bubblemessage orange'>!</span>"; } ?></a>
-				</li>
-			<?php } ?>
-			</ul></li>
-		<?php } else{ ?>
-			<?php if (is_array($_SESSION['wspvars']['locallanguages']) && count($_SESSION['wspvars']['locallanguages'])>1){
+			<?php } else { ?>
+				<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
+					<a><?php echo returnIntLang('menu user'); ?></a> <?php
 
-			ksort($_SESSION['wspvars']['locallanguages'], SORT_STRING);
+				if (isset($_SESSION['wspvars']['messages'])){
+					$allmessage = unserializeBroken($_SESSION['wspvars']['messages']) ?: [];
+					$i = 0;
+					if (count($allmessage)>0 && strlen(trim($_SESSION['wspvars']['messages']))>4){
+						foreach ($allmessage AS $key => $value) {
+							if ($value[3]==0){
+								$i++;
+							}
+						}
+					}
+					if ($i>0){
+						echo "<span class=\"bubblemessageholder\"><span class=\"bubblemessage orange\" id=\"\">".$i."</span></span>";
+					}
+				}
+
+				?>
+				<ul class="level1">
+					<li id="m_<?php echo $mp; ?>_0">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usermanagement.php">
+							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
+							<span class="link"><?php echo returnIntLang('menu user managedata'); ?></span>
+						</a>
+					</li>
+				</ul>
+			</li>
+		<?php } ?>
+
+		<?php $mp = 3; if (
+			($_SESSION['wspvars']['rights']['siteprops'] ?? 0) != 0) { ?>
+			<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
+				<a>
+					<span class="icon"><i class="fa-brands fa-safari"></i></span>
+					<span class="link"><?php echo returnIntLang('menu siteprefs'); ?></span>
+					<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
+				</a>
+			<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block;'";?>>
+				<?php if ($isextended==1){ ?>
+					<li class="level1" id="m_<?php echo $mp; ?>_2">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/siteprefs.php">
+							<span class="icon"><i class="fa-solid fa-toolbox"></i></span>
+							<span class="link"><?php echo returnIntLang('menu siteprefs generell'); ?></span>
+						</a>
+					</li>
+					<!-- 
+					<li class="level1" id="m_<?php echo $mp; ?>_2">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/sites.php">
+							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
+							<span class="link"><?php echo returnIntLang('menu siteprefs sites'); ?></span>
+						</a>
+					</li>
+					-->
+					<li class="level1" id="m_<?php echo $mp; ?>_1">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/headerprefs.php">
+							<span class="icon"><i class="fa-solid fa-share-from-square"></i></span>
+							<span class="link"><?php echo returnIntLang('menu siteprefs redirects'); ?></span>
+						</a>
+					</li>
+				<?php } ?>
+				<li class="level1" id="m_<?php echo $mp; ?>_3">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/semanagement.php">
+						<span class="icon"><i class="fa-brands fa-google"></i></span>
+						<span class="link"><?php echo returnIntLang('menu siteprefs seo'); ?></span>
+					</a>
+				</li>
+				<li class="level1" id="m_<?php echo $mp; ?>_4">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/analytics.php">
+						<span class="icon"><i class="fa-solid fa-chart-line"></i></span>
+						<span class="link"><?php echo returnIntLang('menu siteprefs google'); ?></span>
+					</a>
+				</li>
+				<li class="level1" id="m_<?php echo $mp; ?>_4">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/privacy.php">
+						<span class="icon"><i class="fa-solid fa-user-shield"></i></span>
+						<span class="link"><?php echo returnIntLang('menu siteprefs privacy'); ?></span>
+					</a>
+				</li>
+			</ul>
+			</li>
+			<?php } ?>
+
+		<?php
+		$mp = 4;
+		if (($_SESSION['wspvars']['rights']['design'] ?? 0) != 0) { ?>
+				<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
+					<a>
+						<span class="icon"><i class="fa-solid fa-palette"></i></span>
+						<span class="link"><?php echo returnIntLang('menu design'); ?></span>
+						<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
+					</a>
+					<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>>
+				<?php if ($fsaccess) { ?><li class="level1" id="m_<?php echo $mp; ?>_0">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/screenmanagement.php">
+						<span class="icon"><i class="fa-solid fa-image"></i></span>
+						<span class="link"><?php echo returnIntLang('menu design media'); ?></span>
+					</a>
+				</li>
+				<?php if ($isextended==1) { ?>
+					<li class="level1" id="m_<?php echo $mp; ?>_8">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/fontmanagement.php">
+							<span class="icon"><i class="fa-brands fa-fonticons"></i></span>
+							<span class="link"><?php echo returnIntLang('menu design fonts'); ?></span>
+						</a>
+					</li>
+				<?php } ?>
+				<?php } ?>
+				<li class="level1" id="m_<?php echo $mp; ?>_1">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/designedit.php">
+						<span class="icon"><i class="fa-brands fa-css"></i></span>
+						<span class="link"><?php echo returnIntLang('menu design css'); ?></span>
+					</a>
+				</li>
+				<?php if ($isextended==1){ ?>
+					<li class="level1" id="m_<?php echo $mp; ?>_7">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/scriptedit.php">
+							<span class="icon"><i class="fa-brands fa-square-js"></i></span>
+							<span class="link"><?php echo returnIntLang('menu design js'); ?></span>
+						</a>
+					</li>
+				<?php } ?>
+				<li class="level1" id="m_<?php echo $mp; ?>_2">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/menutemplate.php">
+						<span class="icon"><i class="fa-solid fa-rectangle-list"></i></span>
+						<span class="link"><?php echo returnIntLang('menu design menutmp'); ?></span>
+					</a>
+				</li>
+				<li class="level1" id="m_<?php echo $mp; ?>_3">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/selfvarsedit.php">
+						<span class="icon"><i class="fa-solid fa-code"></i></span>
+						<span class="link"><?php echo returnIntLang('menu design selfvars'); ?></span>
+					</a>
+				</li>
+				<li class="level1" id="m_<?php echo $mp; ?>_4">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/templates.php">
+						<span class="icon"><i class="fa-regular fa-file-code"></i></span>
+						<span class="link"><?php echo returnIntLang('menu design templates'); ?></span>
+					</a>
+				</li>
+				</ul>
+				</li>
+			<?php } ?>
+
+		<?php
+		$mp = 6;
+		if (
+			($_SESSION['wspvars']['rights']['imagesfolder'] ?? "0") != "0"
+			|| ($_SESSION['wspvars']['rights']['downloadfolder'] ?? "0") != "0"
+		) {
+
+			if ($fsaccess) {
+				?>
+				<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_6">
+					<a>
+						<span class="icon"><i class="fa-solid fa-file"></i></span>
+						<span class="link"><?php echo returnIntLang('menu files'); ?></span>
+						<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
+					</a>
+					<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block;'";?>>
+					<?php if (($_SESSION['wspvars']['rights']['imagesfolder'] ?? 0)!="0") { ?>
+						<li class="level1" id="m_6_1">
+							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/imagemanagement.php">
+								<span class="icon"><i class="fa-solid fa-file-image"></i></span>
+								<span class="link"><?php echo returnIntLang('menu files images'); ?></span>
+							</a>
+						</li>
+						<?php } ?>
+						<?php if (($_SESSION['wspvars']['rights']['downloadfolder'] ?? 0)!="0") { ?>
+						<li class="level1" id="m_6_2">
+							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/documentmanagement.php">
+								<span class="icon"><i class="fa-solid fa-file-arrow-down"></i></span>
+								<span class="link"><?php echo returnIntLang('menu files docs'); ?></span>
+							</a>
+						</li>
+						<?php } ?>
+						<?php if (($_SESSION['wspvars']['rights']['videofolder'] ?? 0)!="0") { ?>
+						<li class="level1" id="m_6_3">
+							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/videomanagement.php">
+								<span class="icon"><i class="fa-solid fa-file-video"></i></span>
+								<span class="link"><?php echo returnIntLang('menu files video'); ?></span>
+							</a>
+						</li>
+						<?php } ?>
+					</ul>
+				</li>
+			<?php
+			}
+			}
+
+			if ($standardtemp>0) { /* allow structure/contents only with defined standard template */
+				$mp = 5;
+				if (
+					(($_SESSION['wspvars']['rights']['sitestructure'] ?? "0") != "0")
+					|| (($_SESSION['wspvars']['rights']['contents'] ?? "0") != "0")
+					|| ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)
+				) { ?>
+					<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
+						<a>
+							<span class="icon"><i class="fa-solid fa-file-invoice"></i></span>
+							<span class="link"><?php echo returnIntLang('menu content'); ?></span>
+							<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
+						</a>
+						<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>>
+							<?php if (($_SESSION['wspvars']['rights']['sitestructure'] ?? 0 || ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)) != 0){ ?>
+								<li class="level1" id="m_<?php echo $mp; ?>_0">
+									<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/menuedit.php">
+										<span class="icon"><i class="fa-solid fa-sitemap"></i></span>
+										<span class="link"><?php echo returnIntLang('menu content structure'); ?></span>
+									</a>
+								</li>
+							<?php } ?>
+							<?php if (($_SESSION['wspvars']['rights']['contents'] ?? 0) != 0 || ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)){ ?>
+								<li class="level1" id="m_<?php echo $mp; ?>_1">
+									<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/contentstructure.php">
+										<span class="icon"><i class="fa-solid fa-pen-to-square"></i></span>
+										<span class="link"><?php echo returnIntLang('menu content contents'); ?></span>
+									</a>
+								</li>
+							<?php } ?>
+							<?php if ($isextended==1) {
+								$worklang = unserializeBroken($_SESSION['wspvars']['sitelanguages']);
+								if (((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)) { ?>
+									<li class="level1" id="m_<?php echo $mp; ?>_4">
+										<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/languagetools.php">
+											<span class="icon"><i class="fa-solid fa-spell-check"></i></span>
+											<span class="link"><?php echo returnIntLang('menu content localize'); ?></span>
+										</a>
+									</li>
+								<?php }
+								if (($_SESSION['wspvars']['rights']['contents'] ?? 0)==1 || ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1)) {
+									echo '<li class="level1" id="m_' . $mp . '_2">';
+									echo '<a href="/' . $_SESSION['wspvars']['wspbasedir'] . '/globalcontent.php">';
+									echo '<span class="icon"><i class="fa-brands fa-buffer"></i></span>';
+									echo '<span class="link">' . returnIntLang('menu content global') . '</span>';
+									echo '</a></li>';
+								}
+							}
+						echo '</ul></li>';
+					} ?>
+			<?php }
+			$mp = 7;
+			if (
+				(int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1
+				|| (
+					($_SESSION['wspvars']['rights']['publisher'] ?? 0) != 0
+					&& ($_SESSION['wspvars']['rights']['publisher'] ?? 0) < 100
+				)
+			) {
+				if ($standardtemp>0){ // allow preview/publisher only with defined standard template
+
+					$queue_sql = "SELECT `id` FROM `wspqueue` WHERE `done` = 0 GROUP BY `param`, `id`";
+					$queue_res = doSQL($queue_sql);
+					$queue_num = $queue_res['num'];
+
+					if ($isextended==1) {
+					// show publisher and queue link as submenupoints
+					if ($fsaccess) {
+					?>
+					<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
+						<a>
+							<span class="icon"><i class="fa-solid fa-cloud-arrow-up"></i>
+							<?php if($queue_num>0) {
+								echo "<div class='badge badge-sm badge-float bg-danger'>".$queue_num."</div>"; 
+							} ?></span>
+							<span class="link"><?php echo returnIntLang('menu changed publisher'); ?></span>
+							<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
+						</a>
+						<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>>
+							<li class="level1" id="m_<?php echo $mp; ?>_0">
+								<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php">
+									<span class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+									<span class="link"><?php echo returnIntLang('menu changed'); ?></span>
+								</a>
+							</li>
+							<li class="level1" id="m_<?php echo $mp; ?>_1">
+								<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publishqueue.php">
+									<span class="icon"><i class="fa-solid fa-hourglass-half"></i></span>
+									<span class="link"><?php echo returnIntLang('menu changed queue'); ?></span>
+								</a>
+							</li>
+						</ul>
+					</li>
+					<?php
+					}
+				}
+					else {
+						if ($fsaccess) {
+						// show only publisher as main menupoint
+						?>
+						<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
+							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php">
+								<span class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+								<span class="link"><?php echo returnIntLang('menu changed'); ?></span>
+							</a>
+						</li>
+						<?php
+						}
+					} ?>
+			<?php } ?>
+			<?php } elseif (($_SESSION['wspvars']['rights']['contents'] ?? 0)!=0){ ?>
+				<li class="level0 <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>"><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php"><?php echo returnIntLang('menu changed preview'); ?></a></li>
+			<?php } ?>
+
+			<?php
+			$mp = 10;
+			if ((int) ($_SESSION['wspvars']['usertype'] ?? 0) === 1) {
+			?>
+				<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup'] == $mp) echo "active";?>" id="m_<?php echo $mp; ?>">
+					<a>
+						<span class="icon"><i class="fa-solid fa-gear"></i></span>
+						<span class="link"><?php echo returnIntLang('menu manage'); ?></span>
+						<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
+					</a>
+				<ul id="m_10s" class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>">
+					<?php if (is_array($_SESSION['wspvars']['locallanguages']) && count($_SESSION['wspvars']['locallanguages'])>1){
+						ksort($_SESSION['wspvars']['locallanguages'], SORT_STRING);
+						?>
+						<li class="level1 hassub">
+							<a>
+								<span class="icon"><i class="fa-solid fa-language"></i></span>
+								<span class="link"><?php echo returnIntLang('menu manage language'); ?></span>
+								<i class="fa-solid fa-caret-left"></i>
+							</a>
+							<ul class="level2">
+								<?php
+								foreach ($_SESSION['wspvars']['locallanguages'] as $llkey => $llvalue) {
+									echo "<li>";
+									echo "<a href=\"" . $_SERVER['PHP_SELF'] . "?setlang=" . $llkey . "\">";
+									echo "<span class='icon'><strong>" . strtoupper($llkey) . "</strong></span>";
+									echo "<span class='link'>" . $llvalue . "</span>";
+									echo "</a></li>";
+								}
+								?>
+							</ul>
+						</li>
+					<?php } ?>
+				<li class="level1" id="m_<?php echo $mp; ?>_0">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/editorprefs.php">
+						<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
+						<span class="link"><?php echo returnIntLang('menu manage editor'); ?></span>
+					</a>
+				</li>
+				<?php if ($isextended==1){ ?>
+					<li class="level1" id="m_<?php echo $mp; ?>_4">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/dev.php">
+							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
+							<span class="link"><?php echo returnIntLang('menu manage developer'); ?></span>
+						</a>
+					</li>
+					<?php if ($fsaccess) { ?>
+					<li class="level1" id="m_<?php echo $mp; ?>_4">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/cleanup.php">
+							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
+							<span class="link"><?php echo returnIntLang('menu manage cleanup'); ?></span>
+						</a>
+					</li>
+					<li class="level1" id="m_<?php echo $mp; ?>_6">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/trash.php">
+							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
+							<span class="link"><?php echo returnIntLang('menu content trash'); ?></span>
+						</a>
+					</li>
+					<?php } ?>
+				<?php } ?>
+				<li class="level1" id="m_<?php echo $mp; ?>_2">
+					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/modules.php">
+						<span class="icon"><i class="fa-solid fa-box-archive"></i></span>
+						<span class="link"><?php echo returnIntLang('menu manage modules'); ?></span>
+					</a>
+				</li>
+				<?php if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/system.php")){ ?>
+					<li class="level1" id="m_<?php echo $mp; ?>_3">
+						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/system.php">
+							<span class="icon">…</span>
+							<span class="link"><?php echo returnIntLang('menu manage system'); if (isset($_SESSION['wspvars']['updatesystem']) && $_SESSION['wspvars']['updatesystem']===true){ echo " &nbsp;<span class='bubblemessage orange'>!</span>"; } ?></span>
+						</a>
+					</li>
+				<?php } ?>
+				</ul></li>
+			<?php } else{ ?>
+				<?php if (is_array($_SESSION['wspvars']['locallanguages']) && count($_SESSION['wspvars']['locallanguages'])>1){
+
+				ksort($_SESSION['wspvars']['locallanguages'], SORT_STRING);
+
+				?>
+				<li class="level0"><a><?php echo returnIntLang('menu manage language'); ?></a>
+					<ul class="level1" id="m_lang">
+					<?php
+					foreach ($_SESSION['wspvars']['locallanguages'] as $llkey => $llvalue) {
+						echo "<li>";
+						echo "<a href=\"" . $_SERVER['PHP_SELF'] . "?setlang=" . $llkey . "\">" . $llvalue . "</a></li>";
+					}
+					?>
+				</ul></li>
+				<?php } ?>
+			<?php } ?>
+			<?php
+
+			$_SESSION['wspvars']['wspmodmenu'] = array();
+			$_SESSION['wspvars']['wspmodmenucount'] = 0;
+			if (isset($_SESSION['wspvars']['rights'])){
+				buildWSPMenu (0, 0, $_SESSION['wspvars']['rights']);
+			}
+
+			$mrun = 0;
+			foreach ($_SESSION['wspvars']['wspmodmenu'] as $key => $value) {
+				$showmodmenu[$mrun]['guid'] = $key;
+				$showmodmenu[$mrun]['level'] = $value[0];
+				$showmodmenu[$mrun]['id'] = $value[1];
+				$showmodmenu[$mrun]['parent_id'] = $value[2];
+				$showmodmenu[$mrun]['title'] = $value[3];
+				$showmodmenu[$mrun]['link'] = $value[4];
+				$mrun++;
+			}
+
+			if ($_SESSION['wspvars']['wspmodmenucount'] == 1) {
+				echo "<li class=\"level0\"><a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[0]['id']."\" title=\"".$showmodmenu[0]['title']."\">".$showmodmenu[0]['title']."</a>";
+				echo "<ul class=\"level1\">";
+				$wmstart = 1;
+			} elseif ($_SESSION['wspvars']['wspmodmenucount'] > 1) {
+				echo "<li class='level0 hassub'>";
+				echo "<a><span class='icon'><i class='fa-solid fa-boxes-stacked'></i></span>";
+				echo "<span class='link'>".returnIntLang('menu modmenu')."</span>";
+				echo "<i class='fa-solid fa-caret-left'></i></a>";
+				echo "<ul class='level1'>";
+				$wmstart = 0;
+			}
+
+			if ($_SESSION['wspvars']['wspmodmenucount'] > 0) {
+				for ($wmrun = $wmstart; $wmrun < $mrun; $wmrun++) {
+					$buf = "";
+					if ($showmodmenu[$wmrun]['level'] == 0) {
+						$buf .= "<li class='hassub' id=\"m_".$showmodmenu[$wmrun]['id']."\" >";
+						if ($wmstart == 0 && key_exists($wmrun + 1, $showmodmenu) && $showmodmenu[$wmrun + 1]['level'] > 0) {
+							$buf .= "\n<a>";
+							$buf .= "<span class='icon'><i class='fa-solid fa-box-open'></i></span>";
+							$buf .= "<span class='link'>" . $showmodmenu[$wmrun]['title']."</span>";
+							$buf .= "<i class='fa-solid fa-caret-left'></i></a>";
+							$buf .= "<ul id=\"submod_".$showmodmenu[$wmrun]['id']."\" class=\"level2\" style=\"display: none;\">";
+							while (isset($showmodmenu[$wmrun + 1]['level']) && $showmodmenu[$wmrun + 1]['level'] > 0) {
+								$wmrun++;
+								$buf .= "<li style=\"\">\n";
+								$buf .= "<a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" title=\"".$showmodmenu[$wmrun]['title']."\">";
+								$buf .= "<span class='icon'><i class='fa-solid fa-circle-dot'></i></span>";
+								$buf .= '<span class="link">' . $showmodmenu[$wmrun]['title'] . '</span>'; 
+								$buf .= "</a></li>";
+							}
+							$buf .= "</ul>";
+						} else {
+							$buf .= "<a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" title=\"".$showmodmenu[$wmrun]['title']."\">";
+							$buf .= "<span class='icon'><i class='fa-regular fa-circle-dot'></i></span>";
+							$buf .= '<span class="link">' . $showmodmenu[$wmrun]['title'] . '</span>';
+							$buf .= "</a>";
+						}
+						$buf .= "</li>";
+					} elseif ($wmstart == 1 && $showmodmenu[$wmrun]['level'] > 0) {
+						$buf .= "<li id=\"m_".$showmodmenu[$wmrun]['id']."\">";
+						$buf .= "<a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" title=\"".$showmodmenu[$wmrun]['title']."\">";
+						$buf .= "<span class='icon'><i class='fa-solid fa-circle-dot'></i></span>";
+						$buf .= '<span class="link">' . $showmodmenu[$wmrun]['title'] . '</span>';
+						$buf .= "</a>";
+						$buf .= "</li>";
+					}
+					echo $buf;
+				}
+			}
+
+			if ($_SESSION['wspvars']['wspmodmenucount'] > 0) {
+				echo "</ul></li>";
+			}
 
 			?>
-			<li class="basic level0"><a><?php echo returnIntLang('menu manage language'); ?></a> <ul class="basic level1" id="m_lang">
-				<?php
-				foreach ($_SESSION['wspvars']['locallanguages'] as $llkey => $llvalue) {
-					echo "<li><a href=\"" . $_SERVER['PHP_SELF'] . "?setlang=" . $llkey . "\">" . $llvalue . "</a></li>";
-				}
-				?>
-			</ul></li>
-			<?php } ?>
-		<?php } ?>
-		<?php
-
-		$_SESSION['wspvars']['wspmodmenu'] = array();
-		$_SESSION['wspvars']['wspmodmenucount'] = 0;
-		if (isset($_SESSION['wspvars']['rights'])){
-			buildWSPMenu (0, 0, $_SESSION['wspvars']['rights']);
-		}
-
-		$mrun = 0;
-		foreach ($_SESSION['wspvars']['wspmodmenu'] as $key => $value) {
-			$showmodmenu[$mrun]['guid'] = $key;
-			$showmodmenu[$mrun]['level'] = $value[0];
-			$showmodmenu[$mrun]['id'] = $value[1];
-			$showmodmenu[$mrun]['parent_id'] = $value[2];
-			$showmodmenu[$mrun]['title'] = $value[3];
-			$showmodmenu[$mrun]['link'] = $value[4];
-			$mrun++;
-		}
-
-		if ($_SESSION['wspvars']['wspmodmenucount'] == 1) {
-			echo "<li class=\"basic level0\"><a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[0]['id']."\" title=\"".$showmodmenu[0]['title']."\">".$showmodmenu[0]['title']."</a>";
-			echo "<ul class=\"basic level1\">";
-			$wmstart = 1;
-		} elseif ($_SESSION['wspvars']['wspmodmenucount'] > 1) {
-			echo "<li class=\"basic level0\" ";
-			echo "><a>".returnIntLang('menu modmenu')."</a> ";
-			echo "<ul class=\"basic level1\">";
-			$wmstart = 0;
-		}
-
-		if ($_SESSION['wspvars']['wspmodmenucount'] > 0) {
-			for ($wmrun = $wmstart; $wmrun < $mrun; $wmrun++) {
-				$buf = "";
-				if ($showmodmenu[$wmrun]['level'] == 0) {
-					$buf .= "<li id=\"m_".$showmodmenu[$wmrun]['id']."\" >";
-					if ($wmstart == 0 && key_exists($wmrun + 1, $showmodmenu) && $showmodmenu[$wmrun + 1]['level'] > 0) {
-						$buf .= "\n<a>".$showmodmenu[$wmrun]['title']." ...</a>";
-						$buf .= "<ul id=\"submod_".$showmodmenu[$wmrun]['id']."\" class=\"level2\" style=\"display: none;\">";
-						while (isset($showmodmenu[$wmrun + 1]['level']) && $showmodmenu[$wmrun + 1]['level'] > 0) {
-							$wmrun++;
-							$buf .= "<li style=\"\">\n<a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" title=\"".$showmodmenu[$wmrun]['title']."\">".$showmodmenu[$wmrun]['title']."</a></li>";
-						}
-						$buf .= "</ul>";
-					} else {
-						$buf .= "\n<a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" title=\"".$showmodmenu[$wmrun]['title']."\">".$showmodmenu[$wmrun]['title']."</a>";
-					}
-					$buf .= "</li>";
-				} elseif ($wmstart == 1 && $showmodmenu[$wmrun]['level'] > 0) {
-					$buf .= "<li id=\"m_".$showmodmenu[$wmrun]['id']."\">";
-					$buf .= "\n<a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" title=\"".$showmodmenu[$wmrun]['title']."\">".$showmodmenu[$wmrun]['title']."</a>";
-					$buf .= "</li>";
-				}
-				echo $buf;
-			}
-		}
-
-		if ($_SESSION['wspvars']['wspmodmenucount'] > 0) {
-			echo "</ul></li>";
-		}
-
-		?>
-	</ul>
-    <ul style="float: right;">
-        <li class="basic level0 cntdwn">
-            <script>
-                <!--
-
-                TargetDate = "<?php echo date("m/d/Y h:i:s A", time()+(60*intval($_SESSION['wspvars']['autologout']))-1); ?>";
-                CountActive = true;
-                CountStepper = -1;
-                LeadingZero = true;
-                DisplayFormat = "%%H%%:%%M%%:%%S%%";
-
-                function calcage(secs, num1, num2) {
-                    s = ((Math.floor(secs/num1))%num2).toString();
-                    if (LeadingZero && s.length < 2)
-                        s = "0" + s;
-                    return "<b>" + s + "</b>";
-                }
-
-                function CountBack(secs) {
-                    if (secs < 0) {
-                        window.location.href = '/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/logout.php';
-                        return;
-                    }
-                    DisplayStr = DisplayFormat.replace(/%%D%%/g, calcage(secs,86400,100000));
-                    DisplayStr = DisplayStr.replace(/%%H%%/g, calcage(secs,3600,24));
-                    DisplayStr = DisplayStr.replace(/%%M%%/g, calcage(secs,60,60));
-                    DisplayStr = DisplayStr.replace(/%%S%%/g, calcage(secs,1,60));
-
-                    document.getElementById("cntdwn").innerHTML = DisplayStr;
-                    setTimeout("CountBack(" + (secs+CountStepper) + ")", SetTimeOutPeriod);
-                }
-
-                function putspan() {
-                    document.write("<span id='cntdwn'></span>");
-                }
-
-                CountStepper = Math.ceil(CountStepper);
-                if (CountStepper == 0)
-                    CountActive = false;
-                var SetTimeOutPeriod = (Math.abs(CountStepper)-1)*1000 + 990;
-                putspan();
-                var dthen = new Date(TargetDate);
-                var dnow = new Date();
-                if(CountStepper>0)
-                    ddiff = new Date(dnow-dthen);
-                else
-                    ddiff = new Date(dthen-dnow);
-                gsecs = Math.floor(ddiff.valueOf()/1000);
-                CountBack(gsecs);
-
-                -->
-            </script>
-        </li>
-        <li class="basic level0 px-2" style="display: initial">
-            <a href="./logout.php">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </a>
-        </li>
-    </ul>
+		</ul>
+	</nav>
 </div>
 <?php
 
@@ -548,7 +668,13 @@ doSQL($msgcleanup);
 <fieldset id="errormsg" style="display: none;"></fieldset>
 <fieldset id="resultmsg" style="display: none;"></fieldset></div>
 
-<script language="JavaScript" type="text/javascript">
+<script>
+
+	$('.hassub > a .icon, .hassub > a .fa-caret-left').on('click', function() {
+		$(this).closest('li.hassub > a').find('.fa-caret-left').toggleClass('fa-rotate-270');
+		$(this).closest('li.hassub > a').next('ul').slideToggle();
+	});
+
 
 var offsetxpoint=-60 //Customize x offset of tooltip
 var offsetypoint=20 //Customize y offset of tooltip

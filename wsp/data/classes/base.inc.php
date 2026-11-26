@@ -172,5 +172,52 @@ if (!class_exists('wspBase')) {
             return array_merge($this->getTables(), ['reference']);
         }
 
+        private function getWSPMessageTypes(): array
+        {
+            return ['noticemsg','resultmsg','errormsg'];
+        }
+
+        private function getWSPMessageStyles(): array
+        {
+            return [
+                'noticemsg' => 'bg-success text-white',
+                'resultmsg' => 'bg-info',
+                'errormsg' => 'bg-danger text-white'
+            ];
+        }
+
+        public function showWSPMessages(array $type = [], bool $bar = true, bool $echo = false): mixed
+        {
+            $output = '';
+            $types = $this->getWSPMessageTypes();
+            $styles = $this->getWSPMessageStyles();
+            if (empty($type)) $type = $types;
+            foreach ($type as $t) {
+                if (!in_array($t, $types)) continue;
+                if (!array_key_exists($t, $_SESSION['wspvars'])) continue;
+                if (!empty($_SESSION['wspvars'][$t] ?: [])) {
+                    $output.= '<div class="my-2 p-3 px-4 rounded-sm ' . $styles[$t] . '">';
+                    if (is_array($_SESSION['wspvars'][$t])) {
+                        foreach ($_SESSION['wspvars'][$t] as $m) {
+                            $output.= $m . '<br />';
+                        }
+                    } else if (is_string($_SESSION['wspvars'][$t])) {
+                        $output.= $_SESSION['wspvars'][$t] . '<br />';
+                    } else {
+                        $output.= '<pre>' . var_export($_SESSION['wspvars'][$t], true) . '</pre>';
+                    }
+                    $output.= '</div>';
+                    if ($bar) unset($_SESSION['wspvars'][$t]);
+                }
+            }
+            if ($echo) {
+                echo $output;
+                return true;
+            } else {
+                return $output;
+            }
+        }
+
+
     }
 }

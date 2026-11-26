@@ -162,13 +162,15 @@ if (!(isset($_POST['previewid']))):
 		<?php endif; ?>
 		<?php endif; ?>
 	</head>
-	<body id="wspbody">
+	<body id="wspbody"<?php if (($_COOKIE['collapsed'] ?? '') === '1') { echo ' class="collapsed"'; } ?>>
 	<?php 
 	if (key_exists('wsperror', $_SESSION['wspvars']) && trim($_SESSION['wspvars']['wsperror'])!=""):
 		echo "<p style=\"color: #CC0000;\">".$_SESSION['wspvars']['wsperror']."</p>";
 	endif;
 endif;
 
-if (intval($_SESSION['wspvars']['userid'] ?? 0)>0) { echo '<div id="topholder"></div>'; }
+if (intval($_SESSION['wspvars']['userid'] ?? 0) > 0) { 
+	include_once(__DIR__ . "/topbar.inc.php");
+}
 
 // EOF

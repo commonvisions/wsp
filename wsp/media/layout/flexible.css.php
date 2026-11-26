@@ -14,7 +14,8 @@
 header("Content-Type: text/css");
 
 ?>
-* { margin: 0px; padding: 0px; }
+
+/* * { margin: 0px; padding: 0px; } */
 
 /* source-sans-3-regular - latin */
 @font-face {
@@ -52,7 +53,18 @@ header("Content-Type: text/css");
 	src: url('./../fonts/source-code-pro-v23-latin/source-code-pro-v23-latin-700.woff2') format('woff2');
 }
 
-body { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; font-size: 13px; overflow: scroll; overflow-x: hidden; }
+html {
+	font-size: 14px;
+}
+
+body { 
+	font-family: 'Source Sans 3', 'Open Sans', sans-serif;
+	font-weight: 400;
+	font-size: 14px;
+	overflow: auto;
+	overflow-x: hidden;
+}
+
 input { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
 select { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
 textarea { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
@@ -61,10 +73,6 @@ textarea.source { font-family: 'Source Code Pro', monospace; font-weight: 400; }
 a { text-decoration: none; }
 
 hr.clearbreak { width: 100%; height: 0.1px; clear: both; float: none; background: none; border: none; outline: none; margin: 0px; }
-
-/* font-size for other screen sizes */
-
-@media screen and (max-device-width: 1290px) { body { font-size: 12px; } }
 
 /** BootStrap redefinitions */
 
@@ -109,9 +117,6 @@ legend {
 
 .card-header {
 	background-color: rgba(0, 153, 255, 0.25);
-}
-
-.card-header-sm {
 	padding: .45rem 1.25rem;
 }
 
@@ -139,6 +144,12 @@ legend {
   background-color: rgba(0,0,0,0.05);
   padding-top: 0.5em;
   padding-bottom: 0.5em;
+}
+
+.badge-float {
+	position: absolute;
+	margin-top: -1rem;
+	margin-right: -1.4rem;
 }
 
 /* fieldsets */
@@ -292,6 +303,7 @@ span.bubblemessage.hidden {
 	visibility: hidden;
 	}
 
+/*
 span.icon {
 	display: inline-block;
 	background: none;
@@ -310,7 +322,8 @@ span.icon {
 	border: 1px solid #bbb;
 	cursor: pointer;
 	text-align: center;
-	}
+}
+*/
 
 /* fieldset legend special */
 
@@ -328,20 +341,99 @@ legend span.bubblemessage {
 #topholder {
 	position: fixed;
 	height: 3rem;
-	width: 100vw;
-	background: rgb(0,51,255);
-	background: linear-gradient(180deg,rgba(0, 51, 153, 1) 0%, rgba(0, 153, 255, 1) 100%);
+	width: 100%;
+	background: rgba(255,255,255,0.9);
 	z-index: 10; 
 	-moz-box-shadow: 0px 0px 10px #000; 
 	-webkit-box-shadow: 0px 0px 10px #000; 
 	box-shadow: 0px 0px 10px #000;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding-left: 240px;
+	-webkit-backdrop-filter: blur(2px);
+
+	#togglenav {
+		padding-left: 1rem;
+	}
+
+	#logoutarea {
+		padding-right: 2rem;
+	}
 }
 
-#menuholder {
+body.collapsed #topholder {
+	padding-left: 3rem;
+}
+
+#mainmenu {
 	position: fixed;
-	height: 3rem;
-	width: 100%;
+	height: 100vh;
+	width: 240px;
 	z-index: 15;
+	overflow-y: auto;
+	background: rgb(0,51,255);
+	background: linear-gradient(180deg,rgba(0, 51, 153, 1) 0%, rgba(0, 153, 255, 1) 100%);
+}
+
+body.collapsed #mainmenu {
+	width: 3rem;
+}
+
+#mainmenu nav,
+#mainmenu ul {
+	margin: 0;
+	padding: 0;
+}
+
+#mainmenu li {
+	min-height: 3em;
+	width: 100%;
+	border-bottom: 1px solid #fff;
+	color: #fff;
+	display: inline-block;
+}
+
+#mainmenu li a {
+	color: inherit;
+	display: flex;
+	padding: 0 !important;
+	position: relative;
+}
+
+#mainmenu li .icon {
+	display: inline-flex;
+	width: 3rem;
+	height: 3rem;
+	padding: 0;
+	margin: 0;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+}
+
+#mainmenu li .link {
+	min-height: 3rem;
+	align-content: center;
+	flex: 1;
+}
+
+body.collapsed #mainmenu li .link {
+	display: none;
+}
+
+#mainmenu li .fa-caret-left {
+	align-content: center;
+	margin: 1rem;
+}
+
+body.collapsed #mainmenu li .fa-caret-left {
+	display: none;
+}
+
+#mainmenu li ul li:last-child {
+	border-bottom: none;
 }
 
 #logincontent {
@@ -349,7 +441,11 @@ legend span.bubblemessage {
 	margin: 0px auto;
 	width: 95%;
 	max-width: 600px;
-	}
+	display: flex;
+	flex-direction: column;
+	min-height: calc(99vh - 4rem);
+	justify-content: center;
+}
 
 #topspacer {
 	z-index: 3;
@@ -357,14 +453,19 @@ legend span.bubblemessage {
 	margin: 0px auto 10px auto;
 	width: 100vw;
 	height: 4rem;
-	}
+}
 
 #contentholder, #infoholder {
 	position: relative;
 	margin: 0px auto;
-	width: 95%;
-	max-width: 1340px;
-	}
+	padding-left: calc(240px + 1rem);
+	padding-right: 2rem;
+}
+
+body.collapsed #contentholder,
+body.collapsed #infoholder {
+	padding-left: 4rem;
+}
 	
 #showdevmsg {
 	position: relative;
@@ -372,7 +473,7 @@ legend span.bubblemessage {
 	width: 95%;
 	max-width: 1330px;
 	display: none;
-	}
+}
 
 #msgbar {
 	position: fixed;
@@ -384,27 +485,16 @@ legend span.bubblemessage {
 
 #footer {
 	clear: both;
-	width: 98%;
-	margin: 20px 0% 20px 1%;
-	border-top: 1px solid black;
-	}
+	width: 100%;
+	margin: auto;
+	height: 4rem;
+}
 
 #footer p {
-	padding: 15px 0px;
-	font-size: 0.85em;
-	text-align: center;
-	}
-	
-#footer p.rightpos {
-	float: right;
+	padding: 2rem;
 	text-align: right;
-	}
-
-#footer p.leftpos {
-	float: left;
-	text-align: left;
-	}
-
+}
+	
 /* icon description area */
 
 ul.icondesc { list-style-type: none; }
@@ -728,9 +818,11 @@ table.contenttable input[type="checkbox"] {
 
 /* menu */
 
-#menuholder.horizontal {}
+#mainmenu {
 
-#menuholder #togglenav {
+}
+
+#mainmenu #togglenav {
 	height: 3rem;
 	padding: 0 1rem;
 	line-height: 3rem;
@@ -740,14 +832,9 @@ table.contenttable input[type="checkbox"] {
 	display: none;
 }
 
-#menuholder ul { list-style-type: none; margin: 0; }
+#mainmenu ul { list-style-type: none; margin: 0; }
 
-#menuholder li.level0 {
-	float: left;
-	position: relative;
-	line-height: 3rem;
-	display: inline-flex;
-	font-size: 1.1em;
+#mainmenu li.level0 {
 	color: white;
 	a {
 		padding: 0 0.5rem;
@@ -756,58 +843,31 @@ table.contenttable input[type="checkbox"] {
 	}
 }
 
-#menuholder li.level0:hover {
+#mainmenu li.level0:hover {
 	background: rgba(255,255,255,0.25);
 }
 
-#menuholder li.basic.level0.active {
+#mainmenu li.basic.level0.active {
 	color: rgb(0,0,0);
 	background: rgba(255,255,255,0.5);
 }
 
-#menuholder li.level0:hover { cursor: pointer; }
-
-#menuholder li.level0 { }
-
-#menuholder li.level0 ul {
-	background: rgb(58, 176, 255);
+#mainmenu li.level0:hover { 
+	cursor: pointer;
 }
 
-#menuholder li.level0.active ul {
-	background: rgb(125, 203, 255);
-	color: #000;
+#mainmenu li.level0 ul {
+	background: rgba(255, 255, 255, 0.4);
 }
 
-#menuholder li.level0 ul.level1 {
-	position: absolute;
+#mainmenu li ul {
+	position: relative;
 	display: none;
 	top: 100%;
 	left: 0;
 	margin-top: -1px;
+	border-top: 1px solid white;
 }
-	
-#menuholder ul.level1 li {
-	white-space: nowrap;	
-	}
-	
-#menuholder li.level0 ul li {
-	border-top: 1px solid #fff;
-	position: relative;
-	}
-	
-#menuholder li.level0 ul li ul {
-	margin-top: -1px;
-	border-left: 1px solid #fff;
-	position: absolute;
-	top: 0px;
-	left: 100%;
-	}
-
-#menuholder li.level0 ul li ul li {
-	white-space: nowrap;
-	}
-
-
 
 /* lists, drag & Drop */
 
@@ -828,6 +888,10 @@ li.ui-state-highlight {
 p.feedreader_date { font-size: 0.8em; }
 p.link { color: orange; }
 
+ul.tablelist,
+ul.tablelist ul {
+	padding: 0 3px;
+}
 
 /* filemanagement */
 
@@ -953,20 +1017,7 @@ div.qq-upload-failed-text { position: relative; display: block; width: 100%; lin
 
 /* end filemanagement */
 
-@media screen and (max-width: 900px) { 
-
-#menuholder li.select { width: 110px; }
-#menuholder li.select select { width: 90px; }
-#menuholder li.level0 a { letter-spacing: -0.05em; }
-	
-	}
-
-
 @media screen and (max-width: 786px) {
-	
-body {
-	font-size: 0.7em;
-	}
 
 fieldset.options {
 	font-size: 0.9em;
@@ -980,60 +1031,7 @@ fieldset.halffield.left {
 	margin: 0px;
 	}
 
-#footer {
-	margin: 20px auto;
-	width: 96%;
-	}
-
-#footer p {
-	padding: 5px 0px;
-	width: 100%;
-	text-align: center;
-	}
-	
-#footer p.rightpos {
-	padding: 15px 0px 5px 0px;
-	text-align: center;
-	}
-
-#footer p.leftpos {
-	padding: 5px 0px;
-	text-align: center;
-	}
-	
-/* menu */
-
-	#menuholder #togglenav {
-		display: block;
-		background: red;
-	}
-
-	#menuholder nav {
-		background: red;
-		position: absolute;
-		top: 3rem;
-		left: 0
-	}
-	
-	#menuholder li.level0 {
-		float: none;
-		clear: both;
-		width: 100vw;
-		line-height: 2rem;
-	}
-
-	#menuholder li.level0 ul.level1 {
-		position: absolute;
-		background: #C5D1D9;
-		display: none;
-		top: 0;
-		right: 0;
-		left: auto;
-		width: 50vw;
-		z-index: 20;
-	}
-
-	}
+}
 	
 @media screen and (max-width: 480px) {
 	body {
@@ -1054,11 +1052,6 @@ fieldset.halffield.left {
 	
 	#topspacer {
 		height: 3.5em;
-		}
-	
-	#footer .cleardate {
-		display: block;
-		width: 200px;
 		}
 	
 	#showdevmsg {

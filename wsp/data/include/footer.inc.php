@@ -41,125 +41,13 @@ if (isset($_SESSION['wspvars']['showsql']) && $_SESSION['wspvars']['showsql']===
 	<?php
 endif;
 
-if (isset($_SESSION['wspvars']) && isset($_SESSION['wspvars']['showdevmsg']) && $_SESSION['wspvars']['showdevmsg']===true):
-	?>
-	<fieldset id="showdevmsg" style="margin: 0px auto; width: 95%; max-width: 1326px;">
-		<legend>Development Messages <?php echo legendOpenerCloser('showdevmsgshow'); ?></legend>
-		<pre><script language="JavaScript" type="text/javascript">
-		<!--
-		
-		document.write("hoehe: " + $(window).height() + " x breite: " + $(window).width()); 
-	
-		// -->
-		</script></pre>
-		<div id="showdevmsgshow">
-		<?php
-		
-		echo serialize($_SESSION['wspvars']['showdevmsg']);
-		
-		?>
-		</div>
-	</fieldset>
-	<?php
-endif;
-
-if (isset($_SESSION['wspvars']['devstat']) && $_SESSION['wspvars']['devstat']===true) {
-	if (isset($_SESSION['wspvars']['rights']) && is_array($_SESSION['wspvars']['rights'])) {
-		?>
-		<fieldset id="wspinfos" style="margin: 0px auto; width: 95%; max-width: 1326px;">
-			<legend>WSP Information <?php echo legendOpenerCloser('wspinfofield'); ?></legend>
-			<div id="wspinfofield">		
-                <?php
-                
-                echo "<ul class=\"tablelist\">";
-                echo "<li class=\"tablecell two\">usevar</li>";
-                echo "<li class=\"tablecell two\">".$_SESSION['wspvars']['usevar']."</li>";
-                echo "<li class=\"tablecell two\">userid</li>";
-                echo "<li class=\"tablecell two\">".$_SESSION['wspvars']['userid']."</li>";
-                echo "<li class=\"tablecell two\">mgroup</li>";
-                echo "<li class=\"tablecell two\">".$_SESSION['wspvars']['mgroup']."</li>";
-                echo "<li class=\"tablecell two\">fpos</li>";
-                echo "<li class=\"tablecell two\">".$_SESSION['wspvars']['fpos']."</li>";
-                echo "<li class=\"tablecell two\">fposcheck</li>";
-                echo "<li class=\"tablecell two\">".intval($_SESSION['wspvars']['fposcheck'])."</li>";
-                echo "<li class=\"tablecell two\">preventleave</li>";
-                echo "<li class=\"tablecell two\">".intval($_SESSION['wspvars']['preventleave'])."</li>";
-                echo "<li class=\"tablecell two\">Server side basedir (DOCUMENT_ROOT)</li><li class=\"tablecell two\"><strong>".str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/")."</strong></li>";
-                echo "<li class=\"tablecell two\">Server side <em>\"calculated\"</em> basedir</li><li class=\"tablecell two\"><strong>".str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/"))."</strong></b></li>";
-                echo "<li class=\"tablecell two\">File path</li><li class=\"tablecell two\"><b><strong>".str_replace("//", "/", $_SERVER['SCRIPT_FILENAME'])."</strong></b></li>";
-                echo "<li class=\"tablecell two\">File name:</li><li class=\"tablecell two\"><strong>".str_replace("//", "/", $_SERVER['SCRIPT_NAME'])."</strong></b></li>";
-                echo "<li class=\"tablecell two\">db-con</li>";
-                echo "<li class=\"tablecell two\"><pre>".var_export(mysqli_ping($_SESSION['wspvars']['db']), true)."<hr style='margin: 5px 0px;' />".var_export($_SESSION['wspvars']['db'], true)."</pre></li>";
-                echo "<li class=\"tablecell two\">ftp-con</li>";
-                echo "<li class=\"tablecell two\">";
-		
-                $ftp = false; $ftpt = 0;
-                while ($ftp===false && $ftpt<3) {
-                    $ftp = ((isset($_SESSION['wspvars']['ftpssl']) && $_SESSION['wspvars']['ftpssl']===true)?ftp_ssl_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])):ftp_connect($_SESSION['wspvars']['ftphost'], intval($_SESSION['wspvars']['ftpport'])));
-                    if ($ftp!==false) {
-                        if (!ftp_login($ftp, $_SESSION['wspvars']['ftpuser'], $_SESSION['wspvars']['ftppass'])) { 
-                            $ftp = false; 
-                        }
-                    }
-                    if (isset($_SESSION['wspvars']['ftppasv']) && $ftp!==false) { 
-                        ftp_pasv($ftp, $_SESSION['wspvars']['ftppasv']); 
-                    }
-                    $ftpt++;
-                }
-                
-                $ftperror = array();
-                $ftprawlist = false;
-                $ftpmkdir = false;
-                $ftprename = false;
-                $testdir = '';
-                if ($ftp!==false) {
-                    $testdir = md5("ftpcheck".time());
-                    $ftplist = ftp_nlist($ftp, $_SESSION['wspvars']['ftpbasedir']);
-                    foreach ($ftplist AS $ftk => $ftv) {
-                        if (substr($ftv, 0, strlen($_SESSION['wspvars']['ftpbasedir']))==$_SESSION['wspvars']['ftpbasedir']) {
-                            $ftplist[$ftk] = substr($ftv, strlen($_SESSION['wspvars']['ftpbasedir']));
-                        }
-                    }
-                    $ftpmkdir = @ftp_mkdir($ftp, str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/".$testdir)));
-                    $ftprename = @ftp_rename($ftp, str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/".$testdir)), str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/".$testdir."-rename")));
-                    ftp_rmdir($ftp, str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/".$testdir."-rename")));
-                    ftp_close($ftp);
-                    echo "<pre>".$_SESSION['wspvars']['ftpbasedir']."<hr style='margin: 5px 0px;' />".var_export($ftplist, true)."</pre>";
-                }
-                else {
-                    echo "no ftp connect after ".$ftpt." tries";
-                }
-		
-                echo "</li>";
-                echo "<li class=\"tablecell two\">ftp-mkdir</li>";
-                echo "<li class=\"tablecell two\">";
-                if (str_replace("//", "/", str_replace("//", "/", "/".$_SESSION['wspvars']['ftpbasedir']."/".$testdir))==$ftpmkdir):
-                    echo "true";
-                endif;
-                echo "</li>";
-                echo "<li class=\"tablecell two\">ftp-rename</li>";
-                echo "<li class=\"tablecell two\">".var_export($ftprename, true)."</li>";
-                echo "<li class=\"tablecell two\">last error</li>";
-                echo "<li class=\"tablecell six\"><pre>";
-                print_r(error_get_last());
-                echo "</pre></li>";
-                echo "<li class=\"tablecell two\">SESSION</li>";
-                echo "<li class=\"tablecell six\"><pre>".var_export($_SESSION['wspvars'], true)."</pre></li>";
-                echo "</ul>";
-                ?>
-            </div>
-        </fieldset>
-    <?php
-    }
-}
 ?>
 
 <input type="hidden" id="cfc" value="0" />
 <div id="footer">
-	<p class="rightpos"><?php echo returnIntLang('worksbestwith'); ?></p>
-	<p class="leftpos"><?php echo returnIntLang('footerquicklinks'); ?></p>
-	<p><strong><a href="http://www.websitepreview.de" target="_blank">WebSitePreview</a></strong> &copy; <a href="http://www.covi.de" target="_blank">COVI</a><span class="cleardate"> </span>2001 - 2025</p>
+	<p><strong><a href="http://www.websitepreview.de" target="_blank">WSP</a></strong> &copy; 2001 - 2026</p>
 </div>
+
 <script type="text/javascript">
 
 $(document).ready(function() {
@@ -211,10 +99,6 @@ function callBackgroundPublish() {}
 
 callBackgroundPublish();
 
-showInnerMsg('noticemsg');
-showInnerMsg('errormsg');
-showInnerMsg('resultmsg');
-
 //******* function scrolling to page area *******//
 
 function scrollToAnchor(aid){
@@ -227,7 +111,6 @@ function scrollToAnchor(aid){
 	}
 
 //******* function defining tables and converting it for mobile view *******//
-
 function createFloatingTable() {
 	$("td.tablecell.two").each(function(){ $(this).attr('colspan', 2); });
 	$("td.tablecell.three").each(function(){ $(this).attr('colspan', 3); });
@@ -236,12 +119,6 @@ function createFloatingTable() {
 	$("td.tablecell.six").each(function(){ $(this).attr('colspan', 6); });
 	$("td.tablecell.seven").each(function(){ $(this).attr('colspan', 7); });
 	$("td.tablecell.eight").each(function(){ $(this).attr('colspan', 8); });
-	
-//	$("table.tablelist tr").each(function(index){
-//		if ($(this).css('display')=='table-row') {
-//			$(this).addClass('visible');
-//			}
-//		});
 	
 	var ua = window.navigator.userAgent;
 	var msie = ua.indexOf("MSIE ");
@@ -267,7 +144,6 @@ function createFloatingTable() {
 	}
 
 //******* function extending autocomplete widget *******//
-
 (function( $ ) {
 	$.widget( "custom.combobox", {
 		_create: function() {

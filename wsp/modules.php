@@ -459,7 +459,6 @@ include ("./data/include/wspmenu.inc.php");
 
 ?>
 <div id="contentholder">
-	<pre id="debugcontent"></pre>
 	<fieldset><h1><?php echo returnIntLang('modules headline'); ?></h1></fieldset>
     <?php
     

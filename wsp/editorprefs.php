@@ -150,14 +150,18 @@ endif;
 		<h1><?php echo returnIntLang('editorprefs headline'); ?></h1>
 	</div>
 	<div class="card">
-		<div class="card-header card-header-sm"><?php echo returnIntLang('str legend', true); ?> <?php echo cardOpenerCloser('wsplegend'); ?></div>
+		<div class="card-header">
+			<?php echo cardOpenerCloser(returnIntLang('str legend', true), 'wsplegend'); ?>
+		</div>
 		<div class="card-body" id="wsplegend">
 			<p><?php echo returnIntLang('editorprefs desc'); ?></p>
 		</div>
 	</div>
 	<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" enctype="multipart/form-data" id="frmprefs" style="margin: 0px;">
 	<div class="card" id="fieldset_environment">
-		<div class="card-header card-header-sm"><?php echo returnIntLang('editorprefs environment'); ?> <?php echo cardOpenerCloser('environment'); ?></div>
+		<div class="card-header">
+			<?php echo cardOpenerCloser(returnIntLang('editorprefs environment'), 'environment'); ?>
+		</div>
 		<div class="card-body" id="environment">
 			<div class="row mb-1">
 				<div class="col-3"><?php echo returnIntLang('editorprefs devurl'); ?> <?php helpText(returnIntLang('editorprefs devurl help', false)); ?></div>
@@ -263,7 +267,7 @@ endif;
 	if(intval(doSQL($smtp_sql)['num'])>0):
 		?>
 		<div class="card" id="fieldset_mailsetting">
-			<div class="card-header card-header-sm"><?php echo returnIntLang('editorprefs mailsetting'); ?> <?php echo cardOpenerCloser('mailsettings'); ?></div>
+			<div class="card-header"><?php echo returnIntLang('editorprefs mailsetting'); ?> <?php echo cardOpenerCloser('mailsettings'); ?></div>
 			<div class="card-body" id="mailsettings">
 				<div class="row">
 						<div class="col-3"><?php echo returnIntLang('editorprefs mailsetting method'); ?></div>

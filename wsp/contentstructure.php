@@ -125,7 +125,6 @@ require ("./data/include/wspmenu.inc.php");
 ?>
 
 <div id="contentholder">
-	<pre id="debugcontent"></pre>
 	<fieldset><?php 
 	// block to define workspace language
 	if ((array_key_exists('workspacelang', $_SESSION['wspvars']) && $_SESSION['wspvars']['workspacelang']=="") || (!(array_key_exists('workspacelang', $_SESSION['wspvars'])))):

@@ -6,16 +6,8 @@
  * @version GIT
  */
 
-/* start session ----------------------------- */
-session_start();
 /* base includes ----------------------------- */
-require ("./data/include/usestat.inc.php");
-require ("./data/include/globalvars.inc.php");
-/* first includes ---------------------------- */
-require ("./data/include/wsplang.inc.php");
-if (file_exists("./data/include/dbaccess.inc.php")) require ("./data/include/dbaccess.inc.php");
-if (file_exists("./data/include/ftpaccess.inc.php")) require ("./data/include/ftpaccess.inc.php");
-require ("./data/include/funcs.inc.php");
+require ("./data/include/generichead.inc.php");
 
 // logout from wsp ---------------------------
 if (isset($_REQUEST['logout'])):
@@ -243,33 +235,24 @@ if (isset($_POST['loginfield']) && $_POST['loginfield']=="go") {
 }
 
 // check for login stat
-if (array_key_exists('actusersid', $_SESSION['wspvars']) && intval($_SESSION['wspvars']['actusersid'])>0 && array_key_exists('userid', $_SESSION['wspvars']) && intval($_SESSION['wspvars']['userid'])>0 && array_key_exists('usevar', $_SESSION['wspvars'])) {
-	$loginindex = true;
+if ((int) ($_SESSION['wspvars']['actusersid'] ?? 0) > 0
+    && (int) ($_SESSION['wspvars']['userid'] ?? 0) > 0
+    && array_key_exists('usevar', $_SESSION['wspvars'] ?? [])) {
+    $loginindex = true;
 }
 
 /* include head ------------------------------ */
 require ("./data/include/header.inc.php");
 
-if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && $loginindex===true) {
+if (array_key_exists('rights', $_SESSION['wspvars'] ?? []) && $loginindex===true) {
 	// include menu if logged in 
 	require ("./data/include/wspmenu.inc.php");
-} else {
-	// include some funcs to display messages, if not logged in ;)
-	require ("./data/include/msgheader.inc.php");
 }
 
-if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && $loginindex===true): ?>
+if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && $loginindex===true): ?>
+	// real index content
 	<div id="contentholder">
 		<div class="breadcrumb"><h1><?php echo returnIntLang('home dashboard'); ?></h1></div>
-		<?php if ($_SESSION['wspvars']['usertype']==1):
-			$lastupdate_sql = "SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'lastversion'";
-			$sysrun = doResultSQL($lastupdate_sql);
-			$runnum = 10;
-            while ($sysrun!='finished' && $runnum>0) {
-                include("./data/include/sysrun.inc.php");
-                $runnum--;
-            }
-		endif; ?>
 		<fieldset class="text full"><p><?php echo returnIntLang('home info'); ?> <strong><?php echo $_SESSION['wspvars']['workspaceurl']; ?></strong>.</p>
 		<p><?php echo returnIntLang('home rights'); ?></p>
 		<p><?php echo returnIntLang('home faqhint'); ?></p>
@@ -325,30 +308,15 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 		<?php endif; ?>
 		<hr class="clearbreak" />
 	<?php else: ?>
-		<div id="topspacer">&nbsp;</div>
 		<div id="logincontent">
 			<?php 
 			
-			if(isset($_GET['logout'])): 
+			if(isset($_GET['logout'])) {
 				unset($_COOKIE['wspautologin']);
-			endif; 
-			?>
-			<fieldset id="noticemsg" style="display: none;"></fieldset>
-			<fieldset id="errormsg" style="display: none;"></fieldset>
-			<fieldset id="resultmsg" style="display: none;"></fieldset>
-			<fieldset><h1><?php echo returnIntLang('home welcome'); ?></h1></fieldset>
-			<?php
-			
-			if (!empty($_SESSION['wspvars']['errormsg'])) {
-				echo '<fieldset id="errormsg" style="display: block;"><p>';
-				echo setUTF8($_SESSION['wspvars']['errormsg']);
-				unset($_SESSION['wspvars']['errormsg']);
-				echo '</p></fieldset>';
 			}
 			
-			?>
-			<fieldset><p><?php 
-
+			(new wspBase())->showWSPMessages(echo: true);
+		
 			if (array_key_exists('cookiecheck', $_SESSION) && $_SESSION['cookiecheck']=="requested"): 
 				echo returnIntLang('login please log in')." ";
 				echo returnIntLang('login pass requested', true); 
@@ -371,68 +339,86 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 				</fieldset>
 				</form>
 			<?php else: 
-				echo returnIntLang('login please activate cookies', true); 
-				echo "<noscript> ";
-				echo returnIntLang('login please activate jscript1', true); 
-				echo "</noscript> ";
-				echo returnIntLang('login please activate', true); 
+				
 				if (array_key_exists('extendedlogin', $_SESSION) && $_SESSION['extendedlogin']): 
-					echo returnIntLang('extended login info', true); 
-				endif; ?></p>
-			</fieldset>
-			<script language="JavaScript" type="text/javascript">
-			<!--
-			
-			document.write("<form action=\"<?php echo $_SERVER['PHP_SELF']; ?>\" method=\"POST\" id=\"wsplogin\" name=\"wsplogin\">");
-			
-			// -->
-			</script>
-				<fieldset>
-					<legend><?php echo returnIntLang('str login', true); ?></legend>
-					<table class="tablelist">
-						<tr>
-							<td class="tablecell four"><?php echo returnIntLang('str username', true); ?></td>
-							<td class="tablecell four"><input name="loginuser" id="loginuser" type="text" value="<?php if (isset($_POST['loginuser'])) echo $_POST['loginuser']; ?>" class="one full" /></td>
-						</tr>
-						<tr>
-							<td class="tablecell four"><?php echo returnIntLang('str password', true); ?></td>
-							<td class="tablecell four"><input name="loginpassword" id="loginpassword" type="password" class="one full" /></td>
-						</tr>
+					echo '<p>' . returnIntLang('extended login info', true) . '</p>'; 
+				endif; ?>
+				<script>
+				
+				document.write("<form action=\"<?php echo $_SERVER['PHP_SELF']; ?>\" method=\"POST\" id=\"wsplogin\" name=\"wsplogin\">");
+				
+				</script>
+				<div class="card">
+					<div class="card-header">
+						<?php echo returnIntLang('str login', true); ?>
+					</div>
+					<div class="card-body">
+						<div class="row">
+							<div class="col">
+								<label class="d-inline">
+									<?php echo returnIntLang('str username', true); ?>
+									<input name="loginuser" id="loginuser" type="text" value="" autofill="false" class="form-control" />
+								</label>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col">
+								<label class="d-inline">
+									<?php echo returnIntLang('str password', true); ?>
+									<input name="loginpassword" id="loginpassword" type="password" class="form-control" />
+								</label>
+							</div>
+						</div>
 						<?php if (key_exists('extendedlogin', $_SESSION) && $_SESSION['extendedlogin']): ?>
-							<tr>
-								<td class="tablecell four"><?php echo returnIntLang('editcon ftp host', true); ?></td>
-								<td class="tablecell four"><input name="ftpserver" id="ftpserver" type="text" value="<?php if (isset($_POST['ftpserver'])) echo $_POST['ftpserver']; ?>" class="one full" /></td>
-							</tr>
-							<tr>
-								<td class="tablecell four"><?php echo returnIntLang('editcon ftp basedir', true); ?></td>
-								<td class="tablecell four"><input name="ftpbasedir" id="ftpbasedir" type="text" value="<?php if (isset($_POST['ftpbasedir'])) echo $_POST['ftpbasedir']; ?>" class="one full" /></td>
-							</tr>
-							<tr>
-								<td class="tablecell four"><?php echo returnIntLang('editcon ftp username', true); ?></td>
-								<td class="tablecell four"><input name="ftpuser" id="ftpuser" type="text" value="<?php if (isset($_POST['ftpuser'])) echo $_POST['ftpuser']; ?>" class="one full" /></td>
-							</tr>
-							<tr>
-								<td class="tablecell four"><?php echo returnIntLang('editcon ftp password', true); ?></td>
-								<td class="tablecell four"><input name="ftppass" id="ftppass" type="password" class="one full" /></td>
-							</tr>
+							<div class="row">
+								<div class="col-6">
+									<label class="d-inline">
+										<?php echo returnIntLang('editcon ftp host', true); ?>
+										<input name="ftpserver" id="ftpserver" type="text" value="" class="form-control" />
+									</label>
+								</div>
+								<div class="col-6">
+									<label class="d-inline">
+										<?php echo returnIntLang('editcon ftp basedir', true); ?>
+										<input name="ftpbasedir" id="ftpbasedir" type="text" value="" class="form-control" />
+									</label>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-6">
+									<label class="d-inline">
+										<?php echo returnIntLang('editcon ftp username', true); ?>
+										<input name="ftpuser" id="ftpuser" type="text" value="" class="form-control" />
+									</label>
+								</div>
+								<div class="col-6">
+									<label class="d-inline">
+										<?php echo returnIntLang('editcon ftp password', true); ?>
+										<input name="ftppass" id="ftppass" type="password" value="" class="form-control" />
+									</label>
+								</div>
+							</div>
 						<?php elseif (file_exists("./data/include/ftpaccess.inc.php")): ?>
 							<tr>
 								<td class="tablecell four"><?php echo returnIntLang('login ignore ftp access', true); ?></td>
 								<td class="tablecell four"><input type="checkbox" name="ignoreftp" id="ignoreftp" value="1" /></td>
 							</tr>
 						<?php endif; ?>
-					</table>
-				</fieldset>
-				<script language="JavaScript" type="text/javascript">
-				<!--
+					</div>
+					<div class="card-footer text-center">
+						<script language="JavaScript" type="text/javascript">
+						<!--
+						
+						document.write("<input name='loginfield' type='hidden' value='go'>");
+						document.write("<input type='submit' style='visibility:hidden;width:1px;height:1px;-line-height:1px;font-size:1px;' />");
+						document.write("<a role='button' onclick=\"$('#wsplogin').submit();\" class='btn btn-primary'><?php echo returnIntLang('btn login', false); ?></a>");
+						document.write('</form>');
+						
+						// -->
+						</script>
+					</div>
+				</div>
 				
-				document.write("<fieldset class=\"options\">");
-				document.write("<p><input name=\"loginfield\" type=\"hidden\" value=\"go\"><a href=\"javascript: document.getElementById('wsplogin').submit();\" class=\"greenfield\"><?php echo returnIntLang('btn login', false); ?></a><input type=\"submit\" style=\"visibility:hidden;width:1px;height:1px;-line-height:1px;font-size:1px;\" /></p>");
-				document.write('</fieldset>');
-				document.write('</form>');
-				
-				// -->
-				</script>
 				<fieldset><p><?php echo returnIntLang('login request lostpass', true); ?> <a href="?requestpass"><?php echo returnIntLang('login click here', true); ?></a> <?php echo returnIntLang('login request extendedlogin', true); ?> <?php if (key_exists('extendedlogin', $_SESSION) && $_SESSION['extendedlogin']): ?><a href="?disableextended"><?php echo returnIntLang('extended login disable here', true); ?></a><?php else: ?><a href="?extendedlogin"><?php echo returnIntLang('extended login click here', true); ?></a><?php endif; ?></p></fieldset>
 
 			<?php endif; ?>
@@ -441,5 +427,6 @@ if(array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSIO
 		</div>
 	<?php endif; ?>
 </div>
-<?php include ("data/include/footer.inc.php"); ?>
-<!-- EOF -->
+<?php 
+
+include_once ("data/include/footer.inc.php");
