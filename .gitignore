@@ -9,6 +9,9 @@
 !data/script/slick*/*/*
 !media/
 !media/layout/
+!media/layout/fonts*
+!media/layout/fonts*/*
+!media/layout/fonts*/*/*
 !media/layout/slick*
 !media/layout/slick*/*
 !media/layout/slick*/*/*
