@@ -290,6 +290,9 @@ function createFloatingTable() {
 //******* Ende Funtionen für Dropbox-Autocomplete *******//
  
 $(document).ready(function() {      
+	if ($(window).width() < 480) {
+		$('body').addClass('collapsed');
+	}
 	
 	/* run function to style tables */
 	createFloatingTable();

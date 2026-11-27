@@ -19,6 +19,9 @@
 !wsp/composer.json
 !wsp/assets/
 !wsp/assets/**
+!/wsp/media/
+!/wsp/media/fonts/
+!/wsp/media/fonts/**
 !wsp/modules/
 !wsp/modules/modules.json
 !wsp/modules/syncfiles.php

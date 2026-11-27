@@ -250,7 +250,6 @@ if (array_key_exists('rights', $_SESSION['wspvars'] ?? []) && $loginindex===true
 }
 
 if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSION['wspvars']) && $loginindex===true): ?>
-	// real index content
 	<div id="contentholder">
 		<div class="breadcrumb"><h1><?php echo returnIntLang('home dashboard'); ?></h1></div>
 		<fieldset class="text full"><p><?php echo returnIntLang('home info'); ?> <strong><?php echo $_SESSION['wspvars']['workspaceurl']; ?></strong>.</p>
