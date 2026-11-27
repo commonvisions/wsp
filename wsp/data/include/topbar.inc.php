@@ -4,8 +4,8 @@
     </div>
     <div id="logoutarea">
     <span id="modelink">
-            <i class="fa-solid fa-circle-half-stroke"></i>
-        </span>    
+            <a role="button"><i class="fa-solid fa-circle-half-stroke"></i></a>
+        </span>
     <span id="userlink">
             <a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/userprefs.php">
                 <i class="fa-solid fa-user-circle"></i></a>
