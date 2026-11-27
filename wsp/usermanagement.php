@@ -10,15 +10,8 @@
  * 
  */
 
-/* start session ----------------------------- */
-session_start();
 /* base includes ----------------------------- */
-require ("./data/include/usestat.inc.php");
-require ("./data/include/globalvars.inc.php");
-/* first includes ---------------------------- */
-require ("./data/include/wsplang.inc.php");
-require ("./data/include/dbaccess.inc.php");
-require ("./data/include/funcs.inc.php");
+require ("./data/include/generichead.inc.php");
 /* checkParamVar ----------------------------- */
 $op = checkParamVar('op', '');
 /* define actual system position ------------- */
@@ -170,63 +163,58 @@ if (isset($_POST['user_data']) && $op=="user_new" && $_POST['new_username']!="" 
 }
 
 // head der datei
-
 include ("data/include/header.inc.php");
 include ("data/include/wspmenu.inc.php");
 ?>
 
 <div id="contentholder">
-	<fieldset><h1><?php echo returnIntLang('usermanagement headline'); ?></h1></fieldset>
-	<fieldset>
-		<legend><?php echo returnIntLang('str legend'); ?> <span class="opencloseButton bubblemessage" rel="wsplegend">↕</span></legend>
-		<div id="wsplegend" style="<?php echo isset($_SESSION['opentabs']['wsplegend']) ? $_SESSION['opentabs']['wsplegend'] : ''; ?>">
-			<p><?php echo returnIntLang('usermanagement userlegend'); ?> <?php if($_SESSION['wspvars']['usertype']==1): ?><?php echo returnIntLang('usermanagement adminlegend'); ?><?php endif; ?></p>
+	<div class="breadcrumb">
+		<h1><?php echo returnIntLang('menu user'); ?></h1>
+		<h1><?php echo returnIntLang('usermanagement headline'); ?></h1>
+	</div>
+	<div class="card">
+		<div class="card-header">
+			<?php echo cardOpenerCloser(returnIntLang('usermanagement change own userdata'), 'ownpass'); ?>
 		</div>
-	</fieldset>
-	
-	<fieldset id="ownpass">
-		<?php
-		$userdata_sql = "SELECT `user` FROM `restrictions` WHERE `rid` = ".intval($_SESSION['wspvars']['userid']);
-		$userdata_res = doResultSQL($userdata_sql);
-		if ($userdata_res!==false) {
-			$my_act_username = $userdata_res;
-		}
-		?>
-		<script language="javascript" type="text/javascript"><!--
-
-		function checklengthpass(){
-			if (document.getElementById('my_new_pass').value.length>7 || document.getElementById('my_new_pass').value.length==0) {
-				document.getElementById('frmuseredit').submit(); return false;
-				} 
-			else {
-				alert("Das Passwort muss min. 8 Zeichen enthalten");
-				}
+		<div class="card-body" id="ownpass">
+			<?php
+			$userdata_sql = "SELECT `user` FROM `restrictions` WHERE `rid` = ".intval($_SESSION['wspvars']['userid']);
+			$userdata_res = doResultSQL($userdata_sql);
+			if ($userdata_res!==false) {
+				$my_act_username = $userdata_res;
 			}
-			
-		--></script>
-		<legend><?php echo returnIntLang('usermanagement changeuserdata1'); ?> '<? echo $my_act_username; ?>' <?php echo returnIntLang('usermanagement changeuserdata2'); ?> <span class="opencloseButton bubblemessage" rel="fieldset_ownpass_content">↕</span></legend>
-		<div id="fieldset_ownpass_content" style="<?php echo isset($_SESSION['opentabs']['fieldset_ownpass_content']) ? $_SESSION['opentabs']['fieldset_ownpass_content'] : ''; ?>"><form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" id="frmuseredit">
-		<table class="tablelist">
-			<tr>
-				<td class="tablecell two"><?php echo returnIntLang('usermanagement oldpass'); ?></td>
-				<td class="tablecell two"><input name="my_act_pass" type="password" class="one full"></td>
-				<td class="tablecell two"><?php echo returnIntLang('usermanagement newpass'); ?></td>
-				<td class="tablecell two"><input id="my_new_pass" name="my_new_pass" type="text" class="one full" /></td>
-			</tr>
-			<tr>
-				<td class="tablecell two"><?php echo returnIntLang('usermanagement disable mailmessage'); ?></td>
-				<td class="tablecell two"><input name="my_message_disable" type="hidden" value="0" /><input name="my_message_disable" type="checkbox" value="1" <?php if(isset($_SESSION['wspvars']['disablenews']) && $_SESSION['wspvars']['disablenews']==1) echo "checked='checked'"; ?> />&nbsp;</td>
-				<td class="tablecell two"><?php echo returnIntLang('usermanagement save session'); ?></td>
-				<td class="tablecell two"><input name="my_save_session" type="hidden" value="0" /><input name="my_save_session" type="checkbox" value="1" <?php if(isset($_SESSION['wspvars']['saveprops']) && $_SESSION['wspvars']['saveprops']==1) echo "checked='checked'"; ?> />&nbsp;</td>
-			</tr>
-		</table>
-		<input type="hidden" name="self_data" value="changepass" />
-		</form>
-		<fieldset class="options innerfieldset">
+			?>
+			<script language="javascript" type="text/javascript"><!--
+
+			function checklengthpass(){
+				if (document.getElementById('my_new_pass').value.length>7 || document.getElementById('my_new_pass').value.length==0) {
+					document.getElementById('frmuseredit').submit(); return false;
+					} 
+				else {
+					alert("Das Passwort muss min. 8 Zeichen enthalten");
+					}
+				}
+				
+			--></script>
+			<table class="tablelist">
+				<tr>
+					<td class="tablecell two"><?php echo returnIntLang('usermanagement oldpass'); ?></td>
+					<td class="tablecell two"><input name="my_act_pass" type="password" class="one full"></td>
+					<td class="tablecell two"><?php echo returnIntLang('usermanagement newpass'); ?></td>
+					<td class="tablecell two"><input id="my_new_pass" name="my_new_pass" type="text" class="one full" /></td>
+				</tr>
+				<tr>
+					<td class="tablecell two"><?php echo returnIntLang('usermanagement disable mailmessage'); ?></td>
+					<td class="tablecell two"><input name="my_message_disable" type="hidden" value="0" /><input name="my_message_disable" type="checkbox" value="1" <?php if(isset($_SESSION['wspvars']['disablenews']) && $_SESSION['wspvars']['disablenews']==1) echo "checked='checked'"; ?> />&nbsp;</td>
+					<td class="tablecell two"><?php echo returnIntLang('usermanagement save session'); ?></td>
+					<td class="tablecell two"><input name="my_save_session" type="hidden" value="0" /><input name="my_save_session" type="checkbox" value="1" <?php if(isset($_SESSION['wspvars']['saveprops']) && $_SESSION['wspvars']['saveprops']==1) echo "checked='checked'"; ?> />&nbsp;</td>
+				</tr>
+			</table>
+			<input type="hidden" name="self_data" value="changepass" />
+			</form>
 			<p><a href="#" onclick="checklengthpass();" class="greenfield"><?php echo returnIntLang('usermanagement updateprops'); ?></a></p>
-		</fieldset>
 		</div>
-	</fieldset>
+	</div>
 	<?php if ($_SESSION['wspvars']['usertype']==1):
 	
 	$usercheck_sql = "SELECT * FROM `restrictions` WHERE `rid` != ".intval($_SESSION['wspvars']['userid'])." ORDER BY `user` ASC";
