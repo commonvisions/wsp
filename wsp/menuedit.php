@@ -302,7 +302,7 @@ function menuTemp(mid) {
 
 function showSub(mid, showlevel) {
 	if (mid>0) {
-		$.post("xajax/ajax.showstructure.php", { 'mid': mid, 'showlevel': showlevel, 'type': 'structure'}).done (function(data) {
+		$.post("api/ajax.showstructure.php", { 'mid': mid, 'showlevel': showlevel, 'type': 'structure'}).done (function(data) {
 			$("#ul_" + mid).html(data);
 			$("#ul_" + mid).toggle('blind', 500, function() {
 				$("#ul_" + mid).addClass('open');
@@ -323,14 +323,14 @@ function showSub(mid, showlevel) {
 	}
 
 function updateItem(movedMID, listOrder) {
-	$.post("xajax/ajax.movestructure.php", { 'mid': movedMID, 'listorder': listOrder})
+	$.post("api/ajax.movestructure.php", { 'mid': movedMID, 'listorder': listOrder})
 		.done (function(data) {
 			passLiTable('ul.sortable', 'li.tablecell', 8, new Array('one','two','three','four','five','six','seven','eight'), 'tblc');
 			});
 	}
 
 function moveItem(movedMID, movedFrom, movedTo, listOrder) {
-	$.post("xajax/ajax.neststructure.php", { 'mid': movedMID, 'listorder': listOrder, 'selector': movedFrom, 'target': movedTo})
+	$.post("api/ajax.neststructure.php", { 'mid': movedMID, 'listorder': listOrder, 'selector': movedFrom, 'target': movedTo})
 		.done (function(data) {
 			passLiTable('ul.sortable', 'li.tablecell', 8, new Array('one','two','three','four','five','six','seven','eight'), 'tblc');
 			});
@@ -501,7 +501,7 @@ function moveItem(movedMID, movedFrom, movedTo, listOrder) {
 	
 	function confirmDelete(mid, mname) {
 		if (confirm('<?php echo returnIntLang('structure really delete menupoint1', false); ?> "' + mname + '" <?php echo returnIntLang('structure really delete menupoint2', false); ?>')) {
-			$.post("xajax/ajax.deletestructure.php", { 'mid': mid})
+			$.post("api/ajax.deletestructure.php", { 'mid': mid})
 				.done (function(data) {
 					$(data).toggle('fade', {}, 500);
 					});
@@ -510,7 +510,7 @@ function moveItem(movedMID, movedFrom, movedTo, listOrder) {
 		
 	function confirmVisibility(mid) {
 		console.log(mid);
-		$.post("xajax/ajax.changevisibilitystructure.php", { 'mid': mid, 'language': '<?php echo $_SESSION['wspvars']['workspacelang']; ?>'})
+		$.post("api/ajax.changevisibilitystructure.php", { 'mid': mid, 'language': '<?php echo $_SESSION['wspvars']['workspacelang']; ?>'})
 			.done (function(data) {
 				if (data==mid) {
 					if ($('#conttab_' + data).hasClass('shownstructure')) {
@@ -553,7 +553,7 @@ function moveItem(movedMID, movedFrom, movedTo, listOrder) {
 
 
 	function showhideVisibility() {
-		$.post("xajax/ajax.showhidevisibility.php")
+		$.post("api/ajax.showhidevisibility.php")
 			.done (function(data) {
 				if(data=="show") {
 					$(".hiddenstructure").parent().css('height', '');

@@ -70,7 +70,7 @@ include ("./data/include/wspmenu.inc.php");
 <script language="JavaScript" type="text/javascript">
 
 function showLogstat() {
-	$.post("xajax/ajax.updatelogstat.php")
+	$.post("api/ajax.updatelogstat.php")
 		.done (function(data) {
 			if (data) {
 				$('#logstat').html(data);

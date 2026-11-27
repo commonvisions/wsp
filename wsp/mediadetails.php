@@ -525,7 +525,7 @@ include ("./data/include/wspmenu.inc.php");
 			var newFileName = $('#media_setfilename').prop('value');
 			var orgFileName = $('#media_orgfilename').prop('value');
 			if (newFileName!=orgFileName) {
-				$.post("xajax/ajax.checkmediafilename.php", {'filefolder': '<?php echo $details['fullfold']; ?>', 'showfile': '<?php echo $details['fullpath']; ?>', 'filetype': '<?php echo $details['filetype']; ?>', 'newfilename': newFileName, 'orgfilename': orgFileName}).done (function(data) {
+				$.post("api/ajax.checkmediafilename.php", {'filefolder': '<?php echo $details['fullfold']; ?>', 'showfile': '<?php echo $details['fullpath']; ?>', 'filetype': '<?php echo $details['filetype']; ?>', 'newfilename': newFileName, 'orgfilename': orgFileName}).done (function(data) {
 					if (data!=1) {
 						$('#media_setfilename').prop('value', data);
 						}

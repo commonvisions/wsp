@@ -79,22 +79,22 @@ if (!(isset($_POST['previewid']))):
 				});
 			
 			function returnSetOpenTab(tabname) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.setopentab.php", { 'tabname': tabname, 'tabstatus': $('#' + tabname).css('display')});
+				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/api/ajax.setopentab.php", { 'tabname': tabname, 'tabstatus': $('#' + tabname).css('display')});
 				}
 				
 			function updateMsg(uid) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.updatemsg.php", { 'uid': uid })
+				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/api/ajax.updatemsg.php", { 'uid': uid })
 					.done (function(data) {
 						$('#msgbar').html(data);
 						})
 				}
 			
 			function updateMsgClose(msgid) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.updatemsgclose.php", { 'msgid': msgid });
+				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/api/ajax.updatemsgclose.php", { 'msgid': msgid });
 				}
 			
 			function backgroundPublish(msgid) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.backgroundpublish.php").done (function(data) {
+				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/api/ajax.backgroundpublish.php").done (function(data) {
 					if (data!='') {
 						callBackgroundPublish();
 						console.log(data.log);
@@ -103,7 +103,7 @@ if (!(isset($_POST['previewid']))):
 				}
 
 			function showInnerMsg(msgtype) {
-				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/xajax/ajax.showinnermsg.php", { 'msgtype': msgtype })
+				$.post("/<?php echo $_SESSION['wspvars']['wspbasedir'] ?>/api/ajax.showinnermsg.php", { 'msgtype': msgtype })
 					.done (function(data) {
 						if (data) {
 							$('#'+msgtype).html(data);

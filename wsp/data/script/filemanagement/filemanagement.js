@@ -26,7 +26,7 @@ function setSortList(sortValue) {
 function updateSortList(fkid) {
 	var displaylist = document.getElementById('displaylist').value;
 	var sortlist = document.getElementById('sortlist').value;
-	$.post("xajax/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
+	$.post("api/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
 		.done (function(data) {
 			$('#files_' + fkid).html(data);
 			});
@@ -36,7 +36,7 @@ function updateSortList(fkid) {
 		if ($.trim(searchValue).length>2) {
 			var displaylist = document.getElementById('displaylist').value;
 			var sortlist = document.getElementById('sortlist').value;
-			$.post("xajax/ajax.returnmediasearch.php", { 'search': $.trim(searchValue), 'display': displaylist, 'sort': sortlist})
+			$.post("api/ajax.returnmediasearch.php", { 'search': $.trim(searchValue), 'display': displaylist, 'sort': sortlist})
 				.done (function(data) {
 					$('#filesearch').css('display', 'block');
 					$('#filesearch').html(data);
@@ -63,7 +63,7 @@ function updateSortList(fkid) {
 		var newdesc = document.getElementById(fileFieldId+'_newfiledesc').value;
 		var olddesc = document.getElementById('savefiledesc').value;
 		if ($.trim(fileFieldId)!="") {
-			$.post("xajax/ajax.setnewfiledesc.php", { 'fileid': $.trim(fileFieldId), 'newdesc': newdesc, 'olddesc': olddesc})
+			$.post("api/ajax.setnewfiledesc.php", { 'fileid': $.trim(fileFieldId), 'newdesc': newdesc, 'olddesc': olddesc})
 				.done (function(data) {
 					$('#'+fileFieldId+'_descname').html(data);
 					})
@@ -103,7 +103,7 @@ function updateSortList(fkid) {
 		var displaylist = document.getElementById('displaylist').value;
 		var sortlist = document.getElementById('sortlist').value;
 		if ($('#btn_open_' + fkid).hasClass('orange')) {
-			$.post("xajax/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
+			$.post("api/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
 					.done (function(data) {
 						$('#files_' + fkid).html(data);
 						$('#btn_open_' + fkid).removeClass('orange');
@@ -164,7 +164,7 @@ function updateSortList(fkid) {
 	function createNewDir(fkid) {
 		var newdirname = document.getElementById('newdirname_'+ fkid).value;
 		if ($.trim(fkid)!="" && $.trim(newdirname)!="") {
-			$.post("xajax/ajax.createnewdir.php", { 'dirid': $.trim(fkid), 'newdirname': newdirname})
+			$.post("api/ajax.createnewdir.php", { 'dirid': $.trim(fkid), 'newdirname': newdirname})
 				.done (function(data) {
 					if(data) {
 						document.location.reload();
@@ -177,7 +177,7 @@ function updateSortList(fkid) {
 
 	function confirmDeleteDir(fkid) {
 		if ($.trim(fkid)!="") {
-			$.post("xajax/ajax.deletedir.php", { 'dirid': $.trim(fkid)}, function(data) { console.log(data) }, 'json')
+			$.post("api/ajax.deletedir.php", { 'dirid': $.trim(fkid)}, function(data) { console.log(data) }, 'json')
 				.done (function(data) {
 					if(data) {
 						document.location.reload();
@@ -190,7 +190,7 @@ function updateSortList(fkid) {
 
 	function confirmDeleteFile(fileFieldId) {
 		if ($.trim(fileFieldId)!="") {
-			$.post("xajax/ajax.deletefile.php", {'fileid': $.trim(fileFieldId)}, function(data) { console.log(data) }, 'json')
+			$.post("api/ajax.deletefile.php", {'fileid': $.trim(fileFieldId)}, function(data) { console.log(data) }, 'json')
 				.done (function(data) {
 					if(data.success) {
 						$('#'+data.removedfile).hide('puff');

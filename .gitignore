@@ -9,9 +9,6 @@
 !data/script/slick*/*/*
 !media/
 !media/layout/
-!media/fonts*
-!media/fonts*/*
-!media/fonts*/*/*
 !media/layout/slick*
 !media/layout/slick*/*
 !media/layout/slick*/*/*
@@ -19,9 +16,11 @@
 !wsp/composer.json
 !wsp/assets/
 !wsp/assets/**
-!/wsp/media/
-!/wsp/media/fonts/
-!/wsp/media/fonts/**
+!wsp/api/
+!wsp/api/**
+!wsp/media/
+!wsp/media/fonts/
+!wsp/media/fonts/**
 !wsp/modules/
 !wsp/modules/modules.json
 !wsp/modules/syncfiles.php
@@ -44,5 +43,3 @@ wsp/data/include/dbaccess.inc.php
 
 data/include/dbaccess.inc.php
 data/modules/*
-
-/media/fonts

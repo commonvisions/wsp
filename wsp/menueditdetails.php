@@ -413,7 +413,7 @@ if ($menudetails_res['num']==0): ?>
         <!--
 
         function checkForUsedFilename(newName) {
-            $.post("xajax/ajax.checkforusedfilename.php", { 'newname': newName})
+            $.post("api/ajax.checkforusedfilename.php", { 'newname': newName})
             .done (function(data) {
                 if (data!='') {
                     var splitData = data.split("#;#");
@@ -430,7 +430,7 @@ if ($menudetails_res['num']==0): ?>
             }
 
         function checkForUsedShortcut(newShortcut) {
-            $.post("xajax/ajax.checkforusedshortcut.php", { 'newshortcut': newShortcut})
+            $.post("api/ajax.checkforusedshortcut.php", { 'newshortcut': newShortcut})
             .done (function(data) {
                 if (data!='') {
                     var splitData = data.split("#;#");

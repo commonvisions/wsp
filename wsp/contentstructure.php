@@ -160,7 +160,7 @@ require ("./data/include/wspmenu.inc.php");
 	
 	function showSub(mid, showlevel) {
 		if (mid>0) {
-			$.post("xajax/ajax.showstructure.php", { 'mid': mid, 'showlevel': showlevel, 'type': 'contents'}).done (function(data) {
+			$.post("api/ajax.showstructure.php", { 'mid': mid, 'showlevel': showlevel, 'type': 'contents'}).done (function(data) {
 				$("#ul_" + mid).html(data);
 				$("#ul_" + mid).toggle('blind', 500, function() {
 					$("#ul_" + mid).addClass('open');
@@ -179,7 +179,7 @@ require ("./data/include/wspmenu.inc.php");
 				toggleFunc = 'toggle';
 			}
 			if ($("#ulc_" + mid).css('display')=='none') {
-				$.post("xajax/ajax.showcontent.php", { 'mid': mid, 'showlevel': showlevel, 'type': 'contents'}).done (function(data) {
+				$.post("api/ajax.showcontent.php", { 'mid': mid, 'showlevel': showlevel, 'type': 'contents'}).done (function(data) {
 					$("#ulc_" + mid).addClass('m-0').addClass('p-0').addClass('open').addClass('tablelist').html(data);
 					$("#ulc_" + mid)[toggleFunc](copystat, function() {
 						$("#ulc_" + mid).addClass('open').addClass('tablelist');
@@ -204,7 +204,7 @@ require ("./data/include/wspmenu.inc.php");
 							
 							console.info(ui);
 
-								$.post("xajax/ajax.dragdropcontent.php", {
+								$.post("api/ajax.dragdropcontent.php", {
 									'action': 'dragdrop',
 									'itempos': ui.item.index(),
 									'dropid': ui.item.context.id,
@@ -230,7 +230,7 @@ require ("./data/include/wspmenu.inc.php");
 							update: function (event, ui) { 
 								var $item = $(ui.item);
 								if (!ui.sender && this === ui.item.parent()[0]) {
-									$.post("xajax/ajax.dragdropcontent.php", {
+									$.post("api/ajax.dragdropcontent.php", {
 										'action': 'sort',
 										'itempos': $item.index(),
 										'dropid': $item.attr('id'),
@@ -277,7 +277,7 @@ require ("./data/include/wspmenu.inc.php");
 	
 	function addContent(mid, carea) {
 		if (mid>0) {
-			$.post("/wsp/xajax/ajax.addcontent.php", { 'mid': mid, 'carea': carea})
+			$.post("/wsp/api/ajax.addcontent.php", { 'mid': mid, 'carea': carea})
 				.done (function(data) {
 					$("#newcontentarea").html(data);
 					$.fancybox("#newcontent");
@@ -291,7 +291,7 @@ require ("./data/include/wspmenu.inc.php");
 		};
 	
 	function searchContent() {
-		$.post("xajax/ajax.findcontent.php", { 'searchval': $('#searchcontent-form-searchcontent').val(), 'searchlang': $('#searchcontent-form-searchlang').val() }).done (function(data) {
+		$.post("api/ajax.findcontent.php", { 'searchval': $('#searchcontent-form-searchcontent').val(), 'searchlang': $('#searchcontent-form-searchlang').val() }).done (function(data) {
 			$("#searchcontentarea").html(data);
 			createFloatingTable();
 			});
@@ -469,7 +469,7 @@ require ("./data/include/wspmenu.inc.php");
 		}	// checkData()
 	
 	function contentShowHide(cid) {
-		$.post("xajax/ajax.togglecontentview.php", { 'cid': cid}).done (function(data) {
+		$.post("api/ajax.togglecontentview.php", { 'cid': cid}).done (function(data) {
 			if (data=="show") {
 				$('.row.id' + cid).removeClass('bg-danger').removeClass('text-white');
 				$('.id' + cid).find('i.text-primary-off').removeClass('text-primary-off').addClass('text-primary');
@@ -487,7 +487,7 @@ require ("./data/include/wspmenu.inc.php");
 	function contentRemove(cid, cname) {
 		if (cid>0) {
 			if (confirm('<?php echo returnIntLang('contentstructure jshint confirmdelete content1', false); ?>»' + cname + '«<?php echo returnIntLang('contentstructure jshint confirmdelete content2', false); ?>')) {
-				$.post("xajax/ajax.deletecontent.php", { 'cid': cid})
+				$.post("api/ajax.deletecontent.php", { 'cid': cid})
 				.done (function(data) {
 					$(data).toggle('fade', {}, 300);
 					});
@@ -499,7 +499,7 @@ require ("./data/include/wspmenu.inc.php");
 		if (cid>0) {
 			let contentList = $('#cli_' + cid).closest('ul.tablelist');
 			if (contentList) {
-				$.post("xajax/ajax.clonecontent.php", { 'cid': cid })
+				$.post("api/ajax.clonecontent.php", { 'cid': cid })
 				.done (function(data) {
 					var return_vals = JSON.parse(data);
 					if (return_vals['clone'] == true) {

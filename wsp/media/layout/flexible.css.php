@@ -99,6 +99,30 @@ header("Content-Type: text/css");
     src: url('./../fonts/inconsolata/inconsolata-v37-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
+:root {
+    --blue: #007bff;
+    --indigo: #6610f2;
+    --purple: #6f42c1;
+    --pink: #e83e8c;
+    --red: #dc3545;
+    --orange: #fd7e14;
+    --yellow: #ffc107;
+    --green: #28a745;
+    --teal: #20c997;
+    --cyan: #17a2b8;
+    --white: #fff;
+    --gray: #6c757d;
+    --gray-dark: #343a40;
+    --primary: #354E65;
+    --soft-primary: #779cbf;
+    --secondary: #6c757d;
+    --success: #28a745;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #343a40;
+}
 
 html {
 	font-size: 14px;
@@ -113,10 +137,10 @@ body {
     min-height: 100vh;
 }
 
-input { font-family: 'Outfit', 'Open Sans', sans-serif; font-weight: 400; }
-select { font-family: 'Outfit', 'Open Sans', sans-serif; font-weight: 400; }
-textarea { font-family: 'Outfit', 'Open Sans', sans-serif; font-weight: 400; }
-textarea.source { font-family: 'Inconsolata', monospace; font-weight: 400; }
+input { font-family: 'Outfit', 'Open Sans', sans-serif; font-weight: 200 !important; }
+select { font-family: 'Outfit', 'Open Sans', sans-serif; font-weight: 200 !important; }
+textarea { font-family: 'Outfit', 'Open Sans', sans-serif; font-weight: 200 !important; }
+textarea.source { font-family: 'Inconsolata', monospace; font-weight: 200 !important; }
 
 a { text-decoration: none; }
 
@@ -199,6 +223,101 @@ legend {
 	margin-top: -1rem;
 	margin-right: -1.4rem;
 }
+
+/* mediatabellen */
+
+.mediablocks {
+    display: block;
+    width: 100%;
+
+    thead {
+        display: block;
+        width: 100%;
+
+        tr {
+            width: 100%;
+            display: flex;
+
+            th {
+                flex: 1;
+                min-width: 0;
+
+                .media-preview {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    tbody {
+        padding-top: 20px;
+        position: relative;
+        display: grid;
+        grid-gap: 1rem;
+        grid-template-columns: repeat(6, 1fr);
+
+        @media screen and (width > 1480px) {
+            grid-template-columns: repeat(8, 1fr);
+        }
+
+        @media screen and (width < 960px) {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        @media screen and (width < 480px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .media-preview {
+            display: grid;
+            place-items: center;
+            min-height: 4rem;
+            font-size: 2rem;
+
+            .media-folder-open {
+                appearance: none;
+                background: none;
+                border: 0;
+                box-shadow: none;
+                color: inherit;
+                padding: 0;
+                font-size: inherit;
+                cursor: pointer;
+
+                &:focus-visible {
+                    outline: 2px solid currentColor;
+                    outline-offset: 3px;
+                }
+            }
+
+            img {
+                display: block;
+                max-width: 100%;
+                max-height: 8rem;
+                object-fit: contain;
+            }
+        }
+
+        tr {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--secondary);
+            border-radius: 3px;
+
+            td {
+                padding: 0;
+                margin: 0;
+                border: 0;
+            }
+        }
+    }
+}
+
+
+
+
+
+
 
 /* fieldsets */
 	
@@ -433,6 +552,13 @@ body.collapsed #topholder {
     color: #ffffff;
     background: rgba(255,255,255,0.1);
     display: flex;
+    font-size: 1em;
+}
+
+#logincontent #logo {
+    color: var(--bs-primary);
+    width: auto;
+    align-self: center;
 }
 
 #logo .icon {
@@ -444,6 +570,10 @@ body.collapsed #topholder {
     align-items: center;
     justify-content: center;
     position: relative;
+}
+
+#logincontent #logo .icon {
+    width: 3em;
 }
 
 #logo .icon .outline {
@@ -460,6 +590,10 @@ body.collapsed #topholder {
     transform: rotate(-50deg);
 }
 
+#logincontent #logo .icon .outline {
+    border-color: var(--bs-primary);
+}
+
 #logo .text {
     align-content: center;
     flex: 1;
@@ -468,9 +602,9 @@ body.collapsed #topholder {
 
     span { float: left; }
 
-    .w { font-weight: 200; font-size: 0.6em; }
-    .s { font-weight: 200; font-size: 0.6em; }
-    .p { font-weight: 200;  font-size: 0.6em; margin-right: 0.2em; }
+    .w { font-weight: 200; font-size: 0.6em; margin-right: -1px; }
+    .s { font-weight: 200; font-size: 0.6em; margin-right: -1px; }
+    .p { font-weight: 200;  font-size: 0.6em; margin-right: 2px; }
 
 }
 
