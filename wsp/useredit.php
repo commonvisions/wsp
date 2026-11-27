@@ -142,7 +142,7 @@ if (isset($_POST['user_data']) && ($_POST['change_username']!="") && ($_POST['ch
 	if (intval($username_res['set'][0]['usertype'])!=1):
 		// save rights for non-admin-users
 		$changeidrights = array();
-		foreach ($wspvars['rightabilityarray'] AS $key => $value) { 
+		foreach ($_SESSION['wspvars']['rightabilityarray'] AS $key => $value) {
 			$changerights[$key] = $_POST['changerights_'.$key];
 			if ($changerights[$key]==2 || $changerights[$key]==4):
 				$checkpost = "change_".$key."_ids";
@@ -204,7 +204,7 @@ if (isset($_POST['user_data']) && ($_POST['change_username']!="") && ($_POST['ch
 		returnIntLang('mailtemplate your account data', false).":\n\n".
 		returnIntLang('mailtemplate your account username', false).": ".$_POST['change_username']."\n".
 		returnIntLang('mailtemplate your account password', false).": ".trim($_POST['set_newpass'])."\n\n".
-		returnIntLang('mailtemplate your account login page', false)." http://www.".$domain."/".$wspvars['wspbasedir']."/\n",
+		returnIntLang('mailtemplate your account login page', false)." http://www.".$domain."/".$_SESSION['wspvars']['wspbasedir']."/\n",
 		"From: wsp@".$domain."\n");
 	endif;
 	addWSPMsg('noticemsg', returnIntLang('usermanagement userproperties set', false));
@@ -350,8 +350,8 @@ include ("./data/include/wspmenu.inc.php");
 	
 	function showSelArea(obj) {
 		<?php
-		foreach ($wspvars['rightabilityarray'] AS $key => $value): 
-			if ($wspvars['rightabilityarray'][$key]['mode']==2 || $wspvars['rightabilityarray'][$key]['mode']==4 || $wspvars['rightabilityarray'][$key]['mode']==5):
+		foreach ($_SESSION['wspvars']['rightabilityarray'] AS $key => $value):
+			if ($_SESSION['wspvars']['rightabilityarray'][$key]['mode']==2 || $_SESSION['wspvars']['rightabilityarray'][$key]['mode']==4 || $_SESSION['wspvars']['rightabilityarray'][$key]['mode']==5):
 				echo "document.getElementById('change_".$key."_ids').style.display = 'none'; ";
 			endif;
 		endforeach;	
@@ -384,8 +384,8 @@ include ("./data/include/wspmenu.inc.php");
 		<div id="rightsdiv" style="<?php echo isset($_SESSION['opentabs']['rightsdiv']) ? $_SESSION['opentabs']['rightsdiv'] : ''; ?>">
 			<?php
 			$r = 0;
-			foreach ($wspvars['rightabilityarray'] AS $key => $value): 
-				if ($wspvars['rightabilityarray'][$key]['mode']!=6): // modus 6 bezieht sich auf ordner im dateisystem
+			foreach ($_SESSION['wspvars']['rightabilityarray'] AS $key => $value):
+				if ($_SESSION['wspvars']['rightabilityarray'][$key]['mode']!=6): // modus 6 bezieht sich auf ordner im dateisystem
 				?>
 				<table class="tablelist">
 					<tr>
@@ -393,38 +393,36 @@ include ("./data/include/wspmenu.inc.php");
 						<td class="tablecell six"><select name="changerights_<?php echo $key; ?>" id="changerights_<?php echo $key; ?>" style="width: 98%;" onchange="checkSelect('<?php echo $key; ?>')">
 						<option value="1" <?php if (isset($rights[$key]) && intval($rights[$key])==1): echo " selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights allrights', false); ?></option>
 						<option value="0" <?php if (isset($rights[$key]) && intval($rights[$key])==0): echo " selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights norights', false); ?></option>
-						<?php if($wspvars['rightabilityarray'][$key]['mode']==2 || $wspvars['rightabilityarray'][$key]['mode']==5 || $wspvars['rightabilityarray'][$key]['mode']==15): ?>
+						<?php if($_SESSION['wspvars']['rightabilityarray'][$key]['mode']==2 || $_SESSION['wspvars']['rightabilityarray'][$key]['mode']==5 || $_SESSION['wspvars']['rightabilityarray'][$key]['mode']==15): ?>
 							<option value="2" <?php if (isset($rights[$key]) && intval($rights[$key])==2): echo " selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights allrightstoselected', false); ?></option>
 						<?php endif; ?>
-						<?php if($wspvars['rightabilityarray'][$key]['mode']>3 && $wspvars['rightabilityarray'][$key]['mode']!=12): ?>
+						<?php if($_SESSION['wspvars']['rightabilityarray'][$key]['mode']>3 && $_SESSION['wspvars']['rightabilityarray'][$key]['mode']!=12): ?>
 							<option value="7" <?php if (isset($rights[$key]) && intval($rights[$key])==7): echo " selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights allrightsselecedstructure', false); ?></option>
 						<?php endif; ?>
-						<?php if($wspvars['rightabilityarray'][$key]['mode']>2 && $wspvars['rightabilityarray'][$key]['mode']!=12): ?>
+						<?php if($_SESSION['wspvars']['rightabilityarray'][$key]['mode']>2 && $_SESSION['wspvars']['rightabilityarray'][$key]['mode']!=12): ?>
 							<option value="3" <?php if (isset($rights[$key]) && intval($rights[$key])==3): echo " selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights editall', false); ?></option>
 						<?php endif; ?>
-						<?php if($wspvars['rightabilityarray'][$key]['mode']>3): ?>
+						<?php if($_SESSION['wspvars']['rightabilityarray'][$key]['mode']>3): ?>
 							<option value="4" <?php if (isset($rights[$key]) && intval($rights[$key])==4): echo " selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights editselected', false); ?></option>
 						<?php endif; ?>
-						<?php if($wspvars['rightabilityarray'][$key]['mode']>10): ?>
-							<option value="<?php echo $wspvars['rightabilityarray'][$key]['mode']; ?>" <?php if (isset($rights[$key]) && intval($rights[$key])==intval($wspvars['rightabilityarray'][$key]['mode'])): echo " selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights use sitestructure prefs', false); ?></option>
+						<?php if($_SESSION['wspvars']['rightabilityarray'][$key]['mode']>10): ?>
+							<option value="<?php echo $_SESSION['wspvars']['rightabilityarray'][$key]['mode']; ?>" <?php if (isset($rights[$key]) && intval($rights[$key])==intval($_SESSION['wspvars']['rightabilityarray'][$key]['mode'])): echo " selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights use sitestructure prefs', false); ?></option>
 						<?php endif; ?>
 						</select></td>
 					</tr>
 				</table>
-				<?php if($wspvars['rightabilityarray'][$key]['mode']==2 || $wspvars['rightabilityarray'][$key]['mode']==4 || $wspvars['rightabilityarray'][$key]['mode']==5 || $wspvars['rightabilityarray'][$key]['mode']==15 || $wspvars['rightabilityarray'][$key]['mode']==7): ?>
+				<?php if(in_array(($_SESSION['wspvars']['rightabilityarray'][$key]['mode'] ?? 0), [2, 4, 5, 7, 15])): ?>
 					<div id="change_<?php echo $key; ?>_field" style="<?php if(!(array_key_exists($key, $rights)) || intval($rights[$key])==0 || intval($rights[$key])==1 || intval($rights[$key])==3 || intval($rights[$key])==7 || intval($rights[$key])==15): ?>display: none;<?php endif; ?>">
 					<table class="tablelist">
 					<tr id="change_<?php echo $key; ?>_row">
 						<td class="tablecell two"><?php echo returnIntLang('rights please select'); ?></td>
-						<td id="change_<?php echo $key; ?>_cell" class="tablecell six"><select name="change_<?php echo $key; ?>_ids[]" size="<?php echo ceil(count($wspvars['rightabilityarray'])*1.3); ?>" multiple style="width: 100%; height: <?php echo ceil(count($wspvars['rightabilityarray'])*1.3); ?>em;" onBlur="check('<?php echo $key; ?>');"><?php
+						<td id="change_<?php echo $key; ?>_cell" class="tablecell six"><select name="change_<?php echo $key; ?>_ids[]" size="<?php echo ceil(count($_SESSION['wspvars']['rightabilityarray'])*1.3); ?>" multiple style="width: 100%; height: <?php echo ceil(count($_SESSION['wspvars']['rightabilityarray'])*1.3); ?>em;" onBlur="check('<?php echo $key; ?>');"><?php
 						$requestsaved = "saved_".$key."_ids";
 						getMenuLevel(0, 0, 4, array($requestsaved));
 						?></select></td>
 					</tr>
 					</table>
 					</div>
-				<?php endif; ?>
-				<?php if ($wspvars['rightabilityarray'][$key]['mode']==2 || $wspvars['rightabilityarray'][$key]['mode']==4 || $wspvars['rightabilityarray'][$key]['mode']==5 || $wspvars['rightabilityarray'][$key]['mode']==15 || $wspvars['rightabilityarray'][$key]['mode']==7): ?>
 					<div id="change_<?php echo $key; ?>_singlefield" style="<?php if(!(array_key_exists($key, $rights)) || intval($rights[$key])!=7): ?>display: none;<?php endif; ?>">
 					<table class="tablelist">
 						<tr>
@@ -446,17 +444,17 @@ include ("./data/include/wspmenu.inc.php");
 		<table class="tablelist">
 			<?php 
 
-			foreach ($wspvars['rightabilityarray'] AS $key => $value): 
-				if ($wspvars['rightabilityarray'][$key]['mode']==6):
-					$path = str_replace("//","/",str_replace("//","/",str_replace("//","/",str_replace(".","",$wspvars['rightabilityarray'][$key]['basefolder']))));
+			foreach ($_SESSION['wspvars']['rightabilityarray'] AS $key => $value):
+				if ($_SESSION['wspvars']['rightabilityarray'][$key]['mode']==6):
+					$path = str_replace("//","/",str_replace("//","/",str_replace("//","/",str_replace(".","",$_SESSION['wspvars']['rightabilityarray'][$key]['basefolder']))));
 					$directory = array();
 					if (is_dir(str_replace("//", "/", str_replace("//", "/", $_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$path)))):
-						mediaDirList($path, $wspvars['rightabilityarray'][$key]['basefolder']);
+						mediaDirList($path, $_SESSION['wspvars']['rightabilityarray'][$key]['basefolder']);
 						sort($directory);
 					endif;
 					?>
 					<tr>
-						<td class="tablecell two"><?php echo returnIntLang($wspvars['rightabilityarray'][$key]['desc']); ?></td>
+						<td class="tablecell two"><?php echo returnIntLang($_SESSION['wspvars']['rightabilityarray'][$key]['desc']); ?></td>
 						<td class="tablecell six"><select name="changerights_<?php echo $key; ?>" id="<?php echo $key; ?>" style="width: 98%;">
 							<option value="0" <?php if (isset($rights[$key]) && $rights[$key]=="0"): echo "selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights filesystem noaccess', false); ?></option>
 							<option value="/" <?php if (isset($rights[$key]) && $rights[$key]=="/"): echo "selected=\"selected\""; endif; ?>><?php echo returnIntLang('rights filesystem norestriction', false); ?></option>
@@ -513,7 +511,7 @@ include ("./data/include/wspmenu.inc.php");
 			
         }
 		
-		if (is_array($wspmod['parent_id'])) {
+		if (isset($wspmod['parent_id']) && is_array($wspmod['parent_id'])) {
 			asort($wspmod['parent_id']);
 		}
 		
@@ -522,7 +520,7 @@ include ("./data/include/wspmenu.inc.php");
 		<?php
 		
 		$r = 0;
-		foreach ($wspmod['parent_id'] AS $key => $value):
+		foreach (($wspmod['parent_id'] ?? []) AS $key => $value):
 			if ($value==0):
 				?>
 				<tr>
