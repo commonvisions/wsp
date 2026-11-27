@@ -800,6 +800,105 @@ $sysequal = (intval($filecount) == $m_res['num']);
 	
 	</script>
 	<?php endif; ?>
+<table id="blocks">
+	<thead>
+		<tr>
+			<th>Ordner</th>
+			<th>Name</th>
+			<th>Größe</th>
+			<th>Datum</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>0</td>
+			<td>folder1</td>
+			<td></td>
+			<td>2026-10-17</td>
+		</tr>
+		<tr>
+			<td>1</td>
+			<td>folder2</td>
+			<td></td>
+			<td>2026-08-11</td>
+		</tr>
+		<tr>
+			<td>2</td>
+			<td>img3</td>
+			<td>345</td>
+			<td>2026-11-15</td>
+		</tr>
+		<tr>
+			<td>2</td>
+			<td>img4</td>
+			<td>234</td>
+			<td>2026-11-11</td>
+		</tr>
+		<tr>
+			<td>2</td>
+			<td>img5</td>
+			<td>234</td>
+			<td>2026-10-11</td>
+		</tr>
+	</tbody>
+</table>
+
+<script>
+
+$('#blocks').DataTable({
+	lengthMenu: [18, 36, 54, 72, 90],
+	columnDefs: [
+        { targets: 0, visible: false, searchable: false }
+    ],
+    orderFixed: { pre: [0, 'asc'] },
+    order: [[1, 'asc']]
+});
+
+</script>
+<style>
+
+#blocks {
+	display: block;
+	width: 100%;
+}
+
+#blocks thead {
+	display: block;
+	width: 100%;
+}
+
+#blocks thead tr {
+	width: 100%;
+	display: flex;
+}
+
+#blocks thead th {
+	flex: 1;
+	min-width: 0;
+}
+
+#blocks tbody {
+	padding-top: 20px;
+	position: relative;
+	display: grid;
+	grid-gap: 1rem;
+	grid-template-columns: repeat(6, 1fr);
+}
+
+#blocks tbody tr {
+	display: flex;
+	flex-direction: column;
+	border: 1px solid red;
+	border-radius: 3px;
+}
+
+#blocks tbody td {
+}
+
+
+</style>
+
+
 </div>
 <?php
 
