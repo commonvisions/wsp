@@ -2,21 +2,26 @@
 
 class wspFiles
 {
+    public const DEFAULT_EXCLUDED_FOLDERS = ['thumbs', 'preview'];
+
     /**
      * List the immediate entries in a folder beneath the installation's /media.
      * File sizes are in bytes. Folder sizes count only direct files.
      * Modification times are Unix timestamps in seconds.
+     * The type is the alphabetical folder ID, or the last folder ID plus two for files.
      * Pass folder or files to return only that branch.
      * A non-empty allow list takes precedence over the exclude list.
      *
      * @param string[] $allowedExtensions
      * @param string[] $excludedExtensions
+     * @param string[] $excludedFolders Folder names to omit at any level.
      */
     public function listFolder(
         string $folder = '/media/images/',
         ?string $branch = null,
         array $allowedExtensions = [],
-        array $excludedExtensions = []
+        array $excludedExtensions = [],
+        array $excludedFolders = self::DEFAULT_EXCLUDED_FOLDERS
     ): string {
         if ($branch !== null && !in_array($branch, ['folder', 'files'], true)) {
             return '{"error":"invalid_media_branch"}';
@@ -28,6 +33,11 @@ class wspFiles
             || str_contains($folder, "\0") || str_contains($folder, ':')
             || in_array('..', explode('/', $folder), true)) {
             return '{"error":"invalid_media_folder"}';
+        }
+
+        $excludedFolders = array_map('strtolower', $excludedFolders);
+        if (array_intersect(explode('/', strtolower(substr($folder, strlen('/media')))), $excludedFolders)) {
+            return '{"error":"media_folder_excluded"}';
         }
 
         // __DIR__ is <project root>/wsp/data/classes.
@@ -43,6 +53,7 @@ class wspFiles
         if ($names === false) {
             return '{"error":"media_folder_unreadable"}';
         }
+        usort($names, 'strcasecmp');
 
         $useAllowList = $allowedExtensions !== [];
         $extensions = array_map(
@@ -51,6 +62,7 @@ class wspFiles
         );
 
         $entries = $branch === null ? ['folder' => [], 'files' => []] : [$branch => []];
+        $folderId = 0;
         foreach ($names as $name) {
             if ($name === '.' || $name === '..') {
                 continue;
@@ -69,6 +81,12 @@ class wspFiles
             }
 
             $entryBranch = $isFolder ? 'folder' : 'files';
+            if ($isFolder) {
+                if (in_array(strtolower($name), $excludedFolders, true)) {
+                    continue;
+                }
+                $folderId++;
+            }
             if (!isset($entries[$entryBranch])) {
                 continue;
             }
@@ -84,10 +102,15 @@ class wspFiles
             $modified = @filemtime($resolvedPath);
             $entries[$entryBranch][] = [
                 'name' => $name,
-                'type' => $isFolder ? 'folder' : 'file',
+                'path' => $resolvedPath,
+                'type' => $isFolder ? $folderId : null,
                 'size' => $size === false ? null : $size,
                 'modified' => $modified === false ? null : $modified,
             ];
+        }
+
+        foreach (array_keys($entries['files'] ?? []) as $index) {
+            $entries['files'][$index]['type'] = $folderId + 2;
         }
 
         return json_encode($entries, JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR);

@@ -224,6 +224,101 @@ legend {
 	margin-right: -1.4rem;
 }
 
+/* mediatabellen */
+
+.mediablocks {
+    display: block;
+    width: 100%;
+
+    thead {
+        display: block;
+        width: 100%;
+
+        tr {
+            width: 100%;
+            display: flex;
+
+            th {
+                flex: 1;
+                min-width: 0;
+
+                .media-preview {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    tbody {
+        padding-top: 20px;
+        position: relative;
+        display: grid;
+        grid-gap: 1rem;
+        grid-template-columns: repeat(6, 1fr);
+
+        @media screen and (width > 1480px) {
+            grid-template-columns: repeat(8, 1fr);
+        }
+
+        @media screen and (width < 960px) {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        @media screen and (width < 480px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .media-preview {
+            display: grid;
+            place-items: center;
+            min-height: 4rem;
+            font-size: 2rem;
+
+            .media-folder-open {
+                appearance: none;
+                background: none;
+                border: 0;
+                box-shadow: none;
+                color: inherit;
+                padding: 0;
+                font-size: inherit;
+                cursor: pointer;
+
+                &:focus-visible {
+                    outline: 2px solid currentColor;
+                    outline-offset: 3px;
+                }
+            }
+
+            img {
+                display: block;
+                max-width: 100%;
+                max-height: 8rem;
+                object-fit: contain;
+            }
+        }
+
+        tr {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--secondary);
+            border-radius: 3px;
+
+            td {
+                padding: 0;
+                margin: 0;
+                border: 0;
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
 /* fieldsets */
 	
 fieldset { padding: 0.5%; margin: 5px 0px; border: 1px solid #D3DDE3; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; }

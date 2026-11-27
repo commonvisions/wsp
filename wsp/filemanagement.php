@@ -601,9 +601,9 @@ $sysequal = (intval($filecount) == $m_res['num']);
 		<ul style="list-style-type: none;">
 			<li><input id="searchlist" value="" style="width: 50%;" onchange="setSearchList(this.value);" onblur="setSearchList(this.value);"></li>
 		</ul>
-		<input type="hidden" id="countlist" value="10000" />
-		<input type="hidden" id="displaylist" value="<?php echo $basedisplay; ?>" />
-		<input type="hidden" id="sortlist" value="<?php echo $basesort; ?>" />
+		<input type="_hidden" id="countlist" value="10000" />
+		<input type="_hidden" id="displaylist" value="<?php echo $basedisplay; ?>" />
+		<input type="_hidden" id="sortlist" value="<?php echo $basesort; ?>" />
 		<input type="_hidden" id="activefolder" value="" />
 		<input type="_hidden" id="activeupload" value="" />
 		<input type="_hidden" id="keypress" value="" />
@@ -651,116 +651,17 @@ $sysequal = (intval($filecount) == $m_res['num']);
 	<?php if($autoscale===false) { echo "<input type='hidden' id='autoscale' name='autoscale' value='5000x5000' />"; } ?>
     <?php if($thumbsize===false) { echo "<input type='hidden' id='thumbsize' name='thumbsize' value='500x500' />"; } ?>
 	<fieldset id="filesearch" style="display: none;"></fieldset>
-	<fieldset id="filesystem">
-		<legend><?php echo returnIntLang('media filestructure', true); ?></legend>
-		<?php
-		// init full structure array
-		$fullstructure = array();
-		// get hidemedia option
-		$hide_sql = "SELECT `varvalue` FROM `wspproperties` WHERE `varname` = 'hiddenmedia'";
-		$hide_res = doResultSQL($hide_sql);
-		// define hidemedia sql statement
-		$hidemedia = "";
-		if ($hide_res && trim($hide_res!='')): 
-			$hiddenmedia = explode(",", trim($hide_res));
-			$hideoption = array(" `filefolder` NOT LIKE '/thumbs/%' ");
-			foreach ($hiddenmedia AS $k => $v):
-				$hideoption[] = " `filefolder` NOT LIKE '/".$v."/%' ";
-			endforeach;
-			$hidemedia = " AND (".implode(" AND ", $hideoption).") ";	
-		endif;
-		// read structure from db
-		$s_sql = "SELECT DISTINCT `filefolder` FROM `wspmedia` WHERE `mediatype` = '".$mediafolder."' ".$hidemedia." ORDER BY `filefolder`";
-		$s_res = doSQL($s_sql);
-		if ($s_res['num']>0):
-			foreach ($s_res['set'] AS $sresk => $sresv):
-				$m_sql = "SELECT `mid` FROM `wspmedia` WHERE `mediatype` = '".$mediafolder."' AND `filefolder` = '".trim($sresv['filefolder'])."' AND `filename` != '' ORDER BY `filename` ";
-				$m_res = doSQL($m_sql);		
-				$fullstructure[] = array('folder' => str_replace("//", "/", "/media/".$mediafolder."/".trim($sresv['filefolder'])), 'trimfolder' => trim($sresv['filefolder']), 'count' => $m_res['num'] );
-			endforeach;
-			$_SESSION['fullstructure'] = $fullstructure;
-		endif;
-		
-		if (count($fullstructure)>0):
-			foreach ($fullstructure AS $fk => $fv):
-				// if restrictions exist
-				if (isset($_SESSION['wspvars']['rights'][$mediafolder.'folder']) && (strstr(trim($fv['folder']), $_SESSION['wspvars']['rights'][$mediafolder.'folder']) || intval($_SESSION['wspvars']['rights'][$mediafolder.'folder'])==1) || intval($_SESSION['wspvars']['usertype'])==1):
-					// has subdirectories ???
-					$errortype = ''; if (str_replace("_", "-", str_replace("/", "-", strtolower($fv['trimfolder'])))!=urltext(str_replace("_", "-", str_replace("/", "-", strtolower($fv['trimfolder']))))): $errortype = 'false'; endif;
-					$subdir = false; if ($fk>0 && $fk<(count($fullstructure)-1) && strstr($fullstructure[($fk+1)]['trimfolder'], $fv['trimfolder'])): $subdir = true; endif;
-					echo "<ul id=\"folder_".$fk."\" class=\"folder ".$basedisplay." ".$errortype." \">";
-					echo "<li class='folder ".$basedisplay;
-					if ($fv['count']==0): echo " empty"; endif;
-					if ($fv['count']>0): echo " closed"; endif; // add options for returning visitors or reloading page to display open folder
-					echo "'><ul class='folderdata ".$basedisplay."'>";
-					echo "<li class='foldergrabber ".$basedisplay."'>&nbsp;</li>";
-					echo "<li class='foldericon ".$basedisplay."'>&nbsp;</li>";
-					echo "<li class='foldername ".$basedisplay."'>".trim($fv['trimfolder'])."</li>";
-					echo "<li class='foldersize ".$basedisplay."'>";
-					echo "</li>";
-					echo "<li class='folderaction ".$basedisplay."'>";
-					 // allow to delete folder if no content is used
-					if (!($subdir)) {
-                        echo "<span id='btn_del_".$fk."' ";
-                        if ($fk==0 || $fv['count']>0) {
-                            echo " style='display: none;' ";
-                        }
-                        echo " class='bubblemessage red' onclick='if(confirm(\"". returnIntLang('confirm delete directory', false) ."\")) {confirmDeleteDir(".$fk.");};'>".returnIntLang('bubble delete', false)."</span> ";
-                    }
-					 // open folder
-					echo "<span id='btn_open_".$fk."' class='bubblemessage ";
-					echo "orange' onclick='showFiles(".$fk.");'>".$fv['count']." ".returnIntLang('bubble files', false)."</span> ";
-					// upload to folder
-					echo "<span id='btn_upload_".$fk."' class='uploadbutton bubblemessage orange' onclick='showUpload(".$fk.");'>".returnIntLang('bubble upload', false)."</span> ";
-					// create subfolder
-					echo "<span id='btn_createdir_".$fk."' class='bubblemessage orange' onclick='showCreateDir(".$fk.");'>".returnIntLang('bubble adddir', false)."</span> ";
-					echo "</li>";
-					echo "<li class='closefolder ".$basedisplay."'>&nbsp;</li>";
-					echo "</ul></li>";
-					echo "</ul>";				
-					// upload area ..
-					echo "<ul id='uploadholder_".$fk."' class='upload ".$basedisplay."' folder='".trim($fv['folder'])."'>";
-					echo "<li class='upload ".$basedisplay."' id=\"upload_".$fk."\"><ul class='uploaddata'>";
-					echo "<li>";
-					?>
-					<div id="uploader_<?php echo $fk; ?>"></div>
-					<?php
-					echo "</li>";
-					echo "</ul><input type='hidden' id='uploadtarget_".$fk."' value='".$fv['folder']."' /></li>";
-					echo "</ul>";
-					// upload area
-					echo "<ul id=\"uploaditems_".$fk."\" class=\"uploaditems ".$basedisplay."\" folder=\"".$fv['folder']."\"></ul>";
-					// directory ara
-					echo "<ul id=\"createsubdir_".$fk."\" class=\"createsubdir ".$basedisplay."\" style=\"display: none;\" ><li><input type=\"text\" name=\"newdirname\" id=\"newdirname_".$fk."\"><input type=\"hidden\" name=\"subdirname\" id=\"subdirname_".$fk."\" value='".$fv['folder']."'> ";
-					echo "<span id='btn_makedir_".$fk."' class='bubblemessage green' onclick='createNewDir(".$fk.");'>".returnIntLang('bubble save', false)."</span> ";
-					echo "<span id='btn_canceldir_".$fk."' class='bubblemessage red' onclick='showCreateDir(".$fk.");'>".returnIntLang('bubble cancel', false)."</span> ";
-					echo "</li></ul>";
-					// file area
-					echo "<ul id=\"files_".$fk."\" class=\"dropable\" folder=\"".$fv['folder']."\" style=\"display: none;\"></ul>";
-                    echo "<script type='text/javascript'>\n";
-                    echo "optionDeleteDir(".$fk.");\n\n";
-                    echo "</script>";
-					if (isset($_SESSION['wspvars']['openmediafolder']) && $_SESSION['wspvars']['openmediafolder']==$fv['folder']): $openmediaid = $fk; $_SESSION['wspvars']['openmediafolder'] = ''; endif;
-					flush();flush();flush();
-				endif;
-			endforeach;
-		else:
-			echo "<p>".returnIntLang('media filestructure missing')."</p>";
-			$sysequal = true;
-		endif;
-		?>
-	</fieldset>
-	
+
 	<?php if ($extern!='1' && !$sysequal) { ?>
-		<form id="readstructure"><input type="hidden" name="op" value='readstructure'><input type="hidden" name="folder" value="<?php echo $mediafolder; ?>" /></form>
+		<form id="readstructure"><input type="_hidden" name="op" value='readstructure'><input type="_hidden" name="folder" value="<?php echo $mediafolder; ?>" /></form>
 		<fieldset class="options innerfieldset"><p><a onclick="document.getElementById('readstructure').submit();" class="greenfield" title="<?php echo $sysinfo; ?>"><?php echo returnIntLang('filesystem reroll1'); ?> (<?php echo $filecount." ".returnIntLang('str files'); ?>) <?php echo returnIntLang('filesystem reroll2'); ?></a></p></fieldset>
 	<?php } ?>
 
-	<input type="hidden" name="savefiledesc" id="savefiledesc" value="" />
+	<input type="_hidden" name="savefiledesc" id="savefiledesc" value="" />
 	<form name="viewfile" id="viewfile" action="<?php echo "/".$_SESSION['wspvars']['wspbasedir']."/mediadetails.php"; ?>" method="post" enctype="multipart/form-data">
-		<input type="hidden" name="showfile" id="detailfilename" value="" />
-		<input type="hidden" name="medialoc" id="detailmedialoc" value="<?php echo $_SERVER['PHP_SELF']; ?>" />
-		<input type="hidden" name="media_folder" id="media_folder" value="<?php echo "/media/" . $mediafolder ?>" />
+		<input type="_hidden" name="showfile" id="detailfilename" value="" />
+		<input type="_hidden" name="medialoc" id="detailmedialoc" value="<?php echo $_SERVER['PHP_SELF']; ?>" />
+		<input type="_hidden" name="media_folder" id="media_folder" value="<?php echo "/media/" . $mediafolder ?>" />
 	</form>
 	
 	<?php if ($extern!=1): ?>
@@ -800,118 +701,143 @@ $sysequal = (intval($filecount) == $m_res['num']);
 	
 	</script>
 	<?php endif; ?>
-<table id="blocks">
+<?php
+$mediaListFolder = '/media/' . $mediafolder . '/' . trim($path, '/');
+?>
+<p id="mediatable-error" role="status" hidden></p>
+<table id="mediatable" class="mediablocks" data-folder="<?php echo htmlspecialchars($mediaListFolder, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
 	<thead>
 		<tr>
 			<th>Ordner</th>
+			<th>Vorschau</th>
 			<th>Name</th>
 			<th>Größe</th>
 			<th>Datum</th>
 		</tr>
 	</thead>
-	<tbody>
-		<tr>
-			<td>0</td>
-			<td>folder1</td>
-			<td></td>
-			<td>2026-10-17</td>
-		</tr>
-		<tr>
-			<td>1</td>
-			<td>folder2</td>
-			<td></td>
-			<td>2026-08-11</td>
-		</tr>
-		<tr>
-			<td>2</td>
-			<td>img3</td>
-			<td>345</td>
-			<td>2026-11-15</td>
-		</tr>
-		<tr>
-			<td>2</td>
-			<td>img4</td>
-			<td>234</td>
-			<td>2026-11-11</td>
-		</tr>
-		<tr>
-			<td>2</td>
-			<td>img5</td>
-			<td>234</td>
-			<td>2026-10-11</td>
-		</tr>
-	</tbody>
+	<tbody></tbody>
 </table>
 
-<?php
-
-require_once __DIR__ . '/data/classes/files.class.php';
-echo (new wspFiles())->listFolder('/media/' . $mediafolder);
-
-
-?>
-
 <script>
+const mediaTable = $('#mediatable');
+const mediaTableError = $('#mediatable-error');
 
-$('#blocks').DataTable({
-	lengthMenu: [18, 36, 54, 72, 90],
-	columnDefs: [
-        { targets: 0, visible: false, searchable: false }
-    ],
-    orderFixed: { pre: [0, 'asc'] },
-    order: [[1, 'asc']]
+let currentMediaFolder = mediaTable.attr('data-folder');
+let requestedMediaFolder = currentMediaFolder;
+const mediaDataTable = mediaTable.DataTable({
+	lengthMenu: [24, 48, 72, 96, 120],
+	ajax: function (_request, callback) {
+		mediaTableError.prop('hidden', true);
+		const folder = requestedMediaFolder;
+		return $.getJSON(
+                'api/ajax.listmediafolder.php',
+                { folder: folder }
+            ).done(function (listing) {
+				if (Array.isArray(listing.folder) && Array.isArray(listing.files)) {
+					currentMediaFolder = folder;
+					const rows = listing.folder.map(entry => ({ ...entry, isFolder: true })).concat(listing.files);
+					if (listing.parent) {
+						rows.unshift({
+							type: 0,
+							name: 'Eine Ebene nach oben',
+							target: listing.parent,
+							size: null,
+							modified: null
+						});
+					}
+					callback({ data: rows });
+				} else {
+					showMediaListError();
+				}
+			}).fail(function (_xhr, status) {
+				if (status !== 'abort') {
+					showMediaListError();
+				}
+			});
+
+		function showMediaListError() {
+			mediaTableError.text('Der Medienordner konnte nicht geladen werden.').prop('hidden', false);
+			callback({ data: [] });
+		}
+	},
+	columns: [
+		{ data: 'type', className: 'type', visible: false, searchable: false },
+		{
+			data: 'preview',
+			defaultContent: '',
+			className: 'preview media-preview',
+			orderable: false,
+			searchable: false,
+			render: () => '',
+			createdCell: function (cell, preview, entry) {
+				const icon = document.createElement('i');
+				const opensFolder = entry.isFolder || entry.type === 0;
+				icon.className = opensFolder ? 'fa-solid fa-folder-closed' : 'fa-solid fa-file';
+				icon.setAttribute('aria-hidden', 'true');
+
+				if (opensFolder) {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'media-folder-open';
+					button.setAttribute('aria-label', entry.name);
+					button.append(icon);
+					cell.replaceChildren(button);
+				} else if (preview) {
+					const image = document.createElement('img');
+					image.alt = '';
+					image.loading = 'lazy';
+					image.addEventListener('error', () => image.replaceWith(icon), { once: true });
+					image.src = preview;
+					cell.replaceChildren(image);
+				} else {
+					cell.replaceChildren(icon);
+				}
+			}
+		},
+		{
+			data: 'name',
+			className: 'name',
+			render: $.fn.dataTable.render.text(),
+			createdCell: function (cell, name, entry) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                if (entry.isFolder || entry.type === 0) {
+                    button.className = 'media-folder-open btn btn-dark btn-sm';
+                } else {
+                    button.className = 'media-file-open btn btn-sm';
+                }
+                button.textContent = name;
+                cell.replaceChildren(button);
+			}
+		},
+		{
+			data: 'size',
+			className: 'size',
+			defaultContent: '',
+			render: (size, type, entry) => type === 'display' && size !== null
+				? size + (entry.isFolder ? (size === 1 ? ' Datei' : ' Dateien') : ' B')
+				: size
+		},
+		{
+			data: 'modified',
+			className: 'modified',
+			defaultContent: '',
+			render: (timestamp, type) => type === 'display' && timestamp !== null
+				? new Date(timestamp * 1000).toLocaleString('de-DE')
+				: timestamp
+		}
+	],
+	orderFixed: { pre: [0, 'asc'] },
+	order: [[2, 'asc']]
 });
 
+mediaTable.on('click', '.media-folder-open', function () {
+	const entry = mediaDataTable.row($(this).closest('tr')).data();
+	requestedMediaFolder = entry.target ?? currentMediaFolder.replace(/\/+$/, '') + '/' + entry.name;
+	mediaDataTable.ajax.reload();
+});
 </script>
-<style>
-
-#blocks {
-	display: block;
-	width: 100%;
-}
-
-#blocks thead {
-	display: block;
-	width: 100%;
-}
-
-#blocks thead tr {
-	width: 100%;
-	display: flex;
-}
-
-#blocks thead th {
-	flex: 1;
-	min-width: 0;
-}
-
-#blocks tbody {
-	padding-top: 20px;
-	position: relative;
-	display: grid;
-	grid-gap: 1rem;
-	grid-template-columns: repeat(6, 1fr);
-}
-
-#blocks tbody tr {
-	display: flex;
-	flex-direction: column;
-	border: 1px solid red;
-	border-radius: 3px;
-}
-
-#blocks tbody td {
-}
-
-
-</style>
-
-
 </div>
 <?php
 
-if ($extern==1):
-	include ("data/include/footerempty.inc.php");
-else:
-	include ("data/include/footer.inc.php");
-endif;
+include ($extern) ? ("data/include/footerempty.inc.php") : ("data/include/footer.inc.php");
