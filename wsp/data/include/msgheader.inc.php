@@ -10,7 +10,7 @@
 <script type="text/javascript">
 			
 function showInnerMsg(msgtype) {
-	$.post("xajax/ajax.showinnermsg.php", { 'msgtype': msgtype })
+	$.post("api/ajax.showinnermsg.php", { 'msgtype': msgtype })
 		.done (function(data) {
 			if (data) {
 				$('#'+msgtype).html(data);

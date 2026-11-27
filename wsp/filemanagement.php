@@ -387,7 +387,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
     function updateSortList(fkid) {
         var displaylist = document.getElementById('displaylist').value;
         var sortlist = document.getElementById('sortlist').value;
-        $.post("xajax/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
+        $.post("api/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
             .done (function(data) {
             $('#files_' + fkid).html(data);
         });
@@ -397,7 +397,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
 		if ($.trim(searchValue).length>2) {
 			var displaylist = document.getElementById('displaylist').value;
 			var sortlist = document.getElementById('sortlist').value;
-			$.post("xajax/ajax.returnmediasearch.php", { 'search': $.trim(searchValue), 'display': displaylist, 'sort': sortlist})
+			$.post("api/ajax.returnmediasearch.php", { 'search': $.trim(searchValue), 'display': displaylist, 'sort': sortlist})
 				.done (function(data) {
 					$('#filesearch').css('display', 'block');
 					$('#filesearch').html(data);
@@ -423,7 +423,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
 		var newdesc = document.getElementById(fileFieldId+'_newfiledesc').value;
 		var olddesc = document.getElementById('savefiledesc').value;
 		if ($.trim(fileFieldId)!="") {
-			$.post("xajax/ajax.setnewfiledesc.php", { 'fileid': $.trim(fileFieldId), 'newdesc': newdesc, 'olddesc': olddesc})
+			$.post("api/ajax.setnewfiledesc.php", { 'fileid': $.trim(fileFieldId), 'newdesc': newdesc, 'olddesc': olddesc})
 				.done (function(data) {
 					$('#'+fileFieldId+'_descname').html(data);
 					})
@@ -460,7 +460,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
 	}
 	
     function optionDeleteDir(fkid) {
-        $.post("xajax/ajax.returnmediafilelist.php", { 'fkid': fkid, 'stat': 'countdelete'}).done (function(data) {
+        $.post("api/ajax.returnmediafilelist.php", { 'fkid': fkid, 'stat': 'countdelete'}).done (function(data) {
             if (parseInt(data)==0 && fkid!=0) {
                 $('#btn_del_' + fkid).show();
             }
@@ -471,7 +471,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
 		var displaylist = document.getElementById('displaylist').value;
 		var sortlist = document.getElementById('sortlist').value;
 		if ($('#btn_open_' + fkid).hasClass('orange')) {
-			$.post("xajax/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
+			$.post("api/ajax.returnmediafilelist.php", { 'fkid': fkid, 'display': displaylist, 'sort': sortlist})
 				.done (function(data) {
 					$('#files_' + fkid).html(data);
 					$('#btn_open_' + fkid).removeClass('orange');
@@ -533,7 +533,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
 		var subdirto = document.getElementById('subdirname_'+ fkid).value;
 		var newdirname = document.getElementById('newdirname_'+ fkid).value;
 		if ($.trim(subdirto)!="" && $.trim(newdirname)!="") {
-			$.post("xajax/ajax.createnewdir.php", { 'subdirto': subdirto, 'newdirname': newdirname, 'mediatype': '<?php echo $mediafolder; ?>'})
+			$.post("api/ajax.createnewdir.php", { 'subdirto': subdirto, 'newdirname': newdirname, 'mediatype': '<?php echo $mediafolder; ?>'})
 				.done(function(data) {
 					if(data==true || data=='1') {
 						document.location.reload();
@@ -548,7 +548,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
 
 	function confirmDeleteDir(fkid) {
 		if ($.trim(fkid)!="") {
-			$.post("xajax/ajax.deletedir.php", { 'dirid': $.trim(fkid) } )
+			$.post("api/ajax.deletedir.php", { 'dirid': $.trim(fkid) } )
 				.done (function(data) {
 					var returnData = JSON.parse(data);
 					if(returnData['success']) {
@@ -570,7 +570,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
 
 	function confirmDeleteFile(fileFieldId) {
 		if (fileFieldId!="") {
-			$.post("xajax/ajax.deletefile.php", { 'fileid': fileFieldId } )
+			$.post("api/ajax.deletefile.php", { 'fileid': fileFieldId } )
 				.done (function(data) {
 					var returnData = JSON.parse(data);
 					if(returnData['success']) {
@@ -604,10 +604,10 @@ $sysequal = (intval($filecount) == $m_res['num']);
 		<input type="hidden" id="countlist" value="10000" />
 		<input type="hidden" id="displaylist" value="<?php echo $basedisplay; ?>" />
 		<input type="hidden" id="sortlist" value="<?php echo $basesort; ?>" />
-		<input type="hidden" id="activefolder" value="" />
-		<input type="hidden" id="activeupload" value="" />
-		<input type="hidden" id="keypress" value="" />
-		<input type="hidden" id="activelist" value="/media/<?php echo $mediafolder; ?>/" />
+		<input type="_hidden" id="activefolder" value="" />
+		<input type="_hidden" id="activeupload" value="" />
+		<input type="_hidden" id="keypress" value="" />
+		<input type="_hidden" id="activelist" value="/media/<?php echo $mediafolder; ?>/" />
 	</fieldset>
 	<?php 
     
@@ -768,7 +768,7 @@ $sysequal = (intval($filecount) == $m_res['num']);
 	
 	$(document).ready(function(){
 		$( ".dropable" ).sortable({placeholder: "ui-state-highlight", connectWith: ".dropable", handle: '.movehandle', receive: function (event, ui) { 
-		$.post("xajax/ajax.dragdropmediafile.php", {'base': '<?php echo "/media/".$mediafolder."/"; ?>', 'fkey': ui.item.attr('id'), 'target': $(this).attr('folder'), 'copykey': document.getElementById('keypress').value})
+		$.post("api/ajax.dragdropmediafile.php", {'base': '<?php echo "/media/".$mediafolder."/"; ?>', 'fkey': ui.item.attr('id'), 'target': $(this).attr('folder'), 'copykey': document.getElementById('keypress').value})
 			.done (function(data) {
 				if ($.trim(data)!='') { alert(data); }
 				var openFolders = document.getElementById('activefolder').value;
@@ -842,6 +842,14 @@ $sysequal = (intval($filecount) == $m_res['num']);
 		</tr>
 	</tbody>
 </table>
+
+<?php
+
+require_once __DIR__ . '/data/classes/files.class.php';
+echo (new wspFiles())->listFolder('/media/' . $mediafolder);
+
+
+?>
 
 <script>
 

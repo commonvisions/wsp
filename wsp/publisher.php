@@ -507,7 +507,7 @@ function setToPublish(selectType) {
 		
 		function searchPublish() {
 			$('#contentpublisher').replaceWith('<table class="publishinglist tablelist" id="contentpublisher"><tr><td class="tablecell eight" style="text-align: center;"><?php echo returnIntLang('publisher loading data', false); ?></td></tr></table>');
-			$.post("xajax/ajax.showpublisher.php", {'showpublish': document.getElementById('publishlist').value, 'searchpublish': document.getElementById('searchPublish').value}).done (function(data) {
+			$.post("api/ajax.showpublisher.php", {'showpublish': document.getElementById('publishlist').value, 'searchpublish': document.getElementById('searchPublish').value}).done (function(data) {
 				if (data!="") {
 					$('#contentpublisher').replaceWith(data);
 					createFloatingTable();
@@ -581,7 +581,7 @@ function setToPublish(selectType) {
 						}
 					
 					$(document).ready(function() {
-						$.post("xajax/ajax.showpublisher.php", {'showpublish': '<?php if ($mpoint_res['num']==0): echo "all"; else: echo "publishrequired"; endif; ?>'}).done (function(data) {
+						$.post("api/ajax.showpublisher.php", {'showpublish': '<?php if ($mpoint_res['num']==0): echo "all"; else: echo "publishrequired"; endif; ?>'}).done (function(data) {
 							if (data!="") {
 								$('#contentpublisher').replaceWith(data);
 								createFloatingTable();

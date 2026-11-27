@@ -45,3 +45,5 @@ wsp/data/include/dbaccess.inc.php
 data/include/dbaccess.inc.php
 data/modules/*
 
+!/wsp/api/
+!/wsp/api/**
