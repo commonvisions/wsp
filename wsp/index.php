@@ -313,7 +313,21 @@ if (array_key_exists('wspvars', $_SESSION) && array_key_exists('rights', $_SESSI
 			if(isset($_GET['logout'])) {
 				unset($_COOKIE['wspautologin']);
 			}
-			
+
+            ?><div id="logo">
+                <div class="icon">
+                    <div class="outline">
+                        <i class="fa-solid fa-eye fa-xs fa-canvas-roomy"></i>
+                    </div>
+                </div>
+                <div class="text">
+                    <span class="w">W</span>
+                    <span class="s">S</span>
+                    <span class="p">P</span>
+                    <span class="seven">7</span>
+                </div>
+            </div><?php
+
 			(new wspBase())->showWSPMessages(echo: true);
 		
 			if (array_key_exists('cookiecheck', $_SESSION) && $_SESSION['cookiecheck']=="requested"): 
