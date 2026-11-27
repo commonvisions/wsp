@@ -93,57 +93,47 @@ if (isset($_SESSION['wspvars']['directwriting']) && $_SESSION['wspvars']['direct
 }
 
 ?>
-<script type="text/javascript">
-
-function jumpTo(jumpValue) {
-	var jumpParts = jumpValue.split("_");
-	if (jumpValue == 'logout') {
-		window.location.href = '/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/logout.php';
-		}
-	else if (jumpParts[0] == 'site') {
-		// ajax function to setup site
-		$.post("xajax/ajax.setwspsite.php", { 'site': jumpParts[1] }).done(function(data) {});
-		}
-	else {
-		$('li.level0').not('li.select').hide('fade');
-		$('li.level0').not('li.select').css('display', 'none');
-		$('li.' + jumpValue).show('fade');
-		}
-	}
-
-function mobileJump(jumpValue) {
-	window.location.href = jumpValue;
-	}
-
-</script>
 <div id="mainmenu">
+    <div id="logo">
+        <div class="icon">
+            <div class="outline">
+                <i class="fa-solid fa-eye fa-xs fa-canvas-roomy"></i>
+            </div>
+        </div>
+        <div class="text">
+            <span class="w">W</span>
+            <span class="s">S</span>
+            <span class="p">P</span>
+            <span class="seven">7</span>
+        </div>
+    </div>
 	<nav>
 		<ul>
 			<?php $mp = 1; ?>
 			<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
 				<a>
 					<span class="icon"><i class="fa-solid fa-house"></i></span>
-					<span class="link"><?php echo returnIntLang('menu home'); ?></span>
+					<span class="text"><?php echo returnIntLang('menu home'); ?></span>
 					<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
 				</a>
 				<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>>
 					<li><a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/index.php">
 						<span class="icon"><i class="fa-solid fa-gauge"></i></span>
-						<span class="link"><?php echo returnIntLang('menu home cms'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu home cms'); ?></span>
 					</a></li>
 					<?php if ($_SESSION['wspvars']['liveurl']==$_SESSION['wspvars']['workspaceurl']){ ?>
 						<li><a href="http://<?php echo $_SESSION['wspvars']['liveurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>">
 							<span class="icon"><i class="fa-solid fa-globe"></i></span>
-							<span class="link"><?php echo returnIntLang('menu home'); ?> <?php echo returnIntLang('menu home website'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu home'); ?> <?php echo returnIntLang('menu home website'); ?></span>
 						</a></li>
 					<?php } else{ ?>
 						<li><a href="http://<?php echo $_SESSION['wspvars']['liveurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>">
 							<span class="icon"><i class="fa-solid fa-globe"></i></span>
-							<span class="link"><?php echo returnIntLang('menu home website'); ?> (LIVE)</span>
+							<span class="text"><?php echo returnIntLang('menu home website'); ?> (LIVE)</span>
 						</a></li>
 						<li><a href="http://<?php echo $_SESSION['wspvars']['workspaceurl']; ?>" target="_blank" title="<?php echo returnIntLang('hint newwindow', false); ?>">
 							<span class="icon"><i class="fa-brands fa-dev"></i></span>
-							<span class="link"><?php echo returnIntLang('menu home website'); ?> (DEV)</span>
+							<span class="text"><?php echo returnIntLang('menu home website'); ?> (DEV)</span>
 						</a></li>
 					<?php } ?>
 			</ul></li>
@@ -151,27 +141,27 @@ function mobileJump(jumpValue) {
 				<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
 					<a>
 						<span class="icon"><i class="fa-solid fa-user"></i></span>
-						<span class="link"><?php echo returnIntLang('menu user'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu user'); ?></span>
 						<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
 					</a>
 					<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block;'";?>>
 						<li class="level1" id="m_<?php echo $mp; ?>_0">
 							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usermanagement.php">
 								<span class="icon"><i class="fa-solid fa-user-group"></i></span>
-								<span class="link"><?php echo returnIntLang('menu user manage'); ?></span>
+								<span class="text"><?php echo returnIntLang('menu user manage'); ?></span>
 							</a>
 						</li>
 						<li class="level1" id="m_<?php echo $mp; ?>_1">
 							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usershow.php">
 								<span class="icon"><i class="fa-solid fa-user-lock"></i></span>
-								<span class="link"><?php echo returnIntLang('menu user login'); ?></span>
+								<span class="text"><?php echo returnIntLang('menu user login'); ?></span>
 							</a>
 						</li>
 						<?php if ($isextended==1){ ?>
 							<li class="level1" id="m_<?php echo $mp; ?>_3">
 								<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/userhistory.php">
 									<span class="icon"><i class="fa-solid fa-user-clock"></i></span>
-									<span class="link"><?php echo returnIntLang('menu user logs'); ?></span>
+									<span class="text"><?php echo returnIntLang('menu user logs'); ?></span>
 								</a>
 							</li>
 						<?php } ?>
@@ -201,7 +191,7 @@ function mobileJump(jumpValue) {
 					<li id="m_<?php echo $mp; ?>_0">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/usermanagement.php">
 							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
-							<span class="link"><?php echo returnIntLang('menu user managedata'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu user managedata'); ?></span>
 						</a>
 					</li>
 				</ul>
@@ -213,7 +203,7 @@ function mobileJump(jumpValue) {
 			<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
 				<a>
 					<span class="icon"><i class="fa-brands fa-safari"></i></span>
-					<span class="link"><?php echo returnIntLang('menu siteprefs'); ?></span>
+					<span class="text"><?php echo returnIntLang('menu siteprefs'); ?></span>
 					<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
 				</a>
 			<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block;'";?>>
@@ -221,40 +211,40 @@ function mobileJump(jumpValue) {
 					<li class="level1" id="m_<?php echo $mp; ?>_2">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/siteprefs.php">
 							<span class="icon"><i class="fa-solid fa-toolbox"></i></span>
-							<span class="link"><?php echo returnIntLang('menu siteprefs generell'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu siteprefs generell'); ?></span>
 						</a>
 					</li>
 					<!-- 
 					<li class="level1" id="m_<?php echo $mp; ?>_2">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/sites.php">
 							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
-							<span class="link"><?php echo returnIntLang('menu siteprefs sites'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu siteprefs sites'); ?></span>
 						</a>
 					</li>
 					-->
 					<li class="level1" id="m_<?php echo $mp; ?>_1">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/headerprefs.php">
 							<span class="icon"><i class="fa-solid fa-share-from-square"></i></span>
-							<span class="link"><?php echo returnIntLang('menu siteprefs redirects'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu siteprefs redirects'); ?></span>
 						</a>
 					</li>
 				<?php } ?>
 				<li class="level1" id="m_<?php echo $mp; ?>_3">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/semanagement.php">
 						<span class="icon"><i class="fa-brands fa-google"></i></span>
-						<span class="link"><?php echo returnIntLang('menu siteprefs seo'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu siteprefs seo'); ?></span>
 					</a>
 				</li>
 				<li class="level1" id="m_<?php echo $mp; ?>_4">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/analytics.php">
 						<span class="icon"><i class="fa-solid fa-chart-line"></i></span>
-						<span class="link"><?php echo returnIntLang('menu siteprefs google'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu siteprefs google'); ?></span>
 					</a>
 				</li>
 				<li class="level1" id="m_<?php echo $mp; ?>_4">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/privacy.php">
 						<span class="icon"><i class="fa-solid fa-user-shield"></i></span>
-						<span class="link"><?php echo returnIntLang('menu siteprefs privacy'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu siteprefs privacy'); ?></span>
 					</a>
 				</li>
 			</ul>
@@ -267,21 +257,21 @@ function mobileJump(jumpValue) {
 				<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
 					<a>
 						<span class="icon"><i class="fa-solid fa-palette"></i></span>
-						<span class="link"><?php echo returnIntLang('menu design'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu design'); ?></span>
 						<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
 					</a>
 					<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>>
 				<?php if ($fsaccess) { ?><li class="level1" id="m_<?php echo $mp; ?>_0">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/screenmanagement.php">
 						<span class="icon"><i class="fa-solid fa-image"></i></span>
-						<span class="link"><?php echo returnIntLang('menu design media'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu design media'); ?></span>
 					</a>
 				</li>
 				<?php if ($isextended==1) { ?>
 					<li class="level1" id="m_<?php echo $mp; ?>_8">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/fontmanagement.php">
 							<span class="icon"><i class="fa-brands fa-fonticons"></i></span>
-							<span class="link"><?php echo returnIntLang('menu design fonts'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu design fonts'); ?></span>
 						</a>
 					</li>
 				<?php } ?>
@@ -289,33 +279,33 @@ function mobileJump(jumpValue) {
 				<li class="level1" id="m_<?php echo $mp; ?>_1">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/designedit.php">
 						<span class="icon"><i class="fa-brands fa-css"></i></span>
-						<span class="link"><?php echo returnIntLang('menu design css'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu design css'); ?></span>
 					</a>
 				</li>
 				<?php if ($isextended==1){ ?>
 					<li class="level1" id="m_<?php echo $mp; ?>_7">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/scriptedit.php">
 							<span class="icon"><i class="fa-brands fa-square-js"></i></span>
-							<span class="link"><?php echo returnIntLang('menu design js'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu design js'); ?></span>
 						</a>
 					</li>
 				<?php } ?>
 				<li class="level1" id="m_<?php echo $mp; ?>_2">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/menutemplate.php">
 						<span class="icon"><i class="fa-solid fa-rectangle-list"></i></span>
-						<span class="link"><?php echo returnIntLang('menu design menutmp'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu design menutmp'); ?></span>
 					</a>
 				</li>
 				<li class="level1" id="m_<?php echo $mp; ?>_3">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/selfvarsedit.php">
 						<span class="icon"><i class="fa-solid fa-code"></i></span>
-						<span class="link"><?php echo returnIntLang('menu design selfvars'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu design selfvars'); ?></span>
 					</a>
 				</li>
 				<li class="level1" id="m_<?php echo $mp; ?>_4">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/templates.php">
 						<span class="icon"><i class="fa-regular fa-file-code"></i></span>
-						<span class="link"><?php echo returnIntLang('menu design templates'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu design templates'); ?></span>
 					</a>
 				</li>
 				</ul>
@@ -334,7 +324,7 @@ function mobileJump(jumpValue) {
 				<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_6">
 					<a>
 						<span class="icon"><i class="fa-solid fa-file"></i></span>
-						<span class="link"><?php echo returnIntLang('menu files'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu files'); ?></span>
 						<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
 					</a>
 					<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block;'";?>>
@@ -342,7 +332,7 @@ function mobileJump(jumpValue) {
 						<li class="level1" id="m_6_1">
 							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/imagemanagement.php">
 								<span class="icon"><i class="fa-solid fa-file-image"></i></span>
-								<span class="link"><?php echo returnIntLang('menu files images'); ?></span>
+								<span class="text"><?php echo returnIntLang('menu files images'); ?></span>
 							</a>
 						</li>
 						<?php } ?>
@@ -350,7 +340,7 @@ function mobileJump(jumpValue) {
 						<li class="level1" id="m_6_2">
 							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/documentmanagement.php">
 								<span class="icon"><i class="fa-solid fa-file-arrow-down"></i></span>
-								<span class="link"><?php echo returnIntLang('menu files docs'); ?></span>
+								<span class="text"><?php echo returnIntLang('menu files docs'); ?></span>
 							</a>
 						</li>
 						<?php } ?>
@@ -358,7 +348,7 @@ function mobileJump(jumpValue) {
 						<li class="level1" id="m_6_3">
 							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/videomanagement.php">
 								<span class="icon"><i class="fa-solid fa-file-video"></i></span>
-								<span class="link"><?php echo returnIntLang('menu files video'); ?></span>
+								<span class="text"><?php echo returnIntLang('menu files video'); ?></span>
 							</a>
 						</li>
 						<?php } ?>
@@ -378,7 +368,7 @@ function mobileJump(jumpValue) {
 					<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
 						<a>
 							<span class="icon"><i class="fa-solid fa-file-invoice"></i></span>
-							<span class="link"><?php echo returnIntLang('menu content'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu content'); ?></span>
 							<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
 						</a>
 						<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>>
@@ -386,7 +376,7 @@ function mobileJump(jumpValue) {
 								<li class="level1" id="m_<?php echo $mp; ?>_0">
 									<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/menuedit.php">
 										<span class="icon"><i class="fa-solid fa-sitemap"></i></span>
-										<span class="link"><?php echo returnIntLang('menu content structure'); ?></span>
+										<span class="text"><?php echo returnIntLang('menu content structure'); ?></span>
 									</a>
 								</li>
 							<?php } ?>
@@ -394,7 +384,7 @@ function mobileJump(jumpValue) {
 								<li class="level1" id="m_<?php echo $mp; ?>_1">
 									<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/contentstructure.php">
 										<span class="icon"><i class="fa-solid fa-pen-to-square"></i></span>
-										<span class="link"><?php echo returnIntLang('menu content contents'); ?></span>
+										<span class="text"><?php echo returnIntLang('menu content contents'); ?></span>
 									</a>
 								</li>
 							<?php } ?>
@@ -404,7 +394,7 @@ function mobileJump(jumpValue) {
 									<li class="level1" id="m_<?php echo $mp; ?>_4">
 										<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/languagetools.php">
 											<span class="icon"><i class="fa-solid fa-spell-check"></i></span>
-											<span class="link"><?php echo returnIntLang('menu content localize'); ?></span>
+											<span class="text"><?php echo returnIntLang('menu content localize'); ?></span>
 										</a>
 									</li>
 								<?php }
@@ -412,7 +402,7 @@ function mobileJump(jumpValue) {
 									echo '<li class="level1" id="m_' . $mp . '_2">';
 									echo '<a href="/' . $_SESSION['wspvars']['wspbasedir'] . '/globalcontent.php">';
 									echo '<span class="icon"><i class="fa-brands fa-buffer"></i></span>';
-									echo '<span class="link">' . returnIntLang('menu content global') . '</span>';
+									echo '<span class="text">' . returnIntLang('menu content global') . '</span>';
 									echo '</a></li>';
 								}
 							}
@@ -443,20 +433,20 @@ function mobileJump(jumpValue) {
 							<?php if($queue_num>0) {
 								echo "<div class='badge badge-sm badge-float bg-danger'>".$queue_num."</div>"; 
 							} ?></span>
-							<span class="link"><?php echo returnIntLang('menu changed publisher'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu changed publisher'); ?></span>
 							<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
 						</a>
 						<ul class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>>
 							<li class="level1" id="m_<?php echo $mp; ?>_0">
 								<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php">
 									<span class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
-									<span class="link"><?php echo returnIntLang('menu changed'); ?></span>
+									<span class="text"><?php echo returnIntLang('menu changed'); ?></span>
 								</a>
 							</li>
 							<li class="level1" id="m_<?php echo $mp; ?>_1">
 								<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publishqueue.php">
 									<span class="icon"><i class="fa-solid fa-hourglass-half"></i></span>
-									<span class="link"><?php echo returnIntLang('menu changed queue'); ?></span>
+									<span class="text"><?php echo returnIntLang('menu changed queue'); ?></span>
 								</a>
 							</li>
 						</ul>
@@ -471,7 +461,7 @@ function mobileJump(jumpValue) {
 						<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "active";?>" id="m_<?php echo $mp; ?>">
 							<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/publisher.php">
 								<span class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
-								<span class="link"><?php echo returnIntLang('menu changed'); ?></span>
+								<span class="text"><?php echo returnIntLang('menu changed'); ?></span>
 							</a>
 						</li>
 						<?php
@@ -489,7 +479,7 @@ function mobileJump(jumpValue) {
 				<li class="level0 hassub <?php if($_SESSION['wspvars']['mgroup'] == $mp) echo "active";?>" id="m_<?php echo $mp; ?>">
 					<a>
 						<span class="icon"><i class="fa-solid fa-gear"></i></span>
-						<span class="link"><?php echo returnIntLang('menu manage'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu manage'); ?></span>
 						<i class="fa-solid fa-caret-left <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "fa-rotate-270";?>"></i>
 					</a>
 				<ul id="m_10s" class="level1" <?php if($_SESSION['wspvars']['mgroup']==$mp) echo "style='display: block'";?>">
@@ -499,7 +489,7 @@ function mobileJump(jumpValue) {
 						<li class="level1 hassub">
 							<a>
 								<span class="icon"><i class="fa-solid fa-language"></i></span>
-								<span class="link"><?php echo returnIntLang('menu manage language'); ?></span>
+								<span class="text"><?php echo returnIntLang('menu manage language'); ?></span>
 								<i class="fa-solid fa-caret-left"></i>
 							</a>
 							<ul class="level2">
@@ -508,7 +498,7 @@ function mobileJump(jumpValue) {
 									echo "<li>";
 									echo "<a href=\"" . $_SERVER['PHP_SELF'] . "?setlang=" . $llkey . "\">";
 									echo "<span class='icon'><strong>" . strtoupper($llkey) . "</strong></span>";
-									echo "<span class='link'>" . $llvalue . "</span>";
+									echo "<span class='text'>" . $llvalue . "</span>";
 									echo "</a></li>";
 								}
 								?>
@@ -518,27 +508,27 @@ function mobileJump(jumpValue) {
 				<li class="level1" id="m_<?php echo $mp; ?>_0">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/editorprefs.php">
 						<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
-						<span class="link"><?php echo returnIntLang('menu manage editor'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu manage editor'); ?></span>
 					</a>
 				</li>
 				<?php if ($isextended==1){ ?>
 					<li class="level1" id="m_<?php echo $mp; ?>_4">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/dev.php">
 							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
-							<span class="link"><?php echo returnIntLang('menu manage developer'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu manage developer'); ?></span>
 						</a>
 					</li>
 					<?php if ($fsaccess) { ?>
 					<li class="level1" id="m_<?php echo $mp; ?>_4">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/cleanup.php">
 							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
-							<span class="link"><?php echo returnIntLang('menu manage cleanup'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu manage cleanup'); ?></span>
 						</a>
 					</li>
 					<li class="level1" id="m_<?php echo $mp; ?>_6">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/trash.php">
 							<span class="icon"><i class="fa-regular fa-circle-question"></i></span>
-							<span class="link"><?php echo returnIntLang('menu content trash'); ?></span>
+							<span class="text"><?php echo returnIntLang('menu content trash'); ?></span>
 						</a>
 					</li>
 					<?php } ?>
@@ -546,14 +536,14 @@ function mobileJump(jumpValue) {
 				<li class="level1" id="m_<?php echo $mp; ?>_2">
 					<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/modules.php">
 						<span class="icon"><i class="fa-solid fa-box-archive"></i></span>
-						<span class="link"><?php echo returnIntLang('menu manage modules'); ?></span>
+						<span class="text"><?php echo returnIntLang('menu manage modules'); ?></span>
 					</a>
 				</li>
 				<?php if (is_file($_SERVER['DOCUMENT_ROOT']."/".$_SESSION['wspvars']['wspbasediradd']."/".$_SESSION['wspvars']['wspbasedir']."/system.php")){ ?>
 					<li class="level1" id="m_<?php echo $mp; ?>_3">
 						<a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/system.php">
 							<span class="icon">…</span>
-							<span class="link"><?php echo returnIntLang('menu manage system'); if (isset($_SESSION['wspvars']['updatesystem']) && $_SESSION['wspvars']['updatesystem']===true){ echo " &nbsp;<span class='bubblemessage orange'>!</span>"; } ?></span>
+							<span class="text"><?php echo returnIntLang('menu manage system'); if (isset($_SESSION['wspvars']['updatesystem']) && $_SESSION['wspvars']['updatesystem']===true){ echo " &nbsp;<span class='bubblemessage orange'>!</span>"; } ?></span>
 						</a>
 					</li>
 				<?php } ?>
@@ -601,7 +591,7 @@ function mobileJump(jumpValue) {
 			} elseif ($_SESSION['wspvars']['wspmodmenucount'] > 1) {
 				echo "<li class='level0 hassub'>";
 				echo "<a><span class='icon'><i class='fa-solid fa-boxes-stacked'></i></span>";
-				echo "<span class='link'>".returnIntLang('menu modmenu')."</span>";
+				echo "<span class='text'>".returnIntLang('menu modmenu')."</span>";
 				echo "<i class='fa-solid fa-caret-left'></i></a>";
 				echo "<ul class='level1'>";
 				$wmstart = 0;
@@ -615,7 +605,7 @@ function mobileJump(jumpValue) {
 						if ($wmstart == 0 && key_exists($wmrun + 1, $showmodmenu) && $showmodmenu[$wmrun + 1]['level'] > 0) {
 							$buf .= "\n<a>";
 							$buf .= "<span class='icon'><i class='fa-solid fa-box-open'></i></span>";
-							$buf .= "<span class='link'>" . $showmodmenu[$wmrun]['title']."</span>";
+							$buf .= "<span class='text'>" . $showmodmenu[$wmrun]['title']."</span>";
 							$buf .= "<i class='fa-solid fa-caret-left'></i></a>";
 							$buf .= "<ul id=\"submod_".$showmodmenu[$wmrun]['id']."\" class=\"level2\" style=\"display: none;\">";
 							while (isset($showmodmenu[$wmrun + 1]['level']) && $showmodmenu[$wmrun + 1]['level'] > 0) {
@@ -623,14 +613,14 @@ function mobileJump(jumpValue) {
 								$buf .= "<li style=\"\">\n";
 								$buf .= "<a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" title=\"".$showmodmenu[$wmrun]['title']."\">";
 								$buf .= "<span class='icon'><i class='fa-solid fa-circle-dot'></i></span>";
-								$buf .= '<span class="link">' . $showmodmenu[$wmrun]['title'] . '</span>'; 
+								$buf .= '<span class="text">' . $showmodmenu[$wmrun]['title'] . '</span>';
 								$buf .= "</a></li>";
 							}
 							$buf .= "</ul>";
 						} else {
 							$buf .= "<a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" title=\"".$showmodmenu[$wmrun]['title']."\">";
 							$buf .= "<span class='icon'><i class='fa-regular fa-circle-dot'></i></span>";
-							$buf .= '<span class="link">' . $showmodmenu[$wmrun]['title'] . '</span>';
+							$buf .= '<span class="text">' . $showmodmenu[$wmrun]['title'] . '</span>';
 							$buf .= "</a>";
 						}
 						$buf .= "</li>";
@@ -638,7 +628,7 @@ function mobileJump(jumpValue) {
 						$buf .= "<li id=\"m_".$showmodmenu[$wmrun]['id']."\">";
 						$buf .= "<a href=\"/".$_SESSION['wspvars']['wspbasedir']."/modgoto.php?modid=".$showmodmenu[$wmrun]['id']."\" title=\"".$showmodmenu[$wmrun]['title']."\">";
 						$buf .= "<span class='icon'><i class='fa-solid fa-circle-dot'></i></span>";
-						$buf .= '<span class="link">' . $showmodmenu[$wmrun]['title'] . '</span>';
+						$buf .= '<span class="text">' . $showmodmenu[$wmrun]['title'] . '</span>';
 						$buf .= "</a>";
 						$buf .= "</li>";
 					}

@@ -6,69 +6,117 @@
  * @version GIT
  */
 
-/*
- * 2024-06-09: fixed Safari bug
- *  
- */
-
 header("Content-Type: text/css");
-
 ?>
 
-/* * { margin: 0px; padding: 0px; } */
-
-/* source-sans-3-regular - latin */
+/* outfit-100 - latin */
 @font-face {
-	font-display: swap;
-	font-family: 'Source Sans 3';
-	font-style: normal;
-	font-weight: 400;
-	src: url('./../fonts/source-sans-3-v15-latin/source-sans-3-v15-latin-regular.woff2') format('woff2');
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 100;
+    src: url('./../fonts/outfit/outfit-v15-latin-100.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
-/* source-sans-3-700 - latin */
+/* outfit-200 - latin */
 @font-face {
-	font-display: swap;
-	font-family: 'Source Sans 3';
-	font-style: normal;
-	font-weight: 700;
-	src: url('./../fonts/source-sans-3-v15-latin/source-sans-3-v15-latin-700.woff2') format('woff2');
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 200;
+    src: url('./../fonts/outfit/outfit-v15-latin-200.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
-/* source-code-pro-regular - latin */
+/* outfit-300 - latin */
 @font-face {
-	font-display: swap;
-	font-family: 'Source Code Pro';
-	font-style: normal;
-	font-weight: 400;
-	src: url('./../fonts/source-code-pro-v23-latin/source-code-pro-v23-latin-regular.woff2') format('woff2');
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 300;
+    src: url('./../fonts/outfit/outfit-v15-latin-300.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
-/* source-code-pro-700 - latin */
+/* outfit-400 - latin */
 @font-face {
-	font-display: swap;
-	font-family: 'Source Code Pro';
-	font-style: normal;
-	font-weight: 700;
-	src: url('./../fonts/source-code-pro-v23-latin/source-code-pro-v23-latin-700.woff2') format('woff2');
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 400;
+    src: url('./../fonts/outfit/outfit-v15-latin-400.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
+
+/* outfit-500 - latin */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 500;
+    src: url('./../fonts/outfit/outfit-v15-latin-500.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* outfit-600 - latin */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 600;
+    src: url('./../fonts/outfit/outfit-v15-latin-600.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* outfit-700 - latin */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 700;
+    src: url('./../fonts/outfit/outfit-v15-latin-700.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* outfit-800 - latin */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 800;
+    src: url('./../fonts/outfit/outfit-v15-latin-800.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* outfit-900 - latin */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Outfit';
+    font-style: normal;
+    font-weight: 900;
+    src: url('./../fonts/outfit/outfit-v15-latin-900.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+/* inconsolata-regular - latin */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Inconsolata';
+    font-style: normal;
+    font-weight: 400;
+    src: url('./../fonts/inconsolata/inconsolata-v37-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
 
 html {
 	font-size: 14px;
 }
 
 body { 
-	font-family: 'Source Sans 3', 'Open Sans', sans-serif;
-	font-weight: 400;
+	font-family: 'Outfit', 'Open Sans', sans-serif;
+	font-weight: 200;
 	font-size: 14px;
 	overflow: auto;
 	overflow-x: hidden;
+    min-height: 100vh;
 }
 
-input { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
-select { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
-textarea { font-family: 'Source Sans 3', 'Open Sans', sans-serif; font-weight: 400; }
-textarea.source { font-family: 'Source Code Pro', monospace; font-weight: 400; }
+input { font-family: 'Outfit', 'Open Sans', sans-serif; font-weight: 400; }
+select { font-family: 'Outfit', 'Open Sans', sans-serif; font-weight: 400; }
+textarea { font-family: 'Outfit', 'Open Sans', sans-serif; font-weight: 400; }
+textarea.source { font-family: 'Inconsolata', monospace; font-weight: 400; }
 
 a { text-decoration: none; }
 
@@ -340,7 +388,7 @@ legend span.bubblemessage {
 
 #topholder {
 	position: fixed;
-	height: 3rem;
+	height: 4rem;
 	width: 100%;
 	background: rgba(255,255,255,0.9);
 	z-index: 10; 
@@ -353,10 +401,21 @@ legend span.bubblemessage {
 	align-items: center;
 	padding-left: 240px;
 	-webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
 
 	#togglenav {
 		padding-left: 1rem;
 	}
+
+    #userlink {
+
+    }
+
+    #cntdwn {
+        width: 5rem;
+        display: inline-block;
+        text-align: center;
+    }
 
 	#logoutarea {
 		padding-right: 2rem;
@@ -364,7 +423,59 @@ legend span.bubblemessage {
 }
 
 body.collapsed #topholder {
-	padding-left: 3rem;
+	padding-left: 4rem;
+}
+
+#logo {
+    width: 100%;
+    height: 4rem;
+    line-height: 4rem;
+    color: #ffffff;
+    background: rgba(255,255,255,0.1);
+    display: flex;
+}
+
+#logo .icon {
+    display: inline-flex;
+    width: 4rem;
+    height: 4rem;
+    padding: 0;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+#logo .icon .outline {
+    border: 2.5px solid white;
+    border-radius: 3rem;
+    padding-right: 2px;
+    padding-bottom: 2px;
+    width: 1.9rem;
+    height: 1.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transform: rotate(-50deg);
+}
+
+#logo .text {
+    align-content: center;
+    flex: 1;
+    font-weight: 800;
+    font-size: 2.5rem;
+
+    span { float: left; }
+
+    .w { font-weight: 200; font-size: 0.6em; }
+    .s { font-weight: 200; font-size: 0.6em; }
+    .p { font-weight: 200;  font-size: 0.6em; margin-right: 0.2em; }
+
+}
+
+body.collapsed #logo .text {
+    display: none;
 }
 
 #mainmenu {
@@ -378,7 +489,7 @@ body.collapsed #topholder {
 }
 
 body.collapsed #mainmenu {
-	width: 3rem;
+	width: 4rem;
 }
 
 #mainmenu nav,
@@ -404,7 +515,7 @@ body.collapsed #mainmenu {
 
 #mainmenu li .icon {
 	display: inline-flex;
-	width: 3rem;
+	width: 4rem;
 	height: 3rem;
 	padding: 0;
 	margin: 0;
@@ -413,13 +524,13 @@ body.collapsed #mainmenu {
 	position: relative;
 }
 
-#mainmenu li .link {
+#mainmenu li .text {
 	min-height: 3rem;
 	align-content: center;
 	flex: 1;
 }
 
-body.collapsed #mainmenu li .link {
+body.collapsed #mainmenu li .text {
 	display: none;
 }
 
@@ -452,7 +563,7 @@ body.collapsed #mainmenu li .fa-caret-left {
 	position: relative;
 	margin: 0px auto 10px auto;
 	width: 100vw;
-	height: 4rem;
+	height: 5rem;
 }
 
 #contentholder, #infoholder {
@@ -462,9 +573,13 @@ body.collapsed #mainmenu li .fa-caret-left {
 	padding-right: 2rem;
 }
 
+#contentholder {
+    min-height: calc(100vh - 11rem);
+}
+
 body.collapsed #contentholder,
 body.collapsed #infoholder {
-	padding-left: 4rem;
+	padding-left: 5rem;
 }
 	
 #showdevmsg {
@@ -823,9 +938,9 @@ table.contenttable input[type="checkbox"] {
 }
 
 #mainmenu #togglenav {
-	height: 3rem;
+	height: 4rem;
 	padding: 0 1rem;
-	line-height: 3rem;
+	line-height: 4rem;
 	font-size: 1.5rem;
 	align-content: center;
 	color: white; 
@@ -1019,10 +1134,6 @@ div.qq-upload-failed-text { position: relative; display: block; width: 100%; lin
 
 @media screen and (max-width: 786px) {
 
-fieldset.options {
-	font-size: 0.9em;
-	}
-
 fieldset.halffield.left {
 	position: relative;
 	width: 98%;
@@ -1034,24 +1145,33 @@ fieldset.halffield.left {
 }
 	
 @media screen and (max-width: 480px) {
-	body {
-		font-size: 0.7em;
-		}
-	
+
+    #topholder {
+        #userlink { margin-right: 0.5em; }
+        #cntdwn { display: none; }
+    }
+
+    body.collapsed #topholder {
+        padding-left: 1rem;
+    }
+
+    body.collapsed #mainmenu {
+        left: -4rem;
+    }
+
+    #contentholder, #infoholder {
+        position: relative;
+        margin: 0px auto;
+        padding-left: 2rem !important;
+        padding-right: 2rem;
+    }
+
 	fieldset.halffield.left {
 		width: 95.5%;
 		}
 	
-	#imenu {
-		padding: 2.5% 2.5%;
-		}
-	
-	#imenu select {
-		font-size: 1.1em;
-		}
-	
 	#topspacer {
-		height: 3.5em;
+		height: 4.5rem;
 		}
 	
 	#showdevmsg {

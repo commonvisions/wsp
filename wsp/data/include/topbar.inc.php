@@ -3,11 +3,17 @@
         <i class="fa-solid fa-bars"></i>
     </div>
     <div id="logoutarea">
+    <span id="modelink">
+            <a role="button"><i class="fa-solid fa-circle-half-stroke"></i></a>
+        </span>
+    <span id="userlink">
+            <a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/userprefs.php">
+                <i class="fa-solid fa-user-circle"></i></a>
+        </span>
         <span id="cntdwn"><b></b></span>
         <span id="logoutlink">
             <a href="/<?php echo $_SESSION['wspvars']['wspbasedir']; ?>/logout.php">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </a>
+                <i class="fa-solid fa-right-from-bracket"></i></a>
         </span>
         <script>
             (() => {
